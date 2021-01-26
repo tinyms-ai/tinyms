@@ -9,9 +9,13 @@ before_install:
   - sudo apt-get install -y libssl-dev
 # command to install dependencies
 install:
-  - pip install mindspore
+  - python setup.py install
+  - python setup.py sdist bdist_wheel
+  - pip install dist/tinyms-0.1.0-py3-none-any.whl
 # command to run tests
-script: python -c "import mindspore;print(mindspore.__version__)"
+script:
+  - python -c "import mindspore; print(mindspore.__version__)"
+  - python -c "import tinyms; print(tinyms.__version__)"
 
 services:
   - docker
