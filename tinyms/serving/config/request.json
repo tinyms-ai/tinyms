@@ -1,0 +1,13 @@
+{
+    "instance": {
+        "shape": [],
+        "data": ""
+    },
+    "servable": {
+        "name": "resnet50",
+        "model": {
+            "format": "ckpt",
+            "class_num": 9
+        }
+    }
+}

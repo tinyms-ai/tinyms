@@ -22,6 +22,7 @@ package_name = 'tinyms'
 version_tag = '0.1.0'
 pwd = os.path.dirname(os.path.realpath(__file__))
 
+
 def _read_file(filename):
     with open(os.path.join(pwd, filename), encoding='UTF-8') as f:
         return f.read()
@@ -38,6 +39,9 @@ def _write_version(file):
 required_package = [
     'scipy >= 1.5.3',
     'mindspore >= 1.1.0',
+    'opencv-python >= 4.4.0',
+    'requests >= 2.22.0',
+    'flask >= 1.1.1',
     'wheel >= 0.32.0',
     'setuptools >= 40.8.0',
 ]
