@@ -41,6 +41,7 @@ required_package = [
     'mindspore >= 1.1.0',
     'matplotlib >= 3.1.1',
     'Pillow >= 6.2.0',
+    'requests >= 2.22.0',
     'wheel >= 0.32.0',
     'setuptools >= 40.8.0',
 ]

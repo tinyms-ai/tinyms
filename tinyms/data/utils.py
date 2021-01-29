@@ -92,6 +92,18 @@ def _download_cifar10(local_path):
     _fetch_and_unzip(remote_url, file_name)
 
 
+def _download_cifar100(local_path):
+    '''Download the dataset from http://www.cs.toronto.edu/~kriz/cifar.html.'''
+    dataset_path = os.path.join(local_path, 'cifar100')
+    if not os.path.exists(dataset_path):
+        os.makedirs(dataset_path)
+
+    print("************** Downloading the Cifar100 dataset **************")
+    remote_url = "http://www.cs.toronto.edu/~kriz/cifar-100-binary.tar.gz"
+    file_name = os.path.join(dataset_path, remote_url.split('/')[-1])
+    _fetch_and_unzip(remote_url, file_name)
+
+
 def download_dataset(dataset_name='mnist', local_path='.'):
     r'''
     This function is defined to easily download any public dataset
@@ -103,14 +115,16 @@ def download_dataset(dataset_name='mnist', local_path='.'):
         local_path: str, specifies the local location of dataset to be downloaded.
             Default: `.`.
     '''
-    if dataset_name not in ('mnist', 'cifar10'):
-        print("Currently dataset_name only supports `mnist` and `cifar10`!")
+    if dataset_name not in ('mnist', 'cifar10', 'cifar100'):
+        print("Currently dataset_name only supports `mnist`, `cifar10` and `cifar100`!")
         sys.exit(0)
 
     if dataset_name == 'mnist':
         return _download_mnist(local_path)
-    else:
+    elif dataset_name == 'cifar10':
         return _download_cifar10(local_path)
+    else:
+        return _download_cifar100(local_path)
 
 
 class ImageViewer():
