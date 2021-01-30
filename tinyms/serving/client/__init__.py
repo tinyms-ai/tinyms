@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-from .client import predict
+from .client import list_servables, predict
 
-__all__ = ["predict"]
+__all__ = ["list_servables", "predict"]

@@ -13,7 +13,7 @@
 # limitations under the License.
 # ============================================================================
 from flask import request, Flask, jsonify
-from ..servable import predict
+from ..servable import predict, servable_search
 
 app = Flask(__name__)
 
@@ -22,11 +22,19 @@ app = Flask(__name__)
 def predict_server():
     json_data = request.get_json()
     instance = json_data['instance']
-    servable = json_data['servable']
-    model = servable['model']
+    servable_name = json_data['servable_name']
 
-    res = predict(instance, servable['name'], model['format'], model['class_num'])
+    res = servable_search(servable_name)
+    if res['status'] != 0:
+        return jsonify(res)
+    servable = res['servables'][0]
+    res = predict(instance, servable_name, servable['model'])
     return jsonify(res)
+
+
+@app.route('/servables', methods=['GET'])
+def list_servables():
+    return jsonify(servable_search())
 
 
 def start(host='127.0.0.1', port=5000):

@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-from .servable import predict
+from .servable import servable_search, predict
 
-__all__ = ["predict"]
+__all__ = ["servable_search", "predict"]

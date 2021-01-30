@@ -3,11 +3,5 @@
         "shape": [],
         "data": ""
     },
-    "servable": {
-        "name": "resnet50",
-        "model": {
-            "format": "ckpt",
-            "class_num": 9
-        }
-    }
+    "servable_name": "resnet50_mushroom"
 }

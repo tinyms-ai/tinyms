@@ -15,6 +15,5 @@
 """.. TinyMS Serving package."""
 from .client import *
 from .server import *
-from .servable import *
 
-__all__ = ["predict", "start", "shutdown"]
+__all__ = ["list_servables", "predict", "start", "shutdown"]
