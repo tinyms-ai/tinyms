@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-""".. TinyMS package."""
-from .version import __version__
-from . import model
-from .model import *
+from mindspore.nn import SequentialCell
 
-__all__ = []
-__all__.extend(__version__)
-__all__.extend(model.__all__)
+__all__ = ['Sequential']
+
+
+class Sequential(SequentialCell):
+    pass

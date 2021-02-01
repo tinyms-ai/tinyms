@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-""".. TinyMS package."""
-from .version import __version__
-from . import model
-from .model import *
 
-__all__ = []
-__all__.extend(__version__)
-__all__.extend(model.__all__)
+from mindspore.nn import Conv2d, Conv2dTranspose, Conv1d, Conv1dTranspose
+
+__all__ = ['Conv2d', 'Conv2dTranspose', 'Conv1d', 'Conv1dTranspose']
