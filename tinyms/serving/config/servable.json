@@ -1,0 +1,11 @@
+[
+    {
+        "name": "resnet50_mushroom",
+        "description": "This servable hosts a ResNet50 model predicting for mushrooms",
+        "model": {
+            "name": "resnet50",
+            "format": "ckpt",
+            "class_num": 9
+        }
+    }
+]

@@ -1,0 +1,7 @@
+{
+    "instance": {
+        "shape": [],
+        "data": ""
+    },
+    "servable_name": "resnet50_mushroom"
+}
