@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+
 from mindspore import Model as _Model
 from mindspore.train.serialization import load_checkpoint as _load_checkpoint, \
     save_checkpoint as _save_checkpoint, export as _export
@@ -54,7 +55,7 @@ class Model(_Model):
                 level to O3 Ascend. The recommended level is choose by the export experience, cannot
                 always generalize. User should specify the level for special network.
 
-                O2 is recommended on GPU, O3 is recommended on Ascend.
+                O2 is recommended on `GPU`, O3 is recommended on `Ascend`.
         """
         # configure the train network
         self._loss_fn = loss_fn

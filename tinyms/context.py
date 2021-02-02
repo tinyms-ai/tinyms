@@ -13,6 +13,8 @@
 # limitations under the License.
 # ============================================================================
 
-from mindspore.nn import Conv2d, Conv2dTranspose, Conv1d, Conv1dTranspose
+from mindspore import context
+from mindspore.context import *
 
-__all__ = ['Conv2d', 'Conv2dTranspose', 'Conv1d', 'Conv1dTranspose']
+__all__ = []
+__all__.extend(context.__all__)

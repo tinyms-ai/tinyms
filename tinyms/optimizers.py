@@ -12,15 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""
-Layers.
 
-The high-level components(Cells) used to construct the neural network.
-"""
-from . import container, conv
-from .container import *
-from .conv import *
+from mindspore.nn import optim
+from mindspore.nn.optim import *
 
 __all__ = []
-__all__.extend(container.__all__)
-__all__.extend(conv.__all__)
+__all__.extend(optim.__all__)

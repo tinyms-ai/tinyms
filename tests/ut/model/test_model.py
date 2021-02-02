@@ -12,24 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-import numpy as np
-import mindspore.nn as nn
-import mindspore.context as context
-from mindspore import Tensor
 
-from tinyms import Model
-from tinyms.layers import Sequential
+import tinyms as ts
+from tinyms import context, layers, Model
+from tinyms.layers import SequentialLayer
 
 
 def test_model_predict():
     context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
 
-    net = Sequential([
-        nn.Conv2d(1, 6, 5, pad_mode='valid', weight_init="ones"),
-        nn.ReLU(),
-        nn.MaxPool2d(kernel_size=2, stride=2)
+    net = SequentialLayer([
+        layers.Conv2d(1, 6, 5, pad_mode='valid', weight_init="ones"),
+        layers.ReLU(),
+        layers.MaxPool2d(kernel_size=2, stride=2)
     ])
     model = Model(net)
     model.compile()
-    z = model.predict(Tensor(np.ones([1, 1, 28, 28]).astype(np.float32)))
+    z = model.predict(ts.ones((1, 1, 28, 28)))
     print(z.asnumpy())

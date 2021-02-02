@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
-from mindspore.nn import SequentialCell
+"""
+This module is to support vision augmentations. transforms is a high performance
+image augmentation module which is developed with c++ opencv.
+"""
+from mindspore.dataset.vision.utils import Inter, Border, ImageBatchFormat
+from . import transforms
+from .transforms import *
 
-__all__ = ['Sequential']
-
-
-class Sequential(SequentialCell):
-    pass
+__all__ = ['Inter', 'Border', 'ImageBatchFormat']
+__all__.extend(transforms.__all__)

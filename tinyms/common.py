@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-""".. TinyMS package."""
-from .version import __version__
-from . import model
-from . import common
-from .model import *
-from .common import *
+from mindspore import Tensor, RowTensor, SparseTensor, \
+    ms_function, Parameter, ParameterTuple
+#from mindspore.common import dtype
+#from mindspore.common.dtype import *
+from mindspore import numpy
+from mindspore.numpy import *
 
-__all__ = []
-__all__.extend(__version__)
-__all__.extend(model.__all__)
-__all__.extend(common.__all__)
+__all__ = ['Tensor', 'RowTensor', 'SparseTensor',
+           'ms_function', 'Parameter', 'ParameterTuple']
+# __all__.extend(dtype.__all__)
+__all__.extend(numpy.__all__)
