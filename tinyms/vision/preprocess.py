@@ -18,6 +18,9 @@ import cv2
 import numpy as np
 from PIL import Image
 
+__all__ = ['preprocess']
+
+
 def _crop_center(img, cropx, cropy):
     y, x, _ = img.shape
     startx = x // 2 - (cropx // 2)

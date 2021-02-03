@@ -16,8 +16,10 @@ This module is to support vision augmentations. transforms is a high performance
 image augmentation module which is developed with c++ opencv.
 """
 from mindspore.dataset.vision.utils import Inter, Border, ImageBatchFormat
-from . import transforms
+from . import transforms, preprocess
 from .transforms import *
+from .preprocess import *
 
 __all__ = ['Inter', 'Border', 'ImageBatchFormat']
 __all__.extend(transforms.__all__)
+__all__.extend(preprocess.__all__)
