@@ -30,10 +30,6 @@ from mindspore.nn.layer.embedding import *
 from mindspore.nn.layer.pooling import *
 from mindspore.nn.layer.math import *
 from mindspore.nn.layer.combined import *
-from mindspore.ops import composite, operations, functional
-from mindspore.ops.composite import *
-from mindspore.ops.operations import *
-from mindspore.ops.functional import *
 
 __all__ = ['Layer', 'SequentialLayer']
 __all__.extend(activation.__all__)
@@ -45,9 +41,6 @@ __all__.extend(embedding.__all__)
 __all__.extend(pooling.__all__)
 __all__.extend(nn_math.__all__)
 __all__.extend(combined.__all__)
-__all__.extend(composite.__all__)
-__all__.extend(operations.__all__)
-__all__.extend(functional.__all__)
 
 
 class Layer(Cell):

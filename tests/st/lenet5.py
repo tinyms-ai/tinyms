@@ -17,8 +17,8 @@ The sample can be run on CPU, GPU and Ascend 910 AI processor.
 """
 import os
 import argparse
-from mindspore import dtype as mstype
 
+import tinyms as ts
 from tinyms import context, layers, Model
 from tinyms.data import MnistDataset, download_dataset
 from tinyms.data.transforms import TypeCast
@@ -54,7 +54,7 @@ def create_dataset(data_path, batch_size=32, repeat_size=1,
     rescale_nml_op = Rescale(rescale_nml, shift_nml)  # normalize images
     rescale_op = Rescale(rescale, shift)  # rescale images
     hwc2chw_op = HWC2CHW()  # change shape from (height, width, channel) to (channel, height, width) to fit network.
-    type_cast_op = TypeCast(mstype.int32)  # change data type of label to int32 to fit network
+    type_cast_op = TypeCast(ts.int32)  # change data type of label to int32 to fit network
 
     # apply map operations on images
     mnist_ds = mnist_ds.map(operations=type_cast_op, input_columns="label", num_parallel_workers=num_parallel_workers)

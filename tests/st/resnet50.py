@@ -17,7 +17,6 @@ The sample can be run on CPU, GPU and Ascend 910 AI processor.
 """
 import random
 import argparse
-from mindspore import dtype as mstype
 
 import tinyms as ts
 from tinyms import context, layers, Model
@@ -25,6 +24,7 @@ from tinyms.data import Cifar10Dataset, download_dataset
 from tinyms.data.transforms import TypeCast
 from tinyms.vision import RandomCrop, RandomHorizontalFlip, Resize, Rescale, Normalize, HWC2CHW
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor
+from tinyms.primitives import Add, ReduceMean, Squeeze
 from tinyms.metrics import Accuracy
 from tinyms.optimizers import Momentum
 from tinyms.losses import SoftmaxCrossEntropyWithLogits
@@ -57,7 +57,7 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
     rescale_op = Rescale(rescale, shift)
     normalize_op = Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
     changeswap_op = HWC2CHW()
-    type_cast_op = TypeCast(mstype.int32)
+    type_cast_op = TypeCast(ts.int32)
 
     c_trans = []
     if training:
@@ -155,7 +155,7 @@ class ResidualBlock(layers.Layer):
         self.conv3 = conv1x1(out_chls, out_channels, stride=1, padding=0)
         self.bn3 = bn_with_initialize_last(out_channels)
         self.relu = layers.ReLU()
-        self.add = layers.Add()
+        self.add = Add()
 
     def construct(self, x):
         """construct"""
@@ -198,7 +198,7 @@ class ResidualBlockWithDown(layers.Layer):
         self.down_sample = down_sample
         self.conv_down_sample = conv1x1(in_channels, out_channels, stride=stride, padding=0)
         self.bn_down_sample = bn_with_initialize(out_channels)
-        self.add = layers.Add()
+        self.add = Add()
 
     def construct(self, x):
         """construct"""
@@ -319,8 +319,8 @@ class ResNet(layers.Layer):
         self.layer2 = MakeLayer1(block, in_channels=256, out_channels=512, stride=2)
         self.layer3 = MakeLayer2(block, in_channels=512, out_channels=1024, stride=2)
         self.layer4 = MakeLayer3(block, in_channels=1024, out_channels=2048, stride=2)
-        self.pool = layers.ReduceMean(keep_dims=True)
-        self.squeeze = layers.Squeeze(axis=(2, 3))
+        self.pool = ReduceMean(keep_dims=True)
+        self.squeeze = Squeeze(axis=(2, 3))
         self.fc = fc_with_initialize(512 * block.expansion, num_classes)
 
     def construct(self, x):

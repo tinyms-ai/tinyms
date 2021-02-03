@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-from mindspore import common
-from mindspore.common import *
-from mindspore import numpy
-from mindspore.numpy import *
+"""
+Primitive.
+"""
+from mindspore.ops import composite, operations, functional
+from mindspore.ops.composite import *
+from mindspore.ops.operations import *
+from mindspore.ops.functional import *
 
 __all__ = []
-__all__.extend(common.__all__)
-__all__.extend(numpy.__all__)
+__all__.extend(composite.__all__)
+__all__.extend(operations.__all__)
+__all__.extend(functional.__all__)
