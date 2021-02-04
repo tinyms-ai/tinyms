@@ -14,12 +14,9 @@
 # ============================================================================
 """.. TinyMS package."""
 from .version import __version__
-from . import model
 from . import common
-from .model import *
 from .common import *
 
 __all__ = []
 __all__.extend(__version__)
-__all__.extend(model.__all__)
 __all__.extend(common.__all__)

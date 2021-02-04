@@ -14,8 +14,9 @@
 # ============================================================================
 
 import tinyms as ts
-from tinyms import context, layers, Model
+from tinyms import context, layers
 from tinyms.layers import SequentialLayer
+from tinyms.model import Model
 
 
 def test_model_predict():

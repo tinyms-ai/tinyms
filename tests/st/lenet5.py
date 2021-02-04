@@ -19,15 +19,15 @@ import os
 import argparse
 
 import tinyms as ts
-from tinyms import context, layers, Model
+from tinyms import context
 from tinyms.data import MnistDataset, download_dataset
 from tinyms.data.transforms import TypeCast
 from tinyms.vision import Inter, Resize, Rescale, HWC2CHW
+from tinyms.model import Model, lenet5
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor
 from tinyms.metrics import Accuracy
 from tinyms.optimizers import Momentum
 from tinyms.losses import SoftmaxCrossEntropyWithLogits
-from tinyms.initializers import Normal
 
 
 def create_dataset(data_path, batch_size=32, repeat_size=1,
@@ -40,62 +40,27 @@ def create_dataset(data_path, batch_size=32, repeat_size=1,
         num_parallel_workers: The number of parallel workers
     """
     # define dataset
-    mnist_ds = MnistDataset(data_path)
-
-    # define operation parameters
-    resize_height, resize_width = 32, 32
-    rescale = 1.0 / 255.0
-    shift = 0.0
-    rescale_nml = 1 / 0.3081
-    shift_nml = -1 * 0.1307 / 0.3081
+    mnist_ds = MnistDataset(data_path, num_parallel_workers=num_parallel_workers,
+                            shuffle=True)
 
     # define map operations
-    resize_op = Resize((resize_height, resize_width), interpolation=Inter.LINEAR)  # Resize images to (32, 32)
-    rescale_nml_op = Rescale(rescale_nml, shift_nml)  # normalize images
-    rescale_op = Rescale(rescale, shift)  # rescale images
-    hwc2chw_op = HWC2CHW()  # change shape from (height, width, channel) to (channel, height, width) to fit network.
+    c_trans = [
+        Resize((32, 32), interpolation=Inter.LINEAR),  # Resize images to (32, 32)
+        Rescale(1 / 0.3081, -1 * 0.1307 / 0.3081),  # normalize images
+        Rescale(1.0 / 255.0, 0.0),  # rescale images
+        HWC2CHW(),  # change shape from (height, width, channel) to (channel, height, width) to fit network
+    ]
     type_cast_op = TypeCast(ts.int32)  # change data type of label to int32 to fit network
 
     # apply map operations on images
     mnist_ds = mnist_ds.map(operations=type_cast_op, input_columns="label", num_parallel_workers=num_parallel_workers)
-    mnist_ds = mnist_ds.map(operations=resize_op, input_columns="image", num_parallel_workers=num_parallel_workers)
-    mnist_ds = mnist_ds.map(operations=rescale_op, input_columns="image", num_parallel_workers=num_parallel_workers)
-    mnist_ds = mnist_ds.map(operations=rescale_nml_op, input_columns="image", num_parallel_workers=num_parallel_workers)
-    mnist_ds = mnist_ds.map(operations=hwc2chw_op, input_columns="image", num_parallel_workers=num_parallel_workers)
-
-    # apply DatasetOps
-    buffer_size = 10000
-    mnist_ds = mnist_ds.shuffle(buffer_size=buffer_size)  # 10000 as in LeNet train script
+    mnist_ds = mnist_ds.map(operations=c_trans, input_columns="image", num_parallel_workers=num_parallel_workers)
+    # apply batch operations
     mnist_ds = mnist_ds.batch(batch_size, drop_remainder=True)
+    # apply repeat operations
     mnist_ds = mnist_ds.repeat(repeat_size)
 
     return mnist_ds
-
-
-class LeNet5(layers.Layer):
-    """Lenet network structure."""
-    # define the operator required
-
-    def __init__(self, num_class=10, num_channel=1):
-        super(LeNet5, self).__init__()
-        self.conv1 = layers.Conv2d(num_channel, 6, 5, pad_mode='valid')
-        self.conv2 = layers.Conv2d(6, 16, 5, pad_mode='valid')
-        self.fc1 = layers.Dense(16 * 5 * 5, 120, weight_init=Normal(0.02))
-        self.fc2 = layers.Dense(120, 84, weight_init=Normal(0.02))
-        self.fc3 = layers.Dense(84, num_class, weight_init=Normal(0.02))
-        self.relu = layers.ReLU()
-        self.max_pool2d = layers.MaxPool2d(kernel_size=2, stride=2)
-        self.flatten = layers.Flatten()
-
-    # use the preceding operators to construct networks
-    def construct(self, x):
-        x = self.max_pool2d(self.relu(self.conv1(x)))
-        x = self.max_pool2d(self.relu(self.conv2(x)))
-        x = self.flatten(x)
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
 
 
 if __name__ == "__main__":
@@ -114,7 +79,7 @@ if __name__ == "__main__":
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('mnist')
     # build the network
-    net = LeNet5()
+    net = lenet5()
     model = Model(net)
     # define the loss function
     net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
@@ -129,10 +94,11 @@ if __name__ == "__main__":
 
     if args_opt.do_eval:  # as for evaluation, users could use model.eval
         print("============== Starting Evaluating ==============")
-        # load the saved model for evaluation
-        model.load_checkpoint(args_opt.checkpoint_path)
         # load testing dataset
         ds_eval = create_dataset(os.path.join(mnist_path, "test"))
+        # load the saved model for evaluation
+        if args_opt.checkpoint_path:
+            model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
         print("============== Accuracy:{} ==============".format(acc))
     else:  # as for train, users could use model.train

@@ -17,7 +17,14 @@ from mindspore import Model as _Model
 from mindspore.train.serialization import load_checkpoint as _load_checkpoint, \
     save_checkpoint as _save_checkpoint, export as _export
 
-__all__ = ['Model']
+from .lenet5 import lenet5, LeNet
+from .resnet50 import resnet50, ResNet
+
+__all__ = [
+    'Model',
+    'lenet5', 'LeNet',
+    'resnet50', 'ResNet',
+]
 
 
 class Model(_Model):
