@@ -60,7 +60,7 @@ def predict(instance, servable_name, servable_model):
         return {"status": 1, "err_msg": err_msg}
 
     # parse the input data
-    input = ts.array(json.loads(instance['data']), dtype='uint8')
+    input = ts.array(json.loads(instance['data']), dtype=ts.float32)
     input = ts.reshape(input, (1, 1, 28, 28)) if model_name == "lenet5" \
         else ts.reshape(input, (1, 3, 224, 224))
     # build the network
