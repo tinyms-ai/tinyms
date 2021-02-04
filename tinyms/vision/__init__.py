@@ -11,12 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
-""".. TinyMS package."""
-from .version import __version__
-from . import common
-from .common import *
+"""
+This module is to support vision augmentations. transforms is a high performance
+image augmentation module which is developed with c++ opencv.
+"""
+from mindspore.dataset.vision.utils import Inter, Border, ImageBatchFormat
+from . import transforms, preprocessing
+from .transforms import *
+from .preprocessing import *
 
-__all__ = []
-__all__.extend(__version__)
-__all__.extend(common.__all__)
+__all__ = ['Inter', 'Border', 'ImageBatchFormat']
+__all__.extend(transforms.__all__)
+__all__.extend(preprocessing.__all__)

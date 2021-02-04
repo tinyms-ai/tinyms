@@ -15,7 +15,7 @@
 import json
 import requests
 
-from .vision import preprocess as v_preprocess
+from tinyms.vision import v_preprocess
 
 
 def list_servables():

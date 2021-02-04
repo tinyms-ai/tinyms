@@ -11,12 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
-""".. TinyMS package."""
-from .version import __version__
-from . import common
-from .common import *
 
-__all__ = []
-__all__.extend(__version__)
-__all__.extend(common.__all__)
+from mindspore.dataset.transforms.c_transforms import *
+
+__all__ = [
+    'Compose',
+    'Concatenate',
+    'Duplicate',
+    'Fill',
+    'Mask',
+    'OneHot',
+    'PadEnd',
+    'RandomApply',
+    'RandomChoice',
+    'Slice',
+    'TypeCast',
+    'Unique',
+]

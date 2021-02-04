@@ -13,7 +13,10 @@
 # limitations under the License.
 # ============================================================================
 """.. TinyMS Serving package."""
+from . import client, server
 from .client import *
 from .server import *
 
-__all__ = ["list_servables", "predict", "start", "shutdown"]
+__all__ = []
+__all__.extend(client.__all__)
+__all__.extend(server.__all__)

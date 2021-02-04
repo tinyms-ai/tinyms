@@ -18,6 +18,9 @@ import cv2
 import numpy as np
 from PIL import Image
 
+__all__ = ['v_preprocess']
+
+
 def _crop_center(img, cropx, cropy):
     y, x, _ = img.shape
     startx = x // 2 - (cropx // 2)
@@ -68,7 +71,7 @@ def _data_preprocess_mnist(img_data):
     return img
 
 
-def preprocess(img_path, dataset_name="mnist"):
+def v_preprocess(img_path, dataset_name="mnist"):
     # check if dataset_name and img_path are valid
     if dataset_name not in ("mnist", "cifar10", "imagenet2012"):
         print("Currently dataset_name only supports `mnist`, `cifar10` and `imagenet2012`!")

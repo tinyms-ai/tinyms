@@ -12,11 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-""".. TinyMS package."""
-from .version import __version__
-from . import common
-from .common import *
 
-__all__ = []
-__all__.extend(__version__)
-__all__.extend(common.__all__)
+import tinyms as ts
+from tinyms import context, layers
+from tinyms.layers import SequentialLayer
+from tinyms.model import Model
+
+
+def test_model_predict():
+    context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
+
+    net = SequentialLayer([
+        layers.Conv2d(1, 6, 5, pad_mode='valid', weight_init="ones"),
+        layers.ReLU(),
+        layers.MaxPool2d(kernel_size=2, stride=2)
+    ])
+    model = Model(net)
+    model.compile()
+    z = model.predict(ts.ones((1, 1, 28, 28)))
+    print(z.asnumpy())

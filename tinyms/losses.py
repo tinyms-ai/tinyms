@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-""".. TinyMS package."""
-from .version import __version__
-from . import common
-from .common import *
+
+from mindspore.nn import loss
+from mindspore.nn.loss import *
 
 __all__ = []
-__all__.extend(__version__)
-__all__.extend(common.__all__)
+__all__.extend(loss.__all__)

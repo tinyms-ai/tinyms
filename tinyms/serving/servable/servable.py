@@ -14,12 +14,9 @@
 # ============================================================================
 import os
 import json
-import numpy as np
-import mindspore
-from mindspore import Tensor
-from mindspore.train.serialization import load_checkpoint
 
-from .model import lenet5, resnet50
+import tinyms as ts
+from tinyms.model import Model, lenet5, resnet50
 
 servable_path = '/etc/tinyms/serving/servable.json'
 
@@ -57,21 +54,25 @@ def predict(instance, servable_name, servable_model):
     if model_name not in ("lenet5", "resnet50"):
         err_msg = "Currently model_name only supports `lenet5` and `resnet50`!"
         return {"status": 1, "err_msg": err_msg}
-    input = np.array(json.loads(instance['data']), dtype='uint8')
-    net = lenet5(class_num=class_num) if model_name == "lenet5" else resnet50(class_num=class_num)
-    input = input.reshape((1, 1, 28, 28)) if model_name == "lenet5" else input.reshape((1, 3, 224, 224))
-
     # check if model_format is valid
     if model_format not in ("ckpt"):
         err_msg = "Currently model_format only supports `ckpt`!"
         return {"status": 1, "err_msg": err_msg}
+
+    # parse the input data
+    input = ts.array(json.loads(instance['data']), dtype='uint8')
+    input = ts.reshape(input, (1, 1, 28, 28)) if model_name == "lenet5" \
+        else ts.reshape(input, (1, 3, 224, 224))
+    # build the network
+    net = lenet5(class_num=class_num) if model_name == "lenet5" else resnet50(class_num=class_num)
+    model = Model(net)
     # load checkpoint
     ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, model_name+"."+model_format)
     if not os.path.isfile(ckpt_path):
         err_msg = "The model path "+ckpt_path+" not exist!"
         return {"status": 1, "err_msg": err_msg}
-    load_checkpoint(ckpt_path, net=net)
-
+    model.load_checkpoint(ckpt_path)
     # execute the network to perform model prediction
-    data = net(Tensor(input, mindspore.float32)).asnumpy()
+    data = model.predict(input).asnumpy()
+
     return {"status": 0, "instance": {"shape": data.shape, "data": json.dumps(data.tolist())}}

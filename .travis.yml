@@ -16,6 +16,7 @@ install:
 script:
   - python -c "import mindspore; print(mindspore.__version__)"
   - python -c "import tinyms; print(tinyms.__version__)"
+  - pytest
 
 services:
   - docker
