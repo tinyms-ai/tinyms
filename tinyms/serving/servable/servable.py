@@ -61,8 +61,6 @@ def predict(instance, servable_name, servable_model):
 
     # parse the input data
     input = ts.array(json.loads(instance['data']), dtype=ts.float32)
-    input = ts.reshape(input, (1, 1, 28, 28)) if model_name == "lenet5" \
-        else ts.reshape(input, (1, 3, 224, 224))
     # build the network
     net = lenet5(class_num=class_num) if model_name == "lenet5" else resnet50(class_num=class_num)
     model = Model(net)
@@ -73,6 +71,6 @@ def predict(instance, servable_name, servable_model):
         return {"status": 1, "err_msg": err_msg}
     model.load_checkpoint(ckpt_path)
     # execute the network to perform model prediction
-    data = model.predict(input).asnumpy()
+    data = model.predict(ts.expand_dims(input, 0)).asnumpy()
 
     return {"status": 0, "instance": {"shape": data.shape, "data": json.dumps(data.tolist())}}

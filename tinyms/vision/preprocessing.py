@@ -66,7 +66,7 @@ def _data_preprocess_imagenet2012(img_data):
 def _data_preprocess_mnist(img_data):
     img = cv2.cvtColor(img_data, cv2.COLOR_RGB2GRAY)
     img = cv2.resize(img, (32, 32))
-    img = _crop_center(img, 28, 28)
+    img = np.expand_dims(img, 0)
 
     return img
 
