@@ -1,6 +1,7 @@
 {
     "instance": {
         "shape": [],
+        "dtype": "",
         "data": ""
     },
     "servable_name": "resnet50_mushroom"

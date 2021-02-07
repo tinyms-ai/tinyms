@@ -18,7 +18,7 @@ from scipy.stats import truncnorm
 
 import tinyms as ts
 from tinyms import layers, Tensor
-from tinyms.primitives import TensorAdd, ReduceMean
+from tinyms.primitives import tensor_add, ReduceMean
 
 
 def _conv_variance_scaling_initializer(in_channel, out_channel, kernel_size):
@@ -108,7 +108,6 @@ class ResidualBlock(layers.Layer):
         if self.down_sample:
             self.down_sample_layer = layers.SequentialLayer(
                 [_conv1x1(in_channel, out_channel, stride), _bn(out_channel)])
-        self.add = TensorAdd()
 
     def construct(self, x):
         out = self.relu(self.bn1(self.conv1(x)))
@@ -117,7 +116,7 @@ class ResidualBlock(layers.Layer):
         identity = x
         if self.down_sample:
             identity = self.down_sample_layer(identity)
-        out = self.relu(self.add(out, identity))
+        out = self.relu(tensor_add(out, identity))
 
         return out
 

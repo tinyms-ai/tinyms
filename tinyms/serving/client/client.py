@@ -39,6 +39,7 @@ def predict(img_path, servable_name, dataset_name="mnist"):
     payload = {
         'instance': {
             'shape': list(img_data.shape),
+            'dtype': img_data.dtype.name,
             'data': json.dumps(img_data.tolist())
         },
         'servable_name': servable_name

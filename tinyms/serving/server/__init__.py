@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-from .server import start, shutdown
+from .server import start_server, shutdown
 
-__all__ = ["start", "shutdown"]
+__all__ = ["start_server", "shutdown"]

@@ -38,7 +38,7 @@ def _write_version(file):
 
 required_package = [
     'scipy >= 1.5.3',
-    'mindspore >= 1.1.0',
+    'mindspore == 1.1.1',
     'opencv-python >= 4.4.0',
     'requests >= 2.22.0',
     'flask >= 1.1.1',
