@@ -37,7 +37,7 @@ def list_servables():
     return jsonify(servable_search())
 
 
-def start(host='127.0.0.1', port=5000):
+def start_server(host='127.0.0.1', port=5000):
     app.run(host=host, port=port)
 
 

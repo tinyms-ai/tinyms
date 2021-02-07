@@ -5,6 +5,7 @@
             1,
             9
         ],
+        "dtype": "float32",
         "data": ""
     },
     "servables": [
