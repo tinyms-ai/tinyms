@@ -15,19 +15,36 @@
 
 import tinyms as ts
 from tinyms import context, layers
-from tinyms.layers import SequentialLayer
-from tinyms.model import Model
+from tinyms.model import Model, lenet5, resnet50
 
 
-def test_model_predict():
+def test_sequential():
     context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
 
-    net = SequentialLayer([
+    net = layers.SequentialLayer([
         layers.Conv2d(1, 6, 5, pad_mode='valid', weight_init="ones"),
         layers.ReLU(),
         layers.MaxPool2d(kernel_size=2, stride=2)
     ])
     model = Model(net)
     model.compile()
-    z = model.predict(ts.ones((1, 1, 28, 28)))
+    z = model.predict(ts.ones((1, 1, 32, 32)))
+    print(z.asnumpy())
+
+
+def test_lenet5():
+    context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
+
+    model = Model(lenet5())
+    model.compile()
+    z = model.predict(ts.ones((1, 1, 32, 32)))
+    print(z.asnumpy())
+
+
+def test_resnet50():
+    context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
+
+    model = Model(resnet50())
+    model.compile()
+    z = model.predict(ts.ones((1, 3, 224, 224)))
     print(z.asnumpy())
