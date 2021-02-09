@@ -76,10 +76,12 @@ if __name__ == '__main__':
                         help='device where the code will be implemented (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='Cifar10 dataset path.')
     parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
-    parser.add_argument('--epoch_size', type=int, default=1, help='Epoch size.')
+    parser.add_argument('--epoch_size', type=int, default=90, help='Epoch size.')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
     parser.add_argument('--num_classes', type=int, default=10, help='Num classes.')
-    parser.add_argument('--checkpoint_path', type=str, default=None, help='CheckPoint file path.')
+    parser.add_argument('--save_checkpoint_epochs', type=int, default=5,
+                        help='Specify epochs interval to save each checkpoints.')
+    parser.add_argument('--checkpoint_path', type=str, default=None, help='Checkpoint file path.')
     args_opt = parser.parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
 
@@ -98,6 +100,7 @@ if __name__ == '__main__':
     epoch_size = args_opt.epoch_size
     batch_size = args_opt.batch_size
     cifar10_path = args_opt.dataset_path
+    save_checkpoint_epochs = args_opt.save_checkpoint_epochs
     dataset_sink_mode = not args_opt.device_target == "CPU"
     if args_opt.do_eval:  # as for evaluation, users could use model.eval
         ds_eval = create_dataset(cifar10_path, batch_size=batch_size, training=False)
@@ -108,6 +111,7 @@ if __name__ == '__main__':
     else:  # as for train, users could use model.train
         ds_train = create_dataset(cifar10_path, batch_size=batch_size)
         ckpoint_cb = ModelCheckpoint(prefix="resnet_cifar10", config=CheckpointConfig(
-            save_checkpoint_steps=ds_train.get_dataset_size(), keep_checkpoint_max=35))
+            save_checkpoint_steps=save_checkpoint_epochs * ds_train.get_dataset_size(),
+            keep_checkpoint_max=10))
         model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()],
                     dataset_sink_mode=dataset_sink_mode)
