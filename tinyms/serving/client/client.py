@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+import os
 import json
+import sys
+import cv2
 import requests
-
-from tinyms.vision import v_preprocess
+import numpy as np
+from PIL import Image
+from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform
 
 
 def list_servables():
@@ -33,7 +37,23 @@ def list_servables():
 
 def predict(img_path, servable_name, dataset_name="mnist"):
     # TODO: The preprocess would be moved to data module later
-    img_data = v_preprocess(img_path, dataset_name)
+    # check if dataset_name and img_path are valid
+    if dataset_name not in ("mnist", "cifar10", "imagenet2012"):
+        print("Currently dataset_name only supports `mnist`, `cifar10` and `imagenet2012`!")
+        sys.exit(0)
+    if not os.path.isfile(img_path):
+        print("The image path "+img_path+" not exist!")
+        sys.exit(0)
+
+    if dataset_name == "mnist":
+        img_data = np.asarray(cv2.imread(img_path, cv2.IMREAD_GRAYSCALE), dtype=np.float32)
+        img_data = mnist_transform(img_data)
+    elif dataset_name == "cifar10":
+        img_data = np.asarray(Image.open(img_path), dtype=np.float32)
+        img_data = cifar10_transform(img_data)
+    else:
+        img_data = np.asarray(Image.open(img_path), dtype=np.float32)
+        img_data = imagefolder_transform(img_data)
 
     # Construct the request payload
     payload = {
