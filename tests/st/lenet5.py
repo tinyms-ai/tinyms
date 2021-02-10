@@ -18,11 +18,9 @@ The sample can be run on CPU, GPU and Ascend 910 AI processor.
 import os
 import argparse
 
-import tinyms as ts
 from tinyms import context
 from tinyms.data import MnistDataset, download_dataset
-from tinyms.data.transforms import TypeCast
-from tinyms.vision import Inter, Resize, Rescale, HWC2CHW
+from tinyms.vision import mnist_transform
 from tinyms.model import Model, lenet5
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor
 from tinyms.metrics import Accuracy
@@ -39,26 +37,13 @@ def create_dataset(data_path, batch_size=32, repeat_size=1,
         repeat_size: The number of replicated data records
         num_parallel_workers: The number of parallel workers
     """
-    # define dataset
+    # define dataset and apply the transform func
     mnist_ds = MnistDataset(data_path, num_parallel_workers=num_parallel_workers,
                             shuffle=True)
-
-    # define map operations
-    c_trans = [
-        Resize((32, 32), interpolation=Inter.LINEAR),  # Resize images to (32, 32)
-        Rescale(1 / 0.3081, -1 * 0.1307 / 0.3081),  # normalize images
-        Rescale(1.0 / 255.0, 0.0),  # rescale images
-        HWC2CHW(),  # change shape from (height, width, channel) to (channel, height, width) to fit network
-    ]
-    type_cast_op = TypeCast(ts.int32)  # change data type of label to int32 to fit network
-
-    # apply map operations on images
-    mnist_ds = mnist_ds.map(operations=type_cast_op, input_columns="label", num_parallel_workers=num_parallel_workers)
-    mnist_ds = mnist_ds.map(operations=c_trans, input_columns="image", num_parallel_workers=num_parallel_workers)
-    # apply batch operations
-    mnist_ds = mnist_ds.batch(batch_size, drop_remainder=True)
-    # apply repeat operations
-    mnist_ds = mnist_ds.repeat(repeat_size)
+    mnist_ds = mnist_transform.apply_ds(mnist_ds,
+                                        repeat_size=repeat_size,
+                                        batch_size=batch_size,
+                                        num_parallel_workers=num_parallel_workers)
 
     return mnist_ds
 

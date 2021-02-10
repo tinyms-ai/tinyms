@@ -18,11 +18,9 @@ The sample can be run on CPU, GPU and Ascend 910 AI processor.
 import random
 import argparse
 
-import tinyms as ts
 from tinyms import context
 from tinyms.data import Cifar10Dataset, download_dataset
-from tinyms.data.transforms import TypeCast
-from tinyms.vision import RandomCrop, RandomHorizontalFlip, Resize, Rescale, Normalize, HWC2CHW
+from tinyms.vision import cifar10_transform
 from tinyms.model import Model, resnet50
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor
 from tinyms.metrics import Accuracy
@@ -41,31 +39,13 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
         repeat_size: The number of replicated data records
         num_parallel_workers: The number of parallel workers
     """
-    # define dataset
+    # define dataset and apply the transform func
     cifar_ds = Cifar10Dataset(data_path, num_parallel_workers=num_parallel_workers,
                               shuffle=True)
-
-    # define map operations
-    c_trans = []
-    if training:
-        c_trans += [
-            RandomCrop((32, 32), (4, 4, 4, 4)),
-            RandomHorizontalFlip(prob=0.5),
-        ]
-    c_trans += [
-        Resize((224, 224)), Rescale(1.0 / 255.0, 0.0),
-        Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010]),
-        HWC2CHW(),
-    ]
-    type_cast_op = TypeCast(ts.int32)
-
-    # apply map operations on images
-    cifar_ds = cifar_ds.map(operations=type_cast_op, input_columns="label", num_parallel_workers=num_parallel_workers)
-    cifar_ds = cifar_ds.map(operations=c_trans, input_columns="image", num_parallel_workers=num_parallel_workers)
-    # apply batch operations
-    cifar_ds = cifar_ds.batch(batch_size=batch_size, drop_remainder=True)
-    # apply repeat operations
-    cifar_ds = cifar_ds.repeat(repeat_size)
+    cifar_ds = cifar10_transform.apply_ds(cifar_ds,
+                                          repeat_size=repeat_size,
+                                          batch_size=batch_size,
+                                          num_parallel_workers=num_parallel_workers)
 
     return cifar_ds
 

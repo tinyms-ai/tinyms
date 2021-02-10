@@ -12,13 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""
-This module is to support vision augmentations. transforms is a high performance
-image augmentation module which is developed with C++ OpenCV.
-"""
-from mindspore.dataset.vision.utils import Inter, Border, ImageBatchFormat
-from . import transforms
-from .transforms import *
 
-__all__ = ['Inter', 'Border', 'ImageBatchFormat']
-__all__.extend(transforms.__all__)
+import numpy as np
+from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform
+
+
+def test_mnist_transform():
+    img = np.ones((32, 32))
+    img = mnist_transform(img)
+    print(img)
+
+
+def test_cifar10_transform():
+    img = np.ones((720, 720, 3))
+    img = cifar10_transform(img)
+    print(img)
+
+
+def test_imagefolder_transform():
+    img = np.ones((1080, 1080, 3))
+    img = imagefolder_transform(img)
+    print(img)
