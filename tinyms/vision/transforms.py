@@ -13,7 +13,6 @@
 # limitations under the License.
 # ============================================================================
 
-import cv2
 import numpy as np
 import tinyms as ts
 from PIL import Image
@@ -30,9 +29,32 @@ __all__ = [
 ]
 __all__.extend(_transform_ops.__all__)
 
+TRANSFORM_STRATEGY = ['TOP1_CLASS', 'TOP5_CLASS']
+
+
+def _postprocess(input, labels, strategy=None):
+    if not isinstance(input, np.ndarray):
+        raise TypeError("Input should be NumPy, got {}.".format(type(input)))
+    if not input.ndim == 2:
+        raise TypeError("Input should be 2-D Numpy, got {}.".format(input.ndim))
+    if strategy not in TRANSFORM_STRATEGY:
+        raise ValueError("Strategy should be one of {}, got {}.".format(TRANSFORM_STRATEGY, strategy))
+
+    if strategy == 'TOP1_CLASS':
+        return labels[input[0].argmax()]
+    else:
+        label_index = np.argsort(input[0])[::-1]
+        score_index = np.sort(input[0])[::-1]
+        top5_labels = []
+        for i in range(5):
+            top5_labels.append(labels[label_index[i]])
+        top5_scores = score_index[:5].tolist()
+        return {'label': top5_labels, 'score': top5_scores}
+
 
 class MnistTransform():
     def __init__(self):
+        self.labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         self.resize = Resize((32, 32))
         self.normalize = Rescale(1 / 0.3081, -1 * 0.1307 / 0.3081)
         self.rescale = Rescale(1.0 / 255.0, 0.0)
@@ -76,9 +98,14 @@ class MnistTransform():
 
         return mnist_ds
 
+    def postprocess(self, input, strategy='TOP1_CLASS'):
+        return _postprocess(input, self.labels, strategy=strategy)
+
 
 class Cifar10Transform():
     def __init__(self):
+        self.labels = ['airplane', 'automobile', 'bird', 'cat', 'deer',
+                       'dog', 'frog', 'horse', 'ship', 'truck']
         self.random_crop = RandomCrop((32, 32), (4, 4, 4, 4))
         self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
         self.resize = Resize((224, 224))
@@ -126,9 +153,22 @@ class Cifar10Transform():
 
         return cifar10_ds
 
+    def postprocess(self, input, strategy='TOP1_CLASS'):
+        return _postprocess(input, self.labels, strategy=strategy)
+
 
 class ImageFolderTransform():
     def __init__(self):
+        self.labels = ["Agaricus双孢蘑菇,伞菌目,蘑菇科,蘑菇属,广泛分布于北半球温带,无毒",
+                       "Amanita毒蝇伞,伞菌目,鹅膏菌科,鹅膏菌属,主要分布于我国黑龙江、吉林、四川、西藏、云南等地,有毒",
+                       "Boletus丽柄牛肝菌,伞菌目,牛肝菌科,牛肝菌属,分布于云南、陕西、甘肃、西藏等地,有毒",
+                       "Cortinarius掷丝膜菌,伞菌目,丝膜菌科,丝膜菌属,分布于湖南等地(夏秋季在山毛等阔叶林地上生长)",
+                       "Entoloma霍氏粉褶菌,伞菌目,粉褶菌科,粉褶菌属,主要分布于新西兰北岛和南岛西部,有毒",
+                       "Hygrocybe浅黄褐湿伞,伞菌目,蜡伞科,湿伞属,分布于香港(见于松仔园),有毒",
+                       "Lactarius松乳菇,红菇目,红菇科,乳菇属,广泛分布于亚热带松林地,无毒",
+                       "Russula褪色红菇,伞菌目,红菇科,红菇属,分布于河北、吉林、四川、江苏、西藏等地,无毒",
+                       "Suillus乳牛肝菌,牛肝菌目,乳牛肝菌科,乳牛肝菌属,分布于吉林、辽宁、山西、安徽、江西、浙江、湖南、四川、贵州等地,无毒",
+                       ]
         self.random_crop_decode_resize = RandomCropDecodeResize(224, scale=(0.08, 1.0), ratio=(0.75, 1.333))
         self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
         self.resize = Resize(256)
@@ -183,6 +223,9 @@ class ImageFolderTransform():
         imagefolder_ds = imagefolder_ds.repeat(repeat_size)
 
         return imagefolder_ds
+
+    def postprocess(self, input, strategy='TOP1_CLASS'):
+        return _postprocess(input, self.labels, strategy=strategy)
 
 
 mnist_transform = MnistTransform()
