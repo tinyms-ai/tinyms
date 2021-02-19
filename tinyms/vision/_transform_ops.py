@@ -14,8 +14,9 @@
 # ============================================================================
 
 from mindspore.dataset.vision.c_transforms import *
+from mindspore.dataset.transforms.c_transforms import *
 
-__all__ = [
+vision_trans = [
     'AutoContrast',
     'BoundingBoxAugment',
     'CenterCrop',
@@ -54,6 +55,23 @@ __all__ = [
     'SoftDvppDecodeResizeJpeg',
     'UniformAugment',
 ]
+
+common_trans = [
+    'Compose',
+    'Concatenate',
+    'Duplicate',
+    'Fill',
+    'Mask',
+    'OneHot',
+    'PadEnd',
+    'RandomApply',
+    'RandomChoice',
+    'Slice',
+    'TypeCast',
+    'Unique',
+]
+
+__all__ = vision_trans + common_trans
 
 decode = Decode()
 hwc2chw = HWC2CHW()
