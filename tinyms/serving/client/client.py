@@ -73,4 +73,10 @@ def predict(img_path, servable_name, dataset_name="mnist"):
     elif res_body['status'] != 0:
         print(res_body['err_msg'])
     else:
-        print(res_body['instance'])
+        instance = res_body['instance']
+        if dataset_name == "mnist":
+            data = mnist_transform.postprocess(np.array(json.loads(instance['data'])), strategy='TOP1_CLASS')
+            print("Prediction is: "+str(data))
+        elif dataset_name == "imagenet2012" and servable_name == "resnet50":
+            data = mnist_transform.postprocess(np.array(json.loads(instance['data'])), strategy='TOP5_CLASS')
+            print("Prediction is: "+str(data))
