@@ -45,7 +45,8 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
     cifar_ds = cifar10_transform.apply_ds(cifar_ds,
                                           repeat_size=repeat_size,
                                           batch_size=batch_size,
-                                          num_parallel_workers=num_parallel_workers)
+                                          num_parallel_workers=num_parallel_workers,
+                                          training=training)
 
     return cifar_ds
 

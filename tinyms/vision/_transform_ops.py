@@ -13,6 +13,7 @@
 # limitations under the License.
 # ============================================================================
 
+from mindspore.dataset.vision.py_transforms import Grayscale
 from mindspore.dataset.vision.c_transforms import *
 from mindspore.dataset.transforms.c_transforms import *
 
@@ -24,6 +25,7 @@ vision_trans = [
     'CutOut',
     'Decode',
     'Equalize',
+    'Grayscale',
     'HWC2CHW',
     'Invert',
     'MixUpBatch',

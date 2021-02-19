@@ -15,9 +15,7 @@
 import os
 import json
 import sys
-import cv2
 import requests
-import numpy as np
 from PIL import Image
 from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform
 
@@ -45,14 +43,12 @@ def predict(img_path, servable_name, dataset_name="mnist"):
         print("The image path "+img_path+" not exist!")
         sys.exit(0)
 
+    img_data = Image.open(img_path)
     if dataset_name == "mnist":
-        img_data = np.asarray(cv2.imread(img_path, cv2.IMREAD_GRAYSCALE), dtype=np.float32)
         img_data = mnist_transform(img_data)
     elif dataset_name == "cifar10":
-        img_data = np.asarray(Image.open(img_path), dtype=np.float32)
         img_data = cifar10_transform(img_data)
     else:
-        img_data = np.asarray(Image.open(img_path), dtype=np.float32)
         img_data = imagefolder_transform(img_data)
 
     # Construct the request payload
