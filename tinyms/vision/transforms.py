@@ -58,6 +58,7 @@ class MnistTransform(DatasetTransform):
     def __init__(self):
         labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         super().__init__(labels=labels)
+        self.grayscale = Grayscale()
         self.resize = Resize((32, 32))
         self.normalize = Rescale(1 / 0.3081, -1 * 0.1307 / 0.3081)
         self.rescale = Rescale(1.0 / 255.0, 0.0)
@@ -75,8 +76,9 @@ class MnistTransform(DatasetTransform):
         """
         if not isinstance(img, (np.ndarray, Image.Image)):
             raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(img)))
-        if not img.ndim == 2:
-            raise TypeError("Input should be 2-D Numpy, got {}.".format(img.ndim))
+        if isinstance(img, np.ndarray):
+            img = Image.fromarray(img, mode='RGB')
+        img = np.asarray(self.grayscale(img), dtype=np.float32)
         img = np.expand_dims(img, 2)
         img = self.resize(img)
         img = self.normalize(img)
