@@ -34,6 +34,22 @@ class DatasetTransform():
         self.labels = labels
         self.transform_strategy = ['TOP1_CLASS', 'TOP5_CLASS']
 
+    def apply_ds(self, ds, trans_func=None, repeat_size=1, batch_size=32,
+                 num_parallel_workers=None):
+        if not isinstance(trans_func, list):
+            raise TypeError('trans_func must be list')
+
+        # apply map operations on datasets
+        ds = ds.map(operations=TypeCast(ts.int32), input_columns="label",
+                    num_parallel_workers=num_parallel_workers)
+        ds = ds.map(operations=trans_func, input_columns="image", num_parallel_workers=num_parallel_workers)
+        # apply batch operations
+        ds = ds.batch(batch_size, drop_remainder=True)
+        # apply repeat operations
+        ds = ds.repeat(repeat_size)
+
+        return ds
+
     def postprocess(self, input, strategy='TOP1_CLASS'):
         if not isinstance(input, np.ndarray):
             raise TypeError("Input should be NumPy, got {}.".format(type(input)))
@@ -62,7 +78,6 @@ class MnistTransform(DatasetTransform):
         self.resize = Resize((32, 32))
         self.normalize = Rescale(1 / 0.3081, -1 * 0.1307 / 0.3081)
         self.rescale = Rescale(1.0 / 255.0, 0.0)
-        self.type_cast = TypeCast(ts.int32)
 
     def __call__(self, img):
         """
@@ -91,15 +106,10 @@ class MnistTransform(DatasetTransform):
         if not isinstance(mnist_ds, MnistDataset):
             raise TypeError("Input should be MnistDataset, got {}.".format(type(mnist_ds)))
 
-        c_trans = [self.resize, self.normalize, self.rescale, hwc2chw]
-        # apply map operations on images
-        mnist_ds = mnist_ds.map(operations=self.type_cast, input_columns="label",
-                                num_parallel_workers=num_parallel_workers)
-        mnist_ds = mnist_ds.map(operations=c_trans, input_columns="image", num_parallel_workers=num_parallel_workers)
-        # apply batch operations
-        mnist_ds = mnist_ds.batch(batch_size, drop_remainder=True)
-        # apply repeat operations
-        mnist_ds = mnist_ds.repeat(repeat_size)
+        trans_func = [self.resize, self.normalize, self.rescale, hwc2chw]
+        # apply transform functions on mnist dataset
+        mnist_ds = super().apply_ds(mnist_ds, trans_func=trans_func, repeat_size=repeat_size,
+                                    batch_size=batch_size, num_parallel_workers=num_parallel_workers)
 
         return mnist_ds
 
@@ -114,7 +124,6 @@ class Cifar10Transform(DatasetTransform):
         self.resize = Resize((224, 224))
         self.rescale = Rescale(1.0 / 255.0, 0.0)
         self.normalize = Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])
-        self.type_cast = TypeCast(ts.int32)
 
     def __call__(self, img):
         """
@@ -140,19 +149,13 @@ class Cifar10Transform(DatasetTransform):
         if not isinstance(cifar10_ds, Cifar10Dataset):
             raise TypeError("Input should be Cifar10Dataset, got {}.".format(type(cifar10_ds)))
 
-        c_trans = []
+        trans_func = []
         if training:
-            c_trans += [self.random_crop, self.random_horizontal_flip]
-        c_trans += [self.resize, self.rescale, self.normalize, hwc2chw]
-        # apply map operations on images
-        cifar10_ds = cifar10_ds.map(operations=self.type_cast, input_columns="label",
-                                    num_parallel_workers=num_parallel_workers)
-        cifar10_ds = cifar10_ds.map(operations=c_trans, input_columns="image",
-                                    num_parallel_workers=num_parallel_workers)
-        # apply batch operations
-        cifar10_ds = cifar10_ds.batch(batch_size, drop_remainder=True)
-        # apply repeat operations
-        cifar10_ds = cifar10_ds.repeat(repeat_size)
+            trans_func += [self.random_crop, self.random_horizontal_flip]
+        trans_func += [self.resize, self.rescale, self.normalize, hwc2chw]
+        # apply transform functions on cifar10 dataset
+        cifar10_ds = super().apply_ds(cifar10_ds, trans_func=trans_func, repeat_size=repeat_size,
+                                      batch_size=batch_size, num_parallel_workers=num_parallel_workers)
 
         return cifar10_ds
 
@@ -176,7 +179,6 @@ class ImageFolderTransform(DatasetTransform):
         self.center_crop = CenterCrop(224)
         self.normalize = Normalize([0.485 * 255, 0.456 * 255, 0.406 * 255],
                                    [0.229 * 255, 0.224 * 255, 0.225 * 255])
-        self.type_cast = TypeCast(ts.int32)
 
     def _center_crop(self, img):
         y, x, _ = img.shape
@@ -209,19 +211,13 @@ class ImageFolderTransform(DatasetTransform):
             raise TypeError("Input should be ImageFolderDataset, got {}.".format(type(imagefolder_ds)))
 
         if training:
-            c_trans = [self.random_crop_decode_resize, self.random_horizontal_flip]
+            trans_func = [self.random_crop_decode_resize, self.random_horizontal_flip]
         else:
-            c_trans = [decode, self.resize, self.center_crop]
-        c_trans += [self.normalize, hwc2chw]
-        # apply map operations on images
-        imagefolder_ds = imagefolder_ds.map(operations=self.type_cast, input_columns="label",
-                                            num_parallel_workers=num_parallel_workers)
-        imagefolder_ds = imagefolder_ds.map(operations=c_trans, input_columns="image",
-                                            num_parallel_workers=num_parallel_workers)
-        # apply batch operations
-        imagefolder_ds = imagefolder_ds.batch(batch_size, drop_remainder=True)
-        # apply repeat operations
-        imagefolder_ds = imagefolder_ds.repeat(repeat_size)
+            trans_func = [decode, self.resize, self.center_crop]
+        trans_func += [self.normalize, hwc2chw]
+        # apply transform functions on imagefolder dataset
+        imagefolder_ds = super().apply_ds(imagefolder_ds, trans_func=trans_func, repeat_size=repeat_size,
+                                          batch_size=batch_size, num_parallel_workers=num_parallel_workers)
 
         return imagefolder_ds
 
