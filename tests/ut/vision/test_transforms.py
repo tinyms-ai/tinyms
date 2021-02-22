@@ -22,6 +22,14 @@ def test_mnist_transform():
     img = mnist_transform(img)
     print(img)
 
+    img = np.ones((32, 32, 1))
+    img = mnist_transform(img)
+    print(img)
+
+    img = np.ones((32, 32, 3))
+    img = mnist_transform(img)
+    print(img)
+
 
 def test_mnist_transform_postprocess():
     input = np.array([[10, 1, 4, 2, 5, 18, -10, -4, 3, 7]])
