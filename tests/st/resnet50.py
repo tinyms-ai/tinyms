@@ -31,7 +31,7 @@ random.seed(1)
 
 
 def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers=1,
-                   training=True):
+                   is_training=True):
     """ create Cifar10 dataset for train or eval.
     Args:
         data_path: Data path
@@ -46,7 +46,7 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
                                           repeat_size=repeat_size,
                                           batch_size=batch_size,
                                           num_parallel_workers=num_parallel_workers,
-                                          training=training)
+                                          is_training=is_training)
 
     return cifar_ds
 
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     save_checkpoint_epochs = args_opt.save_checkpoint_epochs
     dataset_sink_mode = not args_opt.device_target == "CPU"
     if args_opt.do_eval:  # as for evaluation, users could use model.eval
-        ds_eval = create_dataset(cifar10_path, batch_size=batch_size, training=False)
+        ds_eval = create_dataset(cifar10_path, batch_size=batch_size, is_training=False)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)

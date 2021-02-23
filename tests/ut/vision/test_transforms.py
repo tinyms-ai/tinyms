@@ -14,7 +14,8 @@
 # ============================================================================
 
 import numpy as np
-from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform
+from tinyms.vision import mnist_transform, cifar10_transform, \
+    imagefolder_transform, voc_transform
 
 
 def test_mnist_transform():
@@ -78,3 +79,9 @@ def test_imagefolder_transform_postprocess():
                           'Amanita毒蝇伞,伞菌目,鹅膏菌科,鹅膏菌属,主要分布于我国黑龙江、吉林、四川、西藏、云南等地,有毒'],
                 'score': [18, 10, 7, 5, 4]}
     assert label == expected
+
+
+def test_voc_transform():
+    img = np.ones((1080, 1080, 3))
+    img = voc_transform(img)
+    print(img)

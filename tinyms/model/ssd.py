@@ -31,7 +31,7 @@ def _bn(channel):
 def _last_conv2d(in_channel, out_channel, kernel_size=3, stride=1, pad_mod='same', pad=0):
     in_channels = in_channel
     out_channels = in_channel
-    depthwise_conv = layers.Conv2d(in_channels, out_channels, kernel_size, stride, pad_mode='same',
+    depthwise_conv = layers.Conv2d(in_channels, out_channels, kernel_size, stride, pad_mode=pad_mod,
                                    padding=pad, group=in_channels)
     conv = _conv2d(in_channel, out_channel, kernel_size=1)
     return layers.SequentialLayer([depthwise_conv, _bn(in_channel), layers.ReLU6(), conv])

@@ -19,12 +19,14 @@ from PIL import Image
 
 from . import _transform_ops
 from ._transform_ops import *
-from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset
+from .utils import ssd_bboxes_encode, jaccard_numpy
+from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset, VOCDataset
 
 __all__ = [
     'mnist_transform', 'MnistTransform',
     'cifar10_transform', 'Cifar10Transform',
     'imagefolder_transform', 'ImageFolderTransform',
+    'voc_transform', 'VOCTransform',
 ]
 __all__.extend(_transform_ops.__all__)
 
@@ -81,7 +83,7 @@ class MnistTransform(DatasetTransform):
 
     def __call__(self, img):
         """
-        Call method.
+        Call method for model prediction.
 
         Args:
             img (NumPy or PIL image): Image to be transformed in Mnist-style.
@@ -127,7 +129,7 @@ class Cifar10Transform(DatasetTransform):
 
     def __call__(self, img):
         """
-        Call method.
+        Call method for model prediction.
 
         Args:
             img (NumPy or PIL image): Image to be transformed in Cifar10-style.
@@ -145,12 +147,12 @@ class Cifar10Transform(DatasetTransform):
         return img
 
     def apply_ds(self, cifar10_ds, repeat_size=1, batch_size=32,
-                 num_parallel_workers=None, training=True):
+                 num_parallel_workers=None, is_training=True):
         if not isinstance(cifar10_ds, Cifar10Dataset):
             raise TypeError("Input should be Cifar10Dataset, got {}.".format(type(cifar10_ds)))
 
         trans_func = []
-        if training:
+        if is_training:
             trans_func += [self.random_crop, self.random_horizontal_flip]
         trans_func += [self.resize, self.rescale, self.normalize, hwc2chw]
         # apply transform functions on cifar10 dataset
@@ -173,10 +175,10 @@ class ImageFolderTransform(DatasetTransform):
                   "Suillus乳牛肝菌,牛肝菌目,乳牛肝菌科,乳牛肝菌属,分布于吉林、辽宁、山西、安徽、江西、浙江、湖南、四川、贵州等地,无毒",
                   ]
         super().__init__(labels=labels)
-        self.random_crop_decode_resize = RandomCropDecodeResize(224, scale=(0.08, 1.0), ratio=(0.75, 1.333))
+        self.random_crop_decode_resize = RandomCropDecodeResize((224, 224), scale=(0.08, 1.0), ratio=(0.75, 1.333))
         self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
-        self.resize = Resize(256)
-        self.center_crop = CenterCrop(224)
+        self.resize = Resize((256, 256))
+        self.center_crop = CenterCrop((224, 224))
         self.normalize = Normalize([0.485 * 255, 0.456 * 255, 0.406 * 255],
                                    [0.229 * 255, 0.224 * 255, 0.225 * 255])
 
@@ -188,7 +190,7 @@ class ImageFolderTransform(DatasetTransform):
 
     def __call__(self, img):
         """
-        Call method.
+        Call method for model prediction.
 
         Args:
             img (NumPy or PIL image): Image to be transformed in ImageFolder-style.
@@ -206,11 +208,11 @@ class ImageFolderTransform(DatasetTransform):
         return img
 
     def apply_ds(self, imagefolder_ds, repeat_size=1, batch_size=32,
-                 num_parallel_workers=None, training=True):
+                 num_parallel_workers=None, is_training=True):
         if not isinstance(imagefolder_ds, ImageFolderDataset):
             raise TypeError("Input should be ImageFolderDataset, got {}.".format(type(imagefolder_ds)))
 
-        if training:
+        if is_training:
             trans_func = [self.random_crop_decode_resize, self.random_horizontal_flip]
         else:
             trans_func = [decode, self.resize, self.center_crop]
@@ -222,6 +224,159 @@ class ImageFolderTransform(DatasetTransform):
         return imagefolder_ds
 
 
+def _rand(a=0., b=1.):
+    """Generate random."""
+    return np.random.rand() * (b - a) + a
+
+
+class VOCTransform(DatasetTransform):
+    def __init__(self):
+        labels = ['background',
+                  'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
+                  'bus', 'car', 'cat', 'chair', 'cow',
+                  'diningtable', 'dog', 'horse', 'motorbike', 'person',
+                  'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+        super().__init__(labels=labels)
+        self.resize = Resize((300, 300))
+        self.horizontal_flip = PILRandomHorizontalFlip(1.0)
+        self.normalize = Normalize(mean=[0.485 * 255, 0.456 * 255, 0.406 * 255],
+                                   std=[0.229 * 255, 0.224 * 255, 0.225 * 255])
+        self.random_color_adjust = RandomColorAdjust(brightness=0.4, contrast=0.4, saturation=0.4)
+
+    def _preprocess_fn(self, image, boxes, labels):
+        """Preprocess function for voc dataset."""
+        def _random_sample_crop(image, boxes):
+            """Random Crop the image and boxes"""
+            height, width, _ = image.shape
+            min_iou = np.random.choice([None, 0.1, 0.3, 0.5, 0.7, 0.9])
+            if min_iou is None:
+                return image, boxes
+            # max trails (50)
+            for _ in range(50):
+                image_t = image
+                w = _rand(0.3, 1.0) * width
+                h = _rand(0.3, 1.0) * height
+                # aspect ratio constraint b/t .5 & 2
+                if h / w < 0.5 or h / w > 2:
+                    continue
+                left = _rand() * (width - w)
+                top = _rand() * (height - h)
+                rect = np.array([int(top), int(left), int(top + h), int(left + w)])
+                overlap = jaccard_numpy(boxes, rect)
+                # dropout some boxes
+                drop_mask = overlap > 0
+                if not drop_mask.any():
+                    continue
+                if overlap[drop_mask].min() < min_iou and overlap[drop_mask].max() > (min_iou + 0.2):
+                    continue
+                image_t = image_t[rect[0]:rect[2], rect[1]:rect[3], :]
+                centers = (boxes[:, :2] + boxes[:, 2:4]) / 2.0
+                m1 = (rect[0] < centers[:, 0]) * (rect[1] < centers[:, 1])
+                m2 = (rect[2] > centers[:, 0]) * (rect[3] > centers[:, 1])
+                # mask in that both m1 and m2 are true
+                mask = m1 * m2 * drop_mask
+                # have any valid boxes? try again if not
+                if not mask.any():
+                    continue
+                # take only matching gt boxes
+                boxes_t = boxes[mask, :].copy()
+                boxes_t[:, :2] = np.maximum(boxes_t[:, :2], rect[:2])
+                boxes_t[:, :2] -= rect[:2]
+                boxes_t[:, 2:4] = np.minimum(boxes_t[:, 2:4], rect[2:4])
+                boxes_t[:, 2:4] -= rect[:2]
+                return image_t, boxes_t
+            return image, boxes
+
+        # Random crop image and bbox
+        boxes = np.hstack((boxes, labels)).astype(np.float32)
+        image, boxes = _random_sample_crop(image, boxes)
+        # Resize image and bbox
+        ih, iw, _ = image.shape
+        image = self.resize(image)
+        boxes[:, [0, 2]] = boxes[:, [0, 2]] / ih
+        boxes[:, [1, 3]] = boxes[:, [1, 3]] / iw
+        # Flip image and bbox or not
+        flip = _rand() < .5
+        if flip:
+            image = np.asarray(self.horizontal_flip(Image.fromarray(image, mode='RGB')))
+            boxes[:, [1, 3]] = 1 - boxes[:, [3, 1]]
+        # When the channels of image is 1
+        if len(image.shape) == 2:
+            image = np.expand_dims(image, axis=-1)
+            image = np.concatenate([image, image, image], axis=-1)
+
+        boxes, label, _ = ssd_bboxes_encode(boxes)
+        return image, boxes, label
+
+    def __call__(self, img):
+        """
+        Call method for model prediction.
+
+        Args:
+            img (NumPy or PIL image): Image to be transformed in VOC-style.
+
+        Returns:
+            img (NumPy), Transformed image.
+        """
+        if not isinstance(img, (np.ndarray, Image.Image)):
+            raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(img)))
+        img = self.resize(img)
+        img = self.normalize(img)
+        img = hwc2chw(img)
+
+        return img
+
+    def apply_ds(self, voc_ds, repeat_size=1, batch_size=32,
+                 num_parallel_workers=None, is_training=True):
+        if not isinstance(voc_ds, VOCDataset):
+            raise TypeError("Input should be VOCDataset, got {}.".format(type(voc_ds)))
+
+        voc_ds = voc_ds.map(operations=self._preprocess_fn,
+                            input_columns=["image", "bbox", "label"],
+                            output_columns=["image", "bbox", "label"],
+                            column_order=["image", "bbox", "label"],
+                            num_parallel_workers=num_parallel_workers)
+        if is_training:
+            trans_func = [self.random_color_adjust, self.normalize, hwc2chw]
+        else:
+            trans_func = [self.normalize, hwc2chw]
+        # apply transform functions on voc dataset
+        voc_ds = super().apply_ds(voc_ds, trans_func=trans_func, repeat_size=repeat_size,
+                                  batch_size=1, num_parallel_workers=num_parallel_workers)
+
+        return voc_ds
+
+    def apply_nms(self, all_boxes, all_scores, thres=0.6, max_boxes=100):
+        """Apply NMS to all bounding boxes."""
+        y1 = all_boxes[:, 0]
+        x1 = all_boxes[:, 1]
+        y2 = all_boxes[:, 2]
+        x2 = all_boxes[:, 3]
+        areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+
+        order = all_scores.argsort()[::-1]
+        keep = []
+        while order.size > 0:
+            i = order[0]
+            keep.append(i)
+            if len(keep) >= max_boxes:
+                break
+
+            xx1 = np.maximum(x1[i], x1[order[1:]])
+            yy1 = np.maximum(y1[i], y1[order[1:]])
+            xx2 = np.minimum(x2[i], x2[order[1:]])
+            yy2 = np.minimum(y2[i], y2[order[1:]])
+            w = np.maximum(0.0, xx2 - xx1 + 1)
+            h = np.maximum(0.0, yy2 - yy1 + 1)
+            inter = w * h
+
+            ovr = inter / (areas[i] + areas[order[1:]] - inter)
+            inds = np.where(ovr <= thres)[0]
+            order = order[inds + 1]
+        return keep
+
+
 mnist_transform = MnistTransform()
 cifar10_transform = Cifar10Transform()
 imagefolder_transform = ImageFolderTransform()
+voc_transform = VOCTransform()
