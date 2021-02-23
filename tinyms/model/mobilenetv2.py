@@ -20,9 +20,6 @@ from tinyms import layers, Tensor
 from tinyms.primitives import tensor_add, Softmax, ReduceMean
 
 
-__all__ = ['MobileNetV2', 'mobilenet_v2']
-
-
 def _make_divisible(v, divisor, min_value=None):
     if min_value is None:
         min_value = divisor
@@ -80,7 +77,7 @@ class ConvBNReLU(layers.Layer):
 
 
 class InvertedResidual(layers.Layer):
-    def __init__(self, inp, oup, stride, expand_ratio):
+    def __init__(self, inp, oup, stride, expand_ratio, use_relu=False):
         super(InvertedResidual, self).__init__()
         assert stride in [1, 2]
 
@@ -96,12 +93,16 @@ class InvertedResidual(layers.Layer):
             layers.BatchNorm2d(oup),
         ])
         self.conv = layers.SequentialLayer(residual_layers)
+        self.use_relu = use_relu
+        self.relu = layers.ReLU6()
 
     def construct(self, x):
         identity = x
         x = self.conv(x)
         if self.use_res_connect:
             return tensor_add(identity, x)
+        if self.use_relu:
+            x = self.relu(x)
         return x
 
 
@@ -122,7 +123,7 @@ class MobileNetV2Backbone(layers.Layer):
 
         # building first layer
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
-        self.out_channels = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
+        self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
         backbone_layers = [ConvBNReLU(3, input_channel, stride=2)]
         # building inverted residual blocks
         for t, c, n, s in self.cfgs:
@@ -132,7 +133,7 @@ class MobileNetV2Backbone(layers.Layer):
                 backbone_layers.append(InvertedResidual(input_channel, output_channel, stride, expand_ratio=t))
                 input_channel = output_channel
         # building last several layers
-        backbone_layers.append(ConvBNReLU(input_channel, self.out_channels, kernel_size=1))
+        backbone_layers.append(ConvBNReLU(input_channel, self.last_channel, kernel_size=1))
         self.backbone = layers.SequentialLayer(backbone_layers)
         self._initialize_weights()
 
@@ -183,8 +184,8 @@ class MobileNetV2(layers.Layer):
 
     Args:
         class_num (int): number of classes.
-        width_mult (int): Channels multiplier for round to 8/16 and others. Default is 1.
-        round_nearest (list): Channel round to. Default is 8.
+        width_mult (float): Channels multiplier for round to 8/16 and others. Default is 1.0.
+        round_nearest (int): Channel round to. Default is 8.
         input_channel (int): Input channel. Default is 32.
         last_channel (int): The channel of last layer. Default is 1280.
     Returns:
@@ -198,7 +199,7 @@ class MobileNetV2(layers.Layer):
                                             round_nearest=round_nearest,
                                             input_channel=input_channel,
                                             last_channel=last_channel)
-        self.head = MobileNetV2Head(input_channel=self.backbone.out_channels,
+        self.head = MobileNetV2Head(input_channel=self.backbone.last_channel,
                                     class_num=class_num)
 
     def construct(self, x):
