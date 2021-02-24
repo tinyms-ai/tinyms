@@ -57,17 +57,21 @@ class DatasetTransform():
             raise TypeError("Input should be 2-D Numpy, got {}.".format(input.ndim))
         if strategy not in self.transform_strategy:
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
-
+            
+        score_list = softmax(np.array(input))
         if strategy == 'TOP1_CLASS':
-            return self.labels[input[0].argmax()]
+            score = max(score_list[0])
+            return {'prediction: ': self.labels[input[0].argmax()], 'score': score}
         else:
             label_index = np.argsort(input[0])[::-1]
-            score_index = np.sort(input[0])[::-1]
+            score_index = np.sort(score_list[0])[::-1]
             top5_labels = []
+            res = ''
+            top5_scores = score_index[:5].tolist()
             for i in range(5):
                 top5_labels.append(self.labels[label_index[i]])
-            top5_scores = score_index[:5].tolist()
-            return {'label': top5_labels, 'score': top5_scores}
+                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + " ,score: " + str(format(top5_scores[i], '.20f')) + '\n'   
+            return res
 
 
 class MnistTransform(DatasetTransform):
@@ -221,7 +225,12 @@ class ImageFolderTransform(DatasetTransform):
 
         return imagefolder_ds
 
-
+def softmax(x):
+    x_exp = np.exp(x)
+    x_sum = np.sum(x_exp, axis = 1, keepdims = True)
+    s = x_exp / x_sum
+    return s
+    
 mnist_transform = MnistTransform()
 cifar10_transform = Cifar10Transform()
 imagefolder_transform = ImageFolderTransform()
