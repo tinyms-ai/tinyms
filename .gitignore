@@ -134,3 +134,5 @@ dmypy.json
 
 # auto-generated py file
 */version.py
+
+**/.DS_Store

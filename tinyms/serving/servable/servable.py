@@ -16,15 +16,20 @@ import os
 import json
 
 import tinyms as ts
-from tinyms.model import Model, lenet5, resnet50
+from tinyms import model
 
 servable_path = '/etc/tinyms/serving/servable.json'
+net_dict = {
+    "lenet5": model.lenet5,
+    "resnet50": model.resnet50,
+    "mobilenet_v2": model.mobilenet_v2
+}
 
 
 def servable_search(name=None):
     # Check if servable_path existed
     if not os.path.exists(servable_path):
-        err_msg = "Servable NOT found in "+servable_path
+        err_msg = "Servable NOT found in " + servable_path
         return {"status": 1, "err_msg": err_msg}
 
     with open(servable_path, 'r') as f:
@@ -36,6 +41,7 @@ def servable_search(name=None):
                 if name in servable.values():
                     return servable
             return None
+
         servable = servable_exist(name)
         if servable is None:
             err_msg = "Servable name NOT supported!"
@@ -50,10 +56,14 @@ def predict(instance, servable_name, servable_model):
     model_name = servable_model['name']
     model_format = servable_model['format']
     class_num = servable_model['class_num']
+
     # check if servable model name is valid
-    if model_name not in ("lenet5", "resnet50"):
-        err_msg = "Currently model_name only supports `lenet5` and `resnet50`!"
+    net_func = net_dict.get(model_name)
+    if net_func is None:
+        err_msg = "Currently model_name only supports " + str(list(net_dict.keys())) + "!"
         return {"status": 1, "err_msg": err_msg}
+    net = net_func(class_num=class_num)
+
     # check if model_format is valid
     if model_format not in ("ckpt"):
         err_msg = "Currently model_format only supports `ckpt`!"
@@ -61,17 +71,19 @@ def predict(instance, servable_name, servable_model):
 
     # parse the input data
     input = ts.array(json.loads(instance['data']), dtype=instance['dtype'])
+
     # build the network
-    net = lenet5(class_num=class_num) if model_name == "lenet5" else resnet50(class_num=class_num)
-    model = Model(net)
+    serve_model = model.Model(net)
+
     # load checkpoint
-    ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, model_name+"."+model_format)
+    ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, model_name + "." + model_format)
     if not os.path.isfile(ckpt_path):
-        err_msg = "The model path "+ckpt_path+" not exist!"
+        err_msg = "The model path " + ckpt_path + " not exist!"
         return {"status": 1, "err_msg": err_msg}
-    model.load_checkpoint(ckpt_path)
+    serve_model.load_checkpoint(ckpt_path)
+
     # execute the network to perform model prediction
-    data = model.predict(ts.expand_dims(input, 0)).asnumpy()
+    data = serve_model.predict(ts.expand_dims(input, 0)).asnumpy()
 
     return {
         "status": 0,
