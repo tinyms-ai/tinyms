@@ -36,7 +36,7 @@ def test_mnist_transform_postprocess():
     label = mnist_transform.postprocess(input)
     assert label == {'prediction: ': 5, 'score': 0.9996444101857648}
 
-    label = mnist_transform.postprocess(input, 'TOP5_CLASS')
+    label = mnist_transform.postprocess(input, strategy='TOP5_CLASS')
     print(label)
     expected = "TOP1: 5, score: 0.99964441018576477571\n"+"TOP2: 0, score: 0.00033534334080897316\n"+"TOP3: 9, score: 0.00001669576183556424\n"+"TOP4: 4, score: 0.00000225952565686712\n"+"TOP5: 2, score: 0.00000083123303596081\n"
     print(expected)
