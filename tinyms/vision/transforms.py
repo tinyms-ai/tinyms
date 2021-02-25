@@ -57,7 +57,7 @@ class DatasetTransform():
             raise TypeError("Input should be 2-D Numpy, got {}.".format(input.ndim))
         if strategy not in self.transform_strategy:
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
-            
+        
         score_list = softmax(np.array(input))
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
@@ -70,7 +70,7 @@ class DatasetTransform():
             top5_scores = score_index[:5].tolist()
             for i in range(5):
                 top5_labels.append(self.labels[label_index[i]])
-                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + " ,score: " + str(format(top5_scores[i], '.20f')) + '\n'   
+                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + ", score: " + str(format(top5_scores[i], '.20f')) + '\n'   
             return res
 
 
