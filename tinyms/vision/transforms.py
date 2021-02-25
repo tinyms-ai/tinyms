@@ -63,8 +63,8 @@ class DatasetTransform():
         softmax = Softmax()
         score_list = softmax(Tensor(array(input),ts.float32)).asnumpy()
         if strategy == 'TOP1_CLASS':
-            score = str(max(score_list[0]))
-            return {'prediction: ': self.labels[input[0].argmax()], 'score': score}
+            score = max(score_list[0])
+            return {'prediction: ': self.labels[input[0].argmax()], 'score': format(score, '.20f')}
         else:
             label_index = np.argsort(input[0])[::-1]
             score_index = np.sort(score_list[0])[::-1]
