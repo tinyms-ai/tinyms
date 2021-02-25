@@ -23,7 +23,6 @@ from . import _transform_ops
 from ._transform_ops import *
 from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset
 
-
 __all__ = [
     'mnist_transform', 'MnistTransform',
     'cifar10_transform', 'Cifar10Transform',
