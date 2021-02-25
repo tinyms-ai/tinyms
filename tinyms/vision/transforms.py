@@ -23,6 +23,7 @@ from . import _transform_ops
 from ._transform_ops import *
 from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset
 
+
 __all__ = [
     'mnist_transform', 'MnistTransform',
     'cifar10_transform', 'Cifar10Transform',
@@ -61,9 +62,9 @@ class DatasetTransform():
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
         
         softmax = Softmax()
-        score_list = softmax(Tensor(array(input),ts.float32))
+        score_list = softmax(Tensor(array(input),ts.float32)).asnumpy()
         if strategy == 'TOP1_CLASS':
-            score = max(score_list[0])
+            score = str(max(score_list[0]))
             return {'prediction: ': self.labels[input[0].argmax()], 'score': score}
         else:
             label_index = np.argsort(input[0])[::-1]
@@ -73,7 +74,7 @@ class DatasetTransform():
             top5_scores = score_index[:5].tolist()
             for i in range(5):
                 top5_labels.append(self.labels[label_index[i]])  
-                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + ", score: " + str(top5_scores[i]) + '\n'
+                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + ", score: " + str(format(top5_scores[i], '.20f')) + '\n'
             return res
 
 

@@ -34,12 +34,10 @@ def test_mnist_transform():
 def test_mnist_transform_postprocess():
     input = np.array([[10, 1, 4, 2, 5, 18, -10, -4, 3, 7]])
     label = mnist_transform.postprocess(input)
-    assert label == {'prediction: ': 5, 'score': 0.9996444101857648}
+    assert label == {'prediction: ': 5, 'score': '0.9996444'}
 
     label = mnist_transform.postprocess(input, strategy='TOP5_CLASS')
-    print(label)
-    expected = "TOP1: 5, score: 0.99964441018576477571\n"+"TOP2: 0, score: 0.00033534334080897316\n"+"TOP3: 9, score: 0.00001669576183556424\n"+"TOP4: 4, score: 0.00000225952565686712\n"+"TOP5: 2, score: 0.00000083123303596081\n"
-    print(expected)
+    expected = "TOP1: 5, score: 0.99964439868927001953\nTOP2: 0, score: 0.00033534335670992732\nTOP3: 9, score: 0.00001669576158747077\nTOP4: 4, score: 0.00000225952544496977\nTOP5: 2, score: 0.00000083123296690246\n"
     assert label == expected
 
 
@@ -52,10 +50,10 @@ def test_cifar10_transform():
 def test_cifar10_transform_postprocess():
     input = np.array([[10, 1, 4, 2, 5, 18, -10, -4, 3, 7]])
     label = cifar10_transform.postprocess(input)
-    assert label == {'prediction: ': 'dog', 'score': 0.9996444101857648}
+    assert label == {'prediction: ': 'dog', 'score': '0.9996444'}
 
     label = cifar10_transform.postprocess(input, strategy='TOP5_CLASS')
-    expected = "TOP1: dog, score: 0.99964441018576477571\nTOP2: airplane, score: 0.00033534334080897316\nTOP3: truck, score: 0.00001669576183556424\nTOP4: deer, score: 0.00000225952565686712\nTOP5: bird, score: 0.00000083123303596081\n"
+    expected = "TOP1: dog, score: 0.99964439868927001953\nTOP2: airplane, score: 0.00033534335670992732\nTOP3: truck, score: 0.00001669576158747077\nTOP4: deer, score: 0.00000225952544496977\nTOP5: bird, score: 0.00000083123296690246\n"
     assert label == expected
 
 
@@ -68,8 +66,8 @@ def test_imagefolder_transform():
 def test_imagefolder_transform_postprocess():
     input = np.array([[10, 4, 2, 5, 18, -10, -4, 3, 7]])
     label = imagefolder_transform.postprocess(input)
-    assert label == {'prediction: ': 'Entoloma霍氏粉褶菌,伞菌目,粉褶菌科,粉褶菌属,主要分布于新西兰北岛和南岛西部,有毒', 'score': 0.9996444515557065}
+    assert label == {'prediction: ': 'Entoloma霍氏粉褶菌,伞菌目,粉褶菌科,粉褶菌属,主要分布于新西兰北岛和南岛西部,有毒', 'score': '0.9996444'}
 
     label = imagefolder_transform.postprocess(input, strategy='TOP5_CLASS')
-    expected = "TOP1: Entoloma霍氏粉褶菌,伞菌目,粉褶菌科,粉褶菌属,主要分布于新西兰北岛和南岛西部,有毒, score: 0.99964445155570647028\nTOP2: Agaricus双孢蘑菇,伞菌目,蘑菇科,蘑菇属,广泛分布于北半球温带,无毒, score: 0.00033534335468704253\nTOP3: Suillus乳牛肝菌,牛肝菌目,乳牛肝菌科,乳牛肝菌属,分布于吉林、辽宁、山西、安徽、江西、浙江、湖南、四川、贵州等地,无毒, score: 0.00001669576252651263\nTOP4: Cortinarius掷丝膜菌,伞菌目,丝膜菌科,丝膜菌属,分布于湖南等地(夏秋季在山毛等阔叶林地上生长), score: 0.00000225952575037681\nTOP5: Amanita毒蝇伞,伞菌目,鹅膏菌科,鹅膏菌属,主要分布于我国黑龙江、吉林、四川、西藏、云南等地,有毒, score: 0.00000083123307036111\n"
+    expected = "TOP1: Entoloma霍氏粉褶菌,伞菌目,粉褶菌科,粉褶菌属,主要分布于新西兰北岛和南岛西部,有毒, score: 0.99964439868927001953\nTOP2: Agaricus双孢蘑菇,伞菌目,蘑菇科,蘑菇属,广泛分布于北半球温带,无毒, score: 0.00033534335670992732\nTOP3: Suillus乳牛肝菌,牛肝菌目,乳牛肝菌科,乳牛肝菌属,分布于吉林、辽宁、山西、安徽、江西、浙江、湖南、四川、贵州等地,无毒, score: 0.00001669576158747077\nTOP4: Cortinarius掷丝膜菌,伞菌目,丝膜菌科,丝膜菌属,分布于湖南等地(夏秋季在山毛等阔叶林地上生长), score: 0.00000225952544496977\nTOP5: Amanita毒蝇伞,伞菌目,鹅膏菌科,鹅膏菌属,主要分布于我国黑龙江、吉林、四川、西藏、云南等地,有毒, score: 0.00000083123296690246\n"
     assert label == expected
