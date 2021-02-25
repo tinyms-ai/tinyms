@@ -16,10 +16,13 @@
 import numpy as np
 import tinyms as ts
 from PIL import Image
+from tinyms.primitives import Softmax
+from tinyms import Tensor, array
 
 from . import _transform_ops
 from ._transform_ops import *
 from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset
+
 
 __all__ = [
     'mnist_transform', 'MnistTransform',
@@ -58,7 +61,8 @@ class DatasetTransform():
         if strategy not in self.transform_strategy:
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
         
-        score_list = softmax(np.array(input))
+        softmax = Softmax()
+        score_list = softmax(Tensor(array(input),ts.float32))
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
             return {'prediction: ': self.labels[input[0].argmax()], 'score': score}
@@ -69,8 +73,8 @@ class DatasetTransform():
             res = ''
             top5_scores = score_index[:5].tolist()
             for i in range(5):
-                top5_labels.append(self.labels[label_index[i]])
-                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + ", score: " + str(format(top5_scores[i], '.20f')) + '\n'   
+                top5_labels.append(self.labels[label_index[i]])  
+                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + ", score: " + str(top5_scores[i]) + '\n'
             return res
 
 
@@ -225,12 +229,7 @@ class ImageFolderTransform(DatasetTransform):
 
         return imagefolder_ds
 
-def softmax(x):
-    x_exp = np.exp(x)
-    x_sum = np.sum(x_exp, axis = 1, keepdims = True)
-    s = x_exp / x_sum
-    return s
-    
+
 mnist_transform = MnistTransform()
 cifar10_transform = Cifar10Transform()
 imagefolder_transform = ImageFolderTransform()
