@@ -14,10 +14,12 @@
 # ============================================================================
 
 """Bbox utils"""
-
+import json
 import math
 import itertools as it
 import numpy as np
+import tinyms as ts
+from tinyms import primitives as P, Tensor
 from easydict import EasyDict as ed
 
 ssd300_config = ed({
@@ -94,8 +96,10 @@ class GenerateDefaultBoxes():
         self.default_boxes = np.array(self.default_boxes, dtype='float32')
 
 
-default_boxes_tlbr = GenerateDefaultBoxes().default_boxes_tlbr
-default_boxes = GenerateDefaultBoxes().default_boxes
+ssd_default_boxes_tlbr = GenerateDefaultBoxes().default_boxes_tlbr
+ssd_default_boxes = GenerateDefaultBoxes().default_boxes
+ssd_default_boxes_tensor = Tensor(ssd_default_boxes, dtype=ts.float32)
+prior_scaling_tensor = Tensor(ssd300_config.prior_scaling, dtype=ts.float32)
 
 
 def ssd_bboxes_encode(boxes):
@@ -103,14 +107,15 @@ def ssd_bboxes_encode(boxes):
     Labels anchors with ground truth inputs.
 
     Args:
-        boxes: ground truth with shape [N, 5], for each row, it stores [y, x, h, w, cls].
+        boxes: ground truth with shape [N, 5], for each row, it stores
+            [ymin, xmin, ymax, xmax, cls].
 
     Returns:
         gt_loc: location ground truth with shape [num_anchors, 4].
         gt_label: class ground truth with shape [num_anchors, 1].
         num_matched_boxes: number of positives in an image.
     """
-    y1, x1, y2, x2 = np.split(default_boxes_tlbr[:, :4], 4, axis=-1)
+    y1, x1, y2, x2 = np.split(ssd_default_boxes_tlbr[:, :4], 4, axis=-1)
     vol_anchors = (x2 - x1) * (y2 - y1)
 
     def jaccard_with_anchors(bbox):
@@ -153,7 +158,7 @@ def ssd_bboxes_encode(boxes):
 
     # Encode features.
     bboxes_t = bboxes[index]
-    default_boxes_t = default_boxes[index]
+    default_boxes_t = ssd_default_boxes[index]
     bboxes_t[:, :2] = (bboxes_t[:, :2] - default_boxes_t[:, :2]) / \
         (default_boxes_t[:, 2:] * ssd300_config.prior_scaling[0])
     tmp = np.maximum(bboxes_t[:, 2:4] / default_boxes_t[:, 2:4], 0.000001)
@@ -165,30 +170,38 @@ def ssd_bboxes_encode(boxes):
 
 
 def ssd_bboxes_decode(boxes):
-    """Decode predict boxes to [y, x, h, w]"""
-    boxes_t = boxes.copy()
-    default_boxes_t = default_boxes.copy()
-    boxes_t[:, :2] = boxes_t[:, :2] * ssd300_config.prior_scaling[0] * default_boxes_t[:, 2:] + default_boxes_t[:, :2]
-    boxes_t[:, 2:4] = np.exp(boxes_t[:, 2:4] * ssd300_config.prior_scaling[1]) * default_boxes_t[:, 2:4]
+    """
+    Decode predict boxes to [ymin, xmin, ymax, xmax].
 
-    bboxes = np.zeros((len(boxes_t), 4), dtype=np.float32)
+    Args:
+    boxes: ground truth with shape [N, 4], for each row, it stores
+        [ymin, xmin, ymax, xmax].
+    """
+    default_bbox_xy = ssd_default_boxes_tensor[..., :2]
+    default_bbox_wh = ssd_default_boxes_tensor[..., 2:]
+    prior_scaling_xy = prior_scaling_tensor[0]
+    prior_scaling_wh = prior_scaling_tensor[1]
+    pred_xy = boxes[..., :2] * prior_scaling_xy * default_bbox_wh + default_bbox_xy
+    pred_wh = P.Exp()(boxes[..., 2:] * prior_scaling_wh) * default_bbox_wh
 
-    bboxes[:, [0, 1]] = boxes_t[:, [0, 1]] - boxes_t[:, [2, 3]] / 2
-    bboxes[:, [2, 3]] = boxes_t[:, [0, 1]] + boxes_t[:, [2, 3]] / 2
+    pred_xy_0 = pred_xy - pred_wh / 2.0
+    pred_xy_1 = pred_xy + pred_wh / 2.0
+    pred_xy = P.Concat(-1)((pred_xy_0, pred_xy_1))
+    pred_xy = P.Maximum()(pred_xy, 0)
+    pred_xy = P.Minimum()(pred_xy, 1)
 
-    return np.clip(bboxes, 0, 1)
-
-
-def intersect(box_a, box_b):
-    """Compute the intersect of two sets of boxes."""
-    max_yx = np.minimum(box_a[:, 2:4], box_b[2:4])
-    min_yx = np.maximum(box_a[:, :2], box_b[:2])
-    inter = np.clip((max_yx - min_yx), a_min=0, a_max=np.inf)
-    return inter[:, 0] * inter[:, 1]
+    return pred_xy
 
 
 def jaccard_numpy(box_a, box_b):
     """Compute the jaccard overlap of two sets of boxes."""
+    def intersect(box_a, box_b):
+        """Compute the intersect of two sets of boxes."""
+        max_yx = np.minimum(box_a[:, 2:4], box_b[2:4])
+        min_yx = np.maximum(box_a[:, :2], box_b[:2])
+        inter = np.clip((max_yx - min_yx), a_min=0, a_max=np.inf)
+        return inter[:, 0] * inter[:, 1]
+
     inter = intersect(box_a, box_b)
     area_a = ((box_a[:, 2] - box_a[:, 0]) *
               (box_a[:, 3] - box_a[:, 1]))
@@ -196,3 +209,98 @@ def jaccard_numpy(box_a, box_b):
               (box_b[3] - box_b[1]))
     union = area_a + area_b - inter
     return inter / union
+
+
+def apply_nms(all_boxes, all_scores, thres=0.6, max_boxes=100):
+    """Apply NMS to all bounding boxes."""
+    y1 = all_boxes[:, 0]
+    x1 = all_boxes[:, 1]
+    y2 = all_boxes[:, 2]
+    x2 = all_boxes[:, 3]
+    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+
+    order = all_scores.argsort()[::-1]
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+        if len(keep) >= max_boxes:
+            break
+
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
+        w = np.maximum(0.0, xx2 - xx1 + 1)
+        h = np.maximum(0.0, yy2 - yy1 + 1)
+        inter = w * h
+
+        ovr = inter / (areas[i] + areas[order[1:]] - inter)
+        inds = np.where(ovr <= thres)[0]
+        order = order[inds + 1]
+    return keep
+
+
+def coco_eval(pred_data, anno_file, val_cls):
+    """Calculate mAP of predicted bboxes."""
+    from pycocotools.coco import COCO
+    from pycocotools.cocoeval import COCOeval
+
+    # Classes need to train or test.
+    num_classes = len(val_cls)
+    val_cls_dict = {}
+    for i, cls in enumerate(val_cls):
+        val_cls_dict[i] = cls
+    coco_gt = COCO(anno_file)
+    class_dict = {}
+    cat_ids = coco_gt.loadCats(coco_gt.getCatIds())
+    for cat in cat_ids:
+        class_dict[cat["name"]] = cat["id"]
+
+    predictions = []
+    img_ids = []
+
+    for sample in pred_data:
+        pred_boxes = sample['boxes']
+        box_scores = sample['box_scores']
+        img_id = sample['img_id']
+        _, h, w = sample['image_shape']
+
+        final_boxes = []
+        final_label = []
+        final_score = []
+        img_ids.append(img_id)
+
+        for c in range(1, num_classes):
+            class_box_scores = box_scores[:, c]
+            score_mask = class_box_scores > ssd300_config.min_score
+            class_box_scores = class_box_scores[score_mask]
+            class_boxes = pred_boxes[score_mask] * [h, w, h, w]
+
+            if score_mask.any():
+                nms_index = apply_nms(class_boxes, class_box_scores,
+                                      ssd300_config.nms_threshold)
+                class_boxes = class_boxes[nms_index]
+                class_box_scores = class_box_scores[nms_index]
+
+                final_boxes += class_boxes.tolist()
+                final_score += class_box_scores.tolist()
+                final_label += [class_dict[val_cls_dict[c]]] * len(class_box_scores)
+
+        for loc, label, score in zip(final_boxes, final_label, final_score):
+            res = {}
+            res['image_id'] = img_id
+            res['bbox'] = [loc[1], loc[0], loc[3] - loc[1], loc[2] - loc[0]]
+            res['score'] = score
+            res['category_id'] = label
+            predictions.append(res)
+    with open('predictions.json', 'w') as f:
+        json.dump(predictions, f)
+
+    coco_dt = coco_gt.loadRes('predictions.json')
+    E = COCOeval(coco_gt, coco_dt, iouType='bbox')
+    E.params.imgIds = img_ids
+    E.evaluate()
+    E.accumulate()
+    E.summarize()
+    return E.stats[0]

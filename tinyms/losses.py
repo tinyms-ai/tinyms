@@ -86,6 +86,7 @@ class SSD300WithLoss(layers.Layer):
     def construct(self, x, gt_loc, gt_label):
         pred_loc, pred_label = self.network(x)
         mask = P.cast(self.less(0, gt_label), ts.float32)
+        num_matched_boxes = P.cast(P.count_nonzero(gt_label), ts.float32)
 
         # Localization Loss
         mask_loc = self.tile(self.expand_dims(mask, -1), (1, 1, 4))
@@ -96,7 +97,7 @@ class SSD300WithLoss(layers.Layer):
         loss_cls = self.class_loss(pred_label, gt_label)
         loss_cls = self.reduce_sum(loss_cls, (1, 2))
 
-        return self.reduce_sum(loss_cls + loss_loc)
+        return self.reduce_sum((loss_cls + loss_loc) / num_matched_boxes)
 
 
 def net_with_loss(net):

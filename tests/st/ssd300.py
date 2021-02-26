@@ -13,12 +13,16 @@
 # limitations under the License.
 # ============================================================================
 
+import os
+import json
 import math
+import time
 import argparse
+import xml.etree.ElementTree as et
 import tinyms as ts
-from tinyms import context, layers, primitives as P
+from tinyms import context, layers, primitives as P, Tensor
 from tinyms.data import VOCDataset
-from tinyms.vision import voc_transform
+from tinyms.vision import voc_transform, ssd_bboxes_decode, coco_eval
 from tinyms.model import Model, ssd300_mobilenet_v2
 from tinyms.losses import net_with_loss
 from tinyms.optimizers import Momentum
@@ -36,8 +40,12 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
         num_parallel_workers: The number of parallel workers
     """
     # define dataset and apply the transform func
-    voc_ds = VOCDataset(data_path, task='Detection', num_parallel_workers=num_parallel_workers,
-                        shuffle=True, decode=True)
+    if is_training:
+        voc_ds = VOCDataset(data_path, task='Detection', num_parallel_workers=num_parallel_workers,
+                            shuffle=True, decode=True)
+    else:
+        voc_ds = VOCDataset(data_path, task='Detection', usage='val', num_parallel_workers=num_parallel_workers,
+                            shuffle=False, decode=True)
     voc_ds = voc_transform.apply_ds(voc_ds,
                                     repeat_size=repeat_size,
                                     batch_size=batch_size,
@@ -126,11 +134,102 @@ class TrainingWrapper(layers.Layer):
         return P.depend(loss, self.optimizer(grads))
 
 
+class SSD300InferWithDecoder(layers.Layer):
+    """
+    SSD300 infer wrapper to decode the bbox locations.
+
+    Args:
+        network (Layer): the origin ssd infer network without bbox decoder.
+        decode_fn (function): the ssd decode function.
+
+    Returns:
+        Tensor, the locations for bbox after decoder representing (y0, x0, y1, x1)
+        Tensor, the prediction labels.
+    """
+
+    def __init__(self, network, decode_fn):
+        super(SSD300InferWithDecoder, self).__init__()
+        self.network = network
+        self.decode_fn = decode_fn
+
+    def construct(self, *args):
+        pred_loc, pred_label = self.network(args[0])
+        pred_xy = self.decode_fn(pred_loc)
+
+        return pred_xy, pred_label
+
+
+def create_voc_label(voc_dir, voc_cls, usage='val'):
+    """Get image path and annotation from VOC."""
+    if not os.path.isdir(voc_dir):
+        raise ValueError(f'Cannot find {voc_dir} dataset path.')
+    anno_dir = voc_dir
+    if os.path.isdir(os.path.join(voc_dir, 'Annotations')):
+        anno_dir = os.path.join(voc_dir, 'Annotations')
+
+    cls_map = {name: i for i, name in enumerate(voc_cls)}
+    # Fetch the specific xml files path
+    xml_files = []
+    with open(os.path.join(voc_dir, 'ImageSets', 'Main', usage+'.txt'), 'r') as f:
+        for line in f:
+            xml_files.append(line.strip('\n')+'.xml')
+
+    json_dict = {"images": [], "type": "instances", "annotations": [],
+                 "categories": []}
+    bnd_id = 1
+    for xml_file in xml_files:
+        img_id = xml_files.index(xml_file)
+        tree = et.parse(os.path.join(anno_dir, xml_file))
+        root_node = tree.getroot()
+        file_name = root_node.find('filename').text
+
+        labels = []
+        for obj in root_node.iter('object'):
+            cls_name = obj.find('name').text
+            if cls_name not in cls_map:
+                print(f'Label "{cls_name}" not in "{cls_map}"')
+                continue
+            bnd_box = obj.find('bndbox')
+            x_min = int(float(bnd_box.find('xmin').text)) - 1
+            y_min = int(float(bnd_box.find('ymin').text)) - 1
+            x_max = int(float(bnd_box.find('xmax').text)) - 1
+            y_max = int(float(bnd_box.find('ymax').text)) - 1
+            labels.append([y_min, x_min, y_max, x_max, cls_map[cls_name]])
+
+            o_width = abs(x_max - x_min)
+            o_height = abs(y_max - y_min)
+            ann = {'area': o_width * o_height, 'iscrowd': 0,
+                   'image_id': img_id,
+                   'bbox': [x_min, y_min, o_width, o_height],
+                   'category_id': cls_map[cls_name], 'id': bnd_id,
+                   'ignore': 0,
+                   'segmentation': []}
+            json_dict['annotations'].append(ann)
+            bnd_id = bnd_id + 1
+
+        size = root_node.find("size")
+        width = int(size.find('width').text)
+        height = int(size.find('height').text)
+        image = {'file_name': file_name, 'height': height, 'width': width,
+                 'id': img_id}
+        json_dict['images'].append(image)
+
+    for cls_name, cid in cls_map.items():
+        cat = {'supercategory': 'none', 'id': cid, 'name': cls_name}
+        json_dict['categories'].append(cat)
+
+    anno_file = os.path.join(anno_dir, 'annotation.json')
+    with open(anno_file, 'w') as f:
+        json.dump(json_dict, f)
+    return anno_file
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="SSD object detection")
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
                         help='device where the code will be implemented (default: CPU)')
-    parser.add_argument('--dataset_path', type=str, default=None, help='VOC2007 dataset path.')
+    parser.add_argument('--dataset_path', type=str, default=None, help='VOC2007/VOC2012 dataset path.')
+    parser.add_argument("--num_classes", type=int, default=21, help="The VOC dataset class number, default is 21.")
     parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
     parser.add_argument("--lr", type=float, default=0.05, help="Learning rate, default is 0.05.")
     parser.add_argument("--epoch_size", type=int, default=500, help="Epoch size, default is 500.")
@@ -143,42 +242,69 @@ if __name__ == '__main__':
     args_opt = parser.parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
 
-    # build the network
-    net = ssd300_mobilenet_v2(class_num=21)
-    # define the loss function
-    net = net_with_loss(net)
-    init_net_param(net)
-
     epoch_size = args_opt.epoch_size
     batch_size = args_opt.batch_size
-    voc2007_path = args_opt.dataset_path
-    ds_train = create_dataset(voc2007_path, batch_size=batch_size)
-    dataset_size = ds_train.get_dataset_size()
-
-    # define the optimizer
-    lr = get_lr(global_step=args_opt.pre_trained_epoch_size * dataset_size,
-                lr_init=0.001, lr_end=0.001 * args_opt.lr, lr_max=args_opt.lr,
-                warmup_epochs=2, total_epochs=args_opt.epoch_size,
-                steps_per_epoch=dataset_size)
-    loss_scale = float(args_opt.loss_scale)
-    if args_opt.device_target == "CPU":
-        loss_scale = 1.0
-    opt = Momentum(filter(lambda x: x.requires_grad, net.get_parameters()), lr,
-                   0.9, 1.5e-4, loss_scale)
-    model = Model(TrainingWrapper(net, opt, loss_scale))
-    model.compile()
-
-    save_checkpoint_epochs = args_opt.save_checkpoint_epochs
+    voc_path = args_opt.dataset_path
     dataset_sink_mode = not args_opt.device_target == "CPU"
+
+    # build the SSD300 network
+    net = ssd300_mobilenet_v2(class_num=args_opt.num_classes)
     if not args_opt.do_eval:  # as for train, users could use model.train
+        ds_train = create_dataset(voc_path, batch_size=batch_size)
+        dataset_size = ds_train.get_dataset_size()
+        # define the loss function
+        net = net_with_loss(net)
+        init_net_param(net)
+        # define the optimizer
+        lr = get_lr(global_step=args_opt.pre_trained_epoch_size * dataset_size,
+                    lr_init=0.001, lr_end=0.001 * args_opt.lr, lr_max=args_opt.lr,
+                    warmup_epochs=2, total_epochs=args_opt.epoch_size,
+                    steps_per_epoch=dataset_size)
+        loss_scale = 1.0 if args_opt.device_target == "CPU" else float(args_opt.loss_scale)
+        opt = Momentum(filter(lambda x: x.requires_grad, net.get_parameters()), lr,
+                       0.9, 1.5e-4, loss_scale)
+        model = Model(TrainingWrapper(net, opt, loss_scale))
+        model.compile()
+
         ckpoint_cb = ModelCheckpoint(prefix="ssd300", config=CheckpointConfig(
-            save_checkpoint_steps=save_checkpoint_epochs * dataset_size,
+            save_checkpoint_steps=args_opt.save_checkpoint_epochs * dataset_size,
             keep_checkpoint_max=10))
         model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor(), TimeMonitor(data_size=dataset_size)],
                     dataset_sink_mode=dataset_sink_mode)
     else:  # as for evaluation, users could use model.eval
-        ds_eval = create_dataset(voc2007_path, batch_size=batch_size, is_training=False)
+        ds_eval = create_dataset(voc_path, batch_size=batch_size, is_training=False)
+        total = ds_eval.get_dataset_size()
+        # define the infer wrapper
+        eval_net = SSD300InferWithDecoder(net, ssd_bboxes_decode)
+        model = Model(eval_net)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)
-        acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
-        print("============== Accuracy:{} ==============".format(acc))
+        # perform the model predict operation
+        print("\n========================================\n")
+        print("total images num: ", total)
+        print("Processing, please wait a moment...")
+        start = time.time()
+        pred_data = []
+        id_iter = 0
+        for data in ds_eval.create_dict_iterator(output_numpy=True):
+            image_np = data['image']
+
+            output = model.predict(Tensor(image_np))
+            for batch_idx in range(image_np.shape[0]):
+                pred_data.append({"boxes": output[0].asnumpy()[batch_idx],
+                                  "box_scores": output[1].asnumpy()[batch_idx],
+                                  "img_id": id_iter,
+                                  "image_shape": image_np[batch_idx].shape})
+                id_iter += 1
+        cost_time = int((time.time() - start) * 1000)
+        print(f'    100% [{total}/{total}] cost {cost_time} ms')
+        # calculate mAP for the predict data
+        voc_cls = ['background',
+                   'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
+                   'bus', 'car', 'cat', 'chair', 'cow',
+                   'diningtable', 'dog', 'horse', 'motorbike', 'person',
+                   'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+        anno_file = create_voc_label(voc_path, voc_cls)
+        mAP = coco_eval(pred_data, anno_file, voc_cls)
+        print("\n========================================\n")
+        print(f"mAP: {mAP}")

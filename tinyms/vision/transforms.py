@@ -243,7 +243,7 @@ class VOCTransform(DatasetTransform):
                                    std=[0.229 * 255, 0.224 * 255, 0.225 * 255])
         self.random_color_adjust = RandomColorAdjust(brightness=0.4, contrast=0.4, saturation=0.4)
 
-    def _preprocess_fn(self, image, boxes, labels):
+    def _preprocess_fn(self, image, boxes, labels, is_training=True):
         """Preprocess function for voc dataset."""
         def _random_sample_crop(image, boxes):
             """Random Crop the image and boxes"""
@@ -287,26 +287,35 @@ class VOCTransform(DatasetTransform):
                 return image_t, boxes_t
             return image, boxes
 
-        # Random crop image and bbox
+        # Only perform resize operation of data evaluation step
+        if not is_training:
+            return self.resize(image), labels
+        # Merge [x, y, w, h] and cls to [x, y, w, h, cls]
         boxes = np.hstack((boxes, labels)).astype(np.float32)
-        image, boxes = _random_sample_crop(image, boxes)
+        # Change [x, y, w, h, cls] to [ymin, xmin, ymax, xmax, cls]
+        boxes_yxyx = np.zeros(boxes.shape, dtype=np.float32)
+        boxes_yxyx[:, 4] = boxes[:, 4]
+        boxes_yxyx[:, [0, 1]] = boxes[:, [1, 0]]
+        boxes_yxyx[:, [2, 3]] = boxes[:, [0, 1]] + boxes[:, [2, 3]]
+        # Random crop image and bbox
+        image, boxes_yxyx = _random_sample_crop(image, boxes_yxyx)
         # Resize image and bbox
         ih, iw, _ = image.shape
         image = self.resize(image)
-        boxes[:, [0, 2]] = boxes[:, [0, 2]] / ih
-        boxes[:, [1, 3]] = boxes[:, [1, 3]] / iw
+        boxes_yxyx[:, [0, 2]] = boxes_yxyx[:, [0, 2]] / ih
+        boxes_yxyx[:, [1, 3]] = boxes_yxyx[:, [1, 3]] / iw
         # Flip image and bbox or not
         flip = _rand() < .5
         if flip:
             image = np.asarray(self.horizontal_flip(Image.fromarray(image, mode='RGB')))
-            boxes[:, [1, 3]] = 1 - boxes[:, [3, 1]]
+            boxes_yxyx[:, [1, 3]] = 1 - boxes_yxyx[:, [3, 1]]
         # When the channels of image is 1
         if len(image.shape) == 2:
             image = np.expand_dims(image, axis=-1)
             image = np.concatenate([image, image, image], axis=-1)
 
-        boxes, label, _ = ssd_bboxes_encode(boxes)
-        return image, boxes, label
+        boxes_yxyx, label, _ = ssd_bboxes_encode(boxes_yxyx)
+        return image, boxes_yxyx, label
 
     def __call__(self, img):
         """
@@ -331,49 +340,27 @@ class VOCTransform(DatasetTransform):
         if not isinstance(voc_ds, VOCDataset):
             raise TypeError("Input should be VOCDataset, got {}.".format(type(voc_ds)))
 
-        voc_ds = voc_ds.map(operations=self._preprocess_fn,
-                            input_columns=["image", "bbox", "label"],
-                            output_columns=["image", "bbox", "label"],
-                            column_order=["image", "bbox", "label"],
-                            num_parallel_workers=num_parallel_workers)
+        compose_map_func = (lambda image, boxes, labels: self._preprocess_fn(image, boxes, labels, is_training))
         if is_training:
+            output_columns = ['image', 'bbox', 'label']
             trans_func = [self.random_color_adjust, self.normalize, hwc2chw]
         else:
+            output_columns = ["image", "label"]
             trans_func = [self.normalize, hwc2chw]
         # apply transform functions on voc dataset
+        voc_ds = voc_ds.map(operations=compose_map_func,
+                            input_columns=["image", "bbox", "label"],
+                            output_columns=output_columns,
+                            column_order=output_columns,
+                            num_parallel_workers=num_parallel_workers)
+        if is_training:
+            voc_ds = voc_ds.filter(predicate=lambda label: len(np.nonzero(label)[0]) != 0,
+                                   input_columns=['label'],
+                                   num_parallel_workers=num_parallel_workers)
         voc_ds = super().apply_ds(voc_ds, trans_func=trans_func, repeat_size=repeat_size,
                                   batch_size=1, num_parallel_workers=num_parallel_workers)
 
         return voc_ds
-
-    def apply_nms(self, all_boxes, all_scores, thres=0.6, max_boxes=100):
-        """Apply NMS to all bounding boxes."""
-        y1 = all_boxes[:, 0]
-        x1 = all_boxes[:, 1]
-        y2 = all_boxes[:, 2]
-        x2 = all_boxes[:, 3]
-        areas = (x2 - x1 + 1) * (y2 - y1 + 1)
-
-        order = all_scores.argsort()[::-1]
-        keep = []
-        while order.size > 0:
-            i = order[0]
-            keep.append(i)
-            if len(keep) >= max_boxes:
-                break
-
-            xx1 = np.maximum(x1[i], x1[order[1:]])
-            yy1 = np.maximum(y1[i], y1[order[1:]])
-            xx2 = np.minimum(x2[i], x2[order[1:]])
-            yy2 = np.minimum(y2[i], y2[order[1:]])
-            w = np.maximum(0.0, xx2 - xx1 + 1)
-            h = np.maximum(0.0, yy2 - yy1 + 1)
-            inter = w * h
-
-            ovr = inter / (areas[i] + areas[order[1:]] - inter)
-            inds = np.where(ovr <= thres)[0]
-            order = order[inds + 1]
-        return keep
 
 
 mnist_transform = MnistTransform()

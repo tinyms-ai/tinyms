@@ -38,24 +38,26 @@ class Model(_Model):
     `Model` groups layers into an object with training and inference features.
 
     Args:
-        network (Cell): A training or testing network.
+        network (Layer): A training or testing network.
     """
 
     def __init__(self, network):
         super(Model, self).__init__(network)
 
-    def compile(self, loss_fn=None, optimizer=None, metrics=None,
+    def compile(self, loss_fn=None, optimizer=None, metrics=None, eval_network=None,
                 amp_level="O0", **kwargs):
         """
         High-Level API for configure the train or eval network.
 
         Args:
-            loss_fn (Cell): Objective function, if loss_fn is None, the
+            loss_fn (Layer): Objective function, if loss_fn is None, the
                                 network should contain the logic of loss and grads calculation, and the logic
                                 of parallel if needed. Default: None.
-            optimizer (Cell): Optimizer for updating the weights. Default: None.
+            optimizer (Layer): Optimizer for updating the weights. Default: None.
             metrics (Union[dict, set]): A Dictionary or a set of metrics to be evaluated by the model during
                             training and testing. eg: {'accuracy', 'recall'}. Default: None.
+            eval_network (Layer): Network for evaluation. If not defined, `network` and `loss_fn` would be wrapped as
+                            `eval_network`. Default: None.
             amp_level (str): Option for argument `level` in `mindspore.amp.build_train_network`, level for mixed
                 precision training. Supports ["O0", "O2", "O3", "auto"]. Default: "O0".
 
@@ -76,7 +78,7 @@ class Model(_Model):
         self._process_amp_args(kwargs)
         self._train_network = self._build_train_network()
         # configure the eval network
-        self._build_eval_network(metrics, eval_network=None, eval_indexes=None)
+        self._build_eval_network(metrics, eval_network=eval_network, eval_indexes=None)
         # configure the predict network
         self._build_predict_network()
 
