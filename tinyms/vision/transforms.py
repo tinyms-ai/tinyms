@@ -61,7 +61,7 @@ class DatasetTransform():
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
         
         softmax = Softmax()
-        score_list = softmax(Tensor(ts.array(input), ts.float32)).asnumpy()
+        score_list = softmax(ts.array(input)).asnumpy()
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
             return ('TOP1: '+ str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))
