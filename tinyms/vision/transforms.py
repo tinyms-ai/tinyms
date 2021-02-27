@@ -16,8 +16,8 @@
 import numpy as np
 import tinyms as ts
 from PIL import Image
+from tinyms import Tensor
 from tinyms.primitives import Softmax
-from tinyms import Tensor, array
 
 from . import _transform_ops
 from ._transform_ops import *
@@ -61,10 +61,10 @@ class DatasetTransform():
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
         
         softmax = Softmax()
-        score_list = softmax(Tensor(array(input),ts.float32)).asnumpy()
+        score_list = softmax(Tensor(ts.array(input), ts.float32)).asnumpy()
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
-            return {'prediction: ': self.labels[input[0].argmax()], 'score': format(score, '.20f')}
+            return ('TOP1: '+ str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))
         else:
             label_index = np.argsort(input[0])[::-1]
             score_index = np.sort(score_list[0])[::-1]
