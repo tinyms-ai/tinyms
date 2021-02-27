@@ -32,7 +32,7 @@ def test_mnist_transform():
 
 
 def test_mnist_transform_postprocess():
-    input = np.array([[10, 1, 4, 2, 5, 18, -10, -4, 3, 7]])
+    input = np.array([[10, 1, 4, 2, 5, 18, -10, -4, 3, 7]]).astype(np.float32)
     label = mnist_transform.postprocess(input)
     assert label == 'TOP1: 5, score: 0.99964439868927001953'
 
@@ -48,7 +48,7 @@ def test_cifar10_transform():
 
 
 def test_cifar10_transform_postprocess():
-    input = np.array([[10, 1, 4, 2, 5, 18, -10, -4, 3, 7]])
+    input = np.array([[10, 1, 4, 2, 5, 18, -10, -4, 3, 7]]).astype(np.float32)
     label = cifar10_transform.postprocess(input)
     assert label == 'TOP1: dog, score: 0.99964439868927001953'
 
@@ -64,7 +64,7 @@ def test_imagefolder_transform():
 
 
 def test_imagefolder_transform_postprocess():
-    input = np.array([[10, 4, 2, 5, 18, -10, -4, 3, 7]])
+    input = np.array([[10, 4, 2, 5, 18, -10, -4, 3, 7]]).astype(np.float32)
     label = imagefolder_transform.postprocess(input)
     assert label == 'TOP1: Entoloma霍氏粉褶菌,伞菌目,粉褶菌科,粉褶菌属,主要分布于新西兰北岛和南岛西部,有毒, score: 0.99964439868927001953'
     label = imagefolder_transform.postprocess(input, strategy='TOP5_CLASS')
