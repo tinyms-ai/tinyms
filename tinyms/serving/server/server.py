@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+import subprocess
+
 from flask import request, Flask, jsonify
 from ..servable import predict, servable_search
 
@@ -37,13 +39,16 @@ def list_servables():
     return jsonify(servable_search())
 
 
-def start_server(host='127.0.0.1', port=5000):
+def run_flask(host='127.0.0.1', port=5000):
     app.run(host=host, port=port)
 
 
+def start_server():
+    cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
+    server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+    
+    
 def shutdown():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
+    server_pid = subprocess.getoutput("netstat -anp | grep 5000 | awk '{printf $7}' | cut -d/ -f1")
+    subprocess.run("kill -9 " + str(server_pid) + "", shell=True)
     return 'Server shutting down...'
