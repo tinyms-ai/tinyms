@@ -14,7 +14,7 @@
 # ============================================================================
 
 """MobileNetV2 Tutorial
-The sample can be run on GPU and Ascend 910 AI processors
+The sample can be run on CPU, GPU and Ascend 910 AI processors
 """
 
 
@@ -23,7 +23,7 @@ import argparse
 from tinyms import context
 from tinyms.data import Cifar10Dataset, download_dataset
 from tinyms.vision import cifar10_transform
-from tinyms.model import Model, MobileNetV2
+from tinyms.model import Model, mobilenetv2
 from tinyms.metrics import Accuracy
 from tinyms.optimizers import Momentum
 from tinyms.losses import SoftmaxCrossEntropyWithLogits, CrossEntropyWithLabelSmooth
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         args_opt.dataset_path = download_dataset('cifar10')
 
     # build the network
-    net = MobileNetV2(args_opt.num_classes)
+    net = mobilenetv2(args_opt.num_classes)
     model = Model(net)
 
     # create cifar10 dataset for training
