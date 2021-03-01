@@ -22,7 +22,7 @@ servable_path = '/etc/tinyms/serving/servable.json'
 net_dict = {
     "lenet5": model.lenet5,
     "resnet50": model.resnet50,
-    "mobilenet_v2": model.mobilenet_v2
+    "mobilenetv2": model.mobilenetv2
 }
 
 

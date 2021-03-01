@@ -20,7 +20,7 @@ from tinyms import layers, Tensor
 from tinyms.primitives import tensor_add, Softmax, ReduceMean
 
 
-__all__ = ['MobileNetV2', 'mobilenet_v2']
+__all__ = ['MobileNetV2', 'mobilenetv2']
 
 
 def _make_divisible(v, divisor, min_value=None):
@@ -207,5 +207,5 @@ class MobileNetV2(layers.Layer):
         return x
 
 
-def mobilenet_v2(class_num=1000):
+def mobilenetv2(class_num=1000):
     return MobileNetV2(class_num=class_num)
