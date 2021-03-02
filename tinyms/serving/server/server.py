@@ -13,6 +13,9 @@
 # limitations under the License.
 # ============================================================================
 import subprocess
+import signal
+import sys
+import socket
 
 from flask import request, Flask, jsonify
 from ..servable import predict, servable_search
@@ -40,15 +43,31 @@ def list_servables():
 
 
 def run_flask(host='127.0.0.1', port=5000):
-    app.run(host=host, port=port)
+    def net_is_used(host='127.0.0.1', port=5000):
+        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        try:
+            s.connect(('127.0.0.1', 5000))
+            s.shutdown(2)
+            print('Using exiting host...')
+        except:
+            app.run(host=host, port=port)
+    
+    net_is_used()
 
 
 def start_server():
     cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
     server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+
+    def signal_handler(signal, frame):
+        shutdown()    
+        sys.exit(0)
     
-    
+    for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
+        signal.signal(sig, signal_handler)
+   
+
 def shutdown():
     server_pid = subprocess.getoutput("netstat -anp | grep 5000 | awk '{printf $7}' | cut -d/ -f1")
-    subprocess.run("kill -9 " + str(server_pid) + "", shell=True)
+    subprocess.run("kill -9 " + str(server_pid), shell=True)
     return 'Server shutting down...'
