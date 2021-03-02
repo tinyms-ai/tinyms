@@ -16,6 +16,8 @@
 import numpy as np
 import tinyms as ts
 from PIL import Image
+from tinyms import Tensor
+from tinyms.primitives import Softmax
 
 from . import _transform_ops
 from ._transform_ops import *
@@ -59,17 +61,22 @@ class DatasetTransform():
             raise TypeError("Input should be 2-D Numpy, got {}.".format(input.ndim))
         if strategy not in self.transform_strategy:
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
-
+        
+        softmax = Softmax()
+        score_list = softmax(ts.array(input)).asnumpy()
         if strategy == 'TOP1_CLASS':
-            return self.labels[input[0].argmax()]
+            score = max(score_list[0])
+            return ('TOP1: '+ str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))
         else:
             label_index = np.argsort(input[0])[::-1]
-            score_index = np.sort(input[0])[::-1]
+            score_index = np.sort(score_list[0])[::-1]
             top5_labels = []
-            for i in range(5):
-                top5_labels.append(self.labels[label_index[i]])
+            res = ''
             top5_scores = score_index[:5].tolist()
-            return {'label': top5_labels, 'score': top5_scores}
+            for i in range(5):
+                top5_labels.append(self.labels[label_index[i]])  
+                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + ", score: " + str(format(top5_scores[i], '.20f')) + '\n'
+            return res
 
 
 class MnistTransform(DatasetTransform):

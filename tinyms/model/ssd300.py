@@ -208,5 +208,5 @@ class SSD300(layers.Layer):
         return pred_loc, pred_label
 
 
-def ssd300_mobilenet_v2(class_num=21, is_training=True):
+def ssd300_mobilenetv2(class_num=21, is_training=True):
     return SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=is_training)

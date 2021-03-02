@@ -56,7 +56,7 @@ ssd300_config = ed({
 
 class GenerateDefaultBoxes():
     """
-    Generate Default boxes for SSD, follows the order of (W, H, archor_sizes).
+    Generate Default boxes for SSD300, follows the order of (W, H, archor_sizes).
     `self.default_boxes` has a shape of [archor_sizes, H, W, 4], the last dimension is [y, x, h, w].
     `self.default_boxes_tlbr` has a shape as `self.default_boxes`, the last dimension is [y1, x1, y2, x2].
     """

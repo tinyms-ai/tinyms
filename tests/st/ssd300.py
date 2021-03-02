@@ -23,7 +23,7 @@ import tinyms as ts
 from tinyms import context, layers, primitives as P, Tensor
 from tinyms.data import VOCDataset
 from tinyms.vision import voc_transform, ssd_bboxes_decode, coco_eval
-from tinyms.model import Model, ssd300_mobilenet_v2
+from tinyms.model import Model, ssd300_mobilenetv2
 from tinyms.losses import net_with_loss
 from tinyms.optimizers import Momentum
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor, TimeMonitor
@@ -105,7 +105,7 @@ def get_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_epochs, st
 
 class TrainingWrapper(layers.Layer):
     """
-    Encapsulation class of SSD network training.
+    Encapsulation class of SSD300 network training.
 
     Append an optimizer to the training network after that the construct
     function can be called to create the backward graph.
@@ -139,8 +139,8 @@ class SSD300InferWithDecoder(layers.Layer):
     SSD300 infer wrapper to decode the bbox locations.
 
     Args:
-        network (Layer): the origin ssd infer network without bbox decoder.
-        decode_fn (function): the ssd decode function.
+        network (Layer): the origin ssd300 infer network without bbox decoder.
+        decode_fn (function): the ssd300 decode function.
 
     Returns:
         Tensor, the locations for bbox after decoder representing (y0, x0, y1, x1)
@@ -183,19 +183,17 @@ def create_voc_label(voc_dir, voc_cls, usage='val'):
         root_node = tree.getroot()
         file_name = root_node.find('filename').text
 
-        labels = []
         for obj in root_node.iter('object'):
             cls_name = obj.find('name').text
             if cls_name not in cls_map:
                 print(f'Label "{cls_name}" not in "{cls_map}"')
                 continue
+
             bnd_box = obj.find('bndbox')
             x_min = int(float(bnd_box.find('xmin').text)) - 1
             y_min = int(float(bnd_box.find('ymin').text)) - 1
             x_max = int(float(bnd_box.find('xmax').text)) - 1
             y_max = int(float(bnd_box.find('ymax').text)) - 1
-            labels.append([y_min, x_min, y_max, x_max, cls_map[cls_name]])
-
             o_width = abs(x_max - x_min)
             o_height = abs(y_max - y_min)
             ann = {'area': o_width * o_height, 'iscrowd': 0,
@@ -225,7 +223,7 @@ def create_voc_label(voc_dir, voc_cls, usage='val'):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="SSD object detection")
+    parser = argparse.ArgumentParser(description="SSD300 object detection")
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
                         help='device where the code will be implemented (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='VOC2007/VOC2012 dataset path.')
@@ -248,7 +246,8 @@ if __name__ == '__main__':
     dataset_sink_mode = not args_opt.device_target == "CPU"
 
     # build the SSD300 network
-    net = ssd300_mobilenet_v2(class_num=args_opt.num_classes)
+    net = ssd300_mobilenetv2(class_num=args_opt.num_classes,
+                             is_training=not args_opt.do_eval)
     if not args_opt.do_eval:  # as for train, users could use model.train
         ds_train = create_dataset(voc_path, batch_size=batch_size)
         dataset_size = ds_train.get_dataset_size()

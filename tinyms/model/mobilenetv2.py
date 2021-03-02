@@ -208,5 +208,5 @@ class MobileNetV2(layers.Layer):
         return x
 
 
-def mobilenet_v2(class_num=1000):
+def mobilenetv2(class_num=1000):
     return MobileNetV2(class_num=class_num)

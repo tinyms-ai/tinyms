@@ -16,6 +16,7 @@ import os
 import json
 import sys
 import requests
+import numpy as np
 from PIL import Image
 from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform
 
@@ -33,7 +34,7 @@ def list_servables():
         print(res_body['servables'])
 
 
-def predict(img_path, servable_name, dataset_name="mnist"):
+def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"):
     # TODO: The preprocess would be moved to data module later
     # check if dataset_name and img_path are valid
     if dataset_name not in ("mnist", "cifar10", "imagenet2012"):
@@ -41,6 +42,9 @@ def predict(img_path, servable_name, dataset_name="mnist"):
         sys.exit(0)
     if not os.path.isfile(img_path):
         print("The image path "+img_path+" not exist!")
+        sys.exit(0)
+    if strategy not in ("TOP1_CLASS", "TOP5_CLASS"):
+        print("Currently strategy only supports `TOP1_CLASS` and `TOP5_CLASS`!")
         sys.exit(0)
 
     img_data = Image.open(img_path)
@@ -69,4 +73,13 @@ def predict(img_path, servable_name, dataset_name="mnist"):
     elif res_body['status'] != 0:
         print(res_body['err_msg'])
     else:
-        print(res_body['instance'])
+        instance = res_body['instance']
+        if dataset_name == "mnist":
+            data = mnist_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
+            print(data)
+        elif dataset_name == "imagenet2012":
+            data = imagefolder_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
+            print(data)
+        else:
+            data = cifar10_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
+            print(data)
