@@ -15,7 +15,7 @@
 
 import tinyms as ts
 from tinyms import context, layers
-from tinyms.model import Model, lenet5, resnet50, mobilenetv2
+from tinyms.model import Model, lenet5, resnet50, mobilenetv2, ssd300_mobilenetv2
 
 
 def test_sequential():
@@ -57,3 +57,12 @@ def test_mobilenetv2():
     model.compile()
     z = model.predict(ts.ones((1, 3, 224, 224)))
     print(z.asnumpy())
+
+
+def test_ssd300():
+    context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
+
+    model = Model(ssd300_mobilenetv2(is_training=False))
+    model.compile()
+    loc, score = model.predict(ts.ones((1, 3, 300, 300)))
+    print(loc.asnumpy(), score.asnumpy())

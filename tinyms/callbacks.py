@@ -13,13 +13,11 @@
 # limitations under the License.
 # ============================================================================
 
-
 import time
 import numpy as np
-
-from mindspore import Tensor
 from mindspore.train import callback
 from mindspore.train.callback import *
+from . import Tensor
 
 
 __all__ = []
