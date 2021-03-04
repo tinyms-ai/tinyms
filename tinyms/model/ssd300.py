@@ -210,3 +210,7 @@ class SSD300(layers.Layer):
 
 def ssd300_mobilenetv2(class_num=21, is_training=True):
     return SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=is_training)
+
+
+def ssd300_infer(class_num=21):
+    return SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=False)

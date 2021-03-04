@@ -16,12 +16,11 @@
 import numpy as np
 import tinyms as ts
 from PIL import Image
-from tinyms import Tensor
 from tinyms.primitives import Softmax
 
 from . import _transform_ops
 from ._transform_ops import *
-from .utils import ssd_bboxes_encode, jaccard_numpy
+from .utils import ssd_bboxes_encode, ssd_bboxes_decode, ssd_bboxes_filter, jaccard_numpy
 from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset, VOCDataset
 
 __all__ = [
@@ -61,12 +60,12 @@ class DatasetTransform():
             raise TypeError("Input should be 2-D Numpy, got {}.".format(input.ndim))
         if strategy not in self.transform_strategy:
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
-        
+
         softmax = Softmax()
         score_list = softmax(ts.array(input)).asnumpy()
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
-            return ('TOP1: '+ str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))
+            return ('TOP1: ' + str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))
         else:
             label_index = np.argsort(input[0])[::-1]
             score_index = np.sort(score_list[0])[::-1]
@@ -74,8 +73,9 @@ class DatasetTransform():
             res = ''
             top5_scores = score_index[:5].tolist()
             for i in range(5):
-                top5_labels.append(self.labels[label_index[i]])  
-                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + ", score: " + str(format(top5_scores[i], '.20f')) + '\n'
+                top5_labels.append(self.labels[label_index[i]])
+                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + \
+                    ", score: " + str(format(top5_scores[i], '.20f')) + '\n'
             return res
 
 
@@ -368,6 +368,26 @@ class VOCTransform(DatasetTransform):
                                   batch_size=1, num_parallel_workers=num_parallel_workers)
 
         return voc_ds
+
+    def postprocess(self, input, strategy='TOP1_CLASS'):
+        if not isinstance(input, np.ndarray):
+            raise TypeError("Input should be NumPy, got {}.".format(type(input)))
+        if not input.ndim == 3:
+            raise TypeError("Input should be 3-D Numpy, got {}.".format(input.ndim))
+        if not strategy == 'TOP1_CLASS':
+            raise ValueError("Currently VOC transform only supports 'TOP1_CLASS' strategy!")
+
+        pred_res = []
+        pred_loc = ssd_bboxes_decode(ts.array(input[0, :, :4])).asnumpy()
+        pred_loc, pred_cls, pred_label = ssd_bboxes_filter(pred_loc, input[0, :, 4:])
+        for loc, cls, label in zip(pred_loc, pred_cls, pred_label):
+            pred_res.append({
+                'bbox': loc,
+                'score': cls,
+                'category_id': self.labels[label],
+            })
+
+        return pred_res
 
 
 mnist_transform = MnistTransform()
