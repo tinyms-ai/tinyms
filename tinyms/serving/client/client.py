@@ -18,7 +18,15 @@ import sys
 import requests
 import numpy as np
 from PIL import Image
-from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform
+from tinyms.vision import mnist_transform, cifar10_transform, \
+    imagefolder_transform, voc_transform
+
+transform_checker = {
+    'mnist': mnist_transform,
+    'cifar10': cifar10_transform,
+    'imagenet2012': imagefolder_transform,
+    'voc': voc_transform,
+}
 
 
 def list_servables():
@@ -35,26 +43,20 @@ def list_servables():
 
 
 def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"):
-    # TODO: The preprocess would be moved to data module later
-    # check if dataset_name and img_path are valid
-    if dataset_name not in ("mnist", "cifar10", "imagenet2012"):
-        print("Currently dataset_name only supports `mnist`, `cifar10` and `imagenet2012`!")
-        sys.exit(0)
+    # Check if args are valid
     if not os.path.isfile(img_path):
-        print("The image path "+img_path+" not exist!")
+        print("The image path {} not exist!".format(img_path))
+        sys.exit(0)
+    trans_func = transform_checker.get(dataset_name)
+    if trans_func is None:
+        print("Currently dataset_name only supports {}!".format(list(transform_checker.keys())))
         sys.exit(0)
     if strategy not in ("TOP1_CLASS", "TOP5_CLASS"):
         print("Currently strategy only supports `TOP1_CLASS` and `TOP5_CLASS`!")
         sys.exit(0)
 
-    img_data = Image.open(img_path)
-    if dataset_name == "mnist":
-        img_data = mnist_transform(img_data)
-    elif dataset_name == "cifar10":
-        img_data = cifar10_transform(img_data)
-    else:
-        img_data = imagefolder_transform(img_data)
-
+    # Perform the tranform operation for the input image
+    img_data = trans_func(Image.open(img_path))
     # Construct the request payload
     payload = {
         'instance': {
@@ -74,12 +76,5 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
         print(res_body['err_msg'])
     else:
         instance = res_body['instance']
-        if dataset_name == "mnist":
-            data = mnist_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
-            print(data)
-        elif dataset_name == "imagenet2012":
-            data = imagefolder_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
-            print(data)
-        else:
-            data = cifar10_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
-            print(data)
+        data = trans_func.postprocess(np.array(json.loads(instance['data'])), strategy)
+        print(data)

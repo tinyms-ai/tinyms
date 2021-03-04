@@ -248,6 +248,8 @@ if __name__ == '__main__':
     # build the SSD300 network
     net = ssd300_mobilenetv2(class_num=args_opt.num_classes,
                              is_training=not args_opt.do_eval)
+    if args_opt.device_target == "GPU":
+        net.to_float(ts.float16)
     if not args_opt.do_eval:  # as for train, users could use model.train
         ds_train = create_dataset(voc_path, batch_size=batch_size)
         dataset_size = ds_train.get_dataset_size()
@@ -293,7 +295,7 @@ if __name__ == '__main__':
                 pred_data.append({"boxes": output[0].asnumpy()[batch_idx],
                                   "box_scores": output[1].asnumpy()[batch_idx],
                                   "img_id": id_iter,
-                                  "image_shape": image_np[batch_idx].shape})
+                                  "image_shape": image_np[batch_idx, 0, :, :].shape})
                 id_iter += 1
         cost_time = int((time.time() - start) * 1000)
         print(f'    100% [{total}/{total}] cost {cost_time} ms')
@@ -304,6 +306,6 @@ if __name__ == '__main__':
                    'diningtable', 'dog', 'horse', 'motorbike', 'person',
                    'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
         anno_file = create_voc_label(voc_path, voc_cls)
-        mAP = coco_eval(pred_data, anno_file, voc_cls)
+        mAP = coco_eval(pred_data, anno_file)
         print("\n========================================\n")
         print(f"mAP: {mAP}")
