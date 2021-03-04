@@ -13,7 +13,7 @@
 # limitations under the License.
 # ============================================================================
 
-from mindspore.dataset.vision.py_transforms import Grayscale
+from mindspore.dataset.vision.py_transforms import Grayscale, RandomHorizontalFlip as PILRandomHorizontalFlip
 from mindspore.dataset.vision.c_transforms import *
 from mindspore.dataset.transforms.c_transforms import *
 
@@ -31,6 +31,7 @@ vision_trans = [
     'MixUpBatch',
     'Normalize',
     'Pad',
+    'PILRandomHorizontalFlip',
     'RandomAffine',
     'RandomColor',
     'RandomColorAdjust',

@@ -14,7 +14,8 @@
 # ============================================================================
 
 import numpy as np
-from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform
+from tinyms.vision import mnist_transform, cifar10_transform, \
+    imagefolder_transform, voc_transform
 
 
 def test_mnist_transform():
@@ -70,3 +71,9 @@ def test_imagefolder_transform_postprocess():
     label = imagefolder_transform.postprocess(input, strategy='TOP5_CLASS')
     expected = "TOP1: Entoloma霍氏粉褶菌,伞菌目,粉褶菌科,粉褶菌属,主要分布于新西兰北岛和南岛西部,有毒, score: 0.99964439868927001953\nTOP2: Agaricus双孢蘑菇,伞菌目,蘑菇科,蘑菇属,广泛分布于北半球温带,无毒, score: 0.00033534335670992732\nTOP3: Suillus乳牛肝菌,牛肝菌目,乳牛肝菌科,乳牛肝菌属,分布于吉林、辽宁、山西、安徽、江西、浙江、湖南、四川、贵州等地,无毒, score: 0.00001669576158747077\nTOP4: Cortinarius掷丝膜菌,伞菌目,丝膜菌科,丝膜菌属,分布于湖南等地(夏秋季在山毛等阔叶林地上生长), score: 0.00000225952544496977\nTOP5: Amanita毒蝇伞,伞菌目,鹅膏菌科,鹅膏菌属,主要分布于我国黑龙江、吉林、四川、西藏、云南等地,有毒, score: 0.00000083123296690246\n"
     assert label == expected
+
+
+def test_voc_transform():
+    img = np.ones((1080, 1080, 3))
+    img = voc_transform(img)
+    print(img)

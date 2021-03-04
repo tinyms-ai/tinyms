@@ -18,7 +18,7 @@ Layer.
 The high-level components(Cells) used to construct the neural network.
 """
 from mindspore.nn import Cell
-from mindspore.nn.layer.container import SequentialCell
+from mindspore.nn.layer.container import SequentialCell, CellList
 from mindspore.nn.layer import activation, normalization, conv, lstm, basic, \
     embedding, pooling, math as nn_math, combined
 from mindspore.nn.layer.activation import *
@@ -31,7 +31,7 @@ from mindspore.nn.layer.pooling import *
 from mindspore.nn.layer.math import *
 from mindspore.nn.layer.combined import *
 
-__all__ = ['Layer', 'SequentialLayer']
+__all__ = ['Layer', 'SequentialLayer', 'LayerList']
 __all__.extend(activation.__all__)
 __all__.extend(normalization.__all__)
 __all__.extend(conv.__all__)
@@ -48,4 +48,8 @@ class Layer(Cell):
 
 
 class SequentialLayer(SequentialCell):
+    pass
+
+
+class LayerList(CellList):
     pass

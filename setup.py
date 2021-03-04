@@ -37,6 +37,7 @@ def _write_version(file):
 
 
 required_package = [
+    'easydict >= 1.9',
     'scipy >= 1.5.3',
     'mindspore == 1.1.1',
     'Pillow >= 6.2.0',
