@@ -15,22 +15,42 @@
 
 import os
 import json
-import math
 import time
 import argparse
 import xml.etree.ElementTree as et
 import tinyms as ts
 from tinyms import context, layers, primitives as P, Tensor
 from tinyms.data import VOCDataset
-from tinyms.vision import voc_transform, ssd_bboxes_decode, coco_eval
-from tinyms.model import Model, ssd300_mobilenetv2
+from tinyms.vision import voc_transform, coco_eval
+from tinyms.model import Model, ssd300_mobilenetv2, ssd300_infer
 from tinyms.losses import net_with_loss
 from tinyms.optimizers import Momentum
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor, TimeMonitor
+from tinyms.utils.train.lr_generator import mobilenetv2_lr as ssd300_lr
 from tinyms.initializers import initializer, TruncatedNormal
 
 
-def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers=1,
+def parse_args():
+    parser = argparse.ArgumentParser(description="SSD300 object detection")
+    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
+                        help='device where the code will be implemented (default: CPU)')
+    parser.add_argument('--dataset_path', type=str, default=None, help='VOC2007/VOC2012 dataset path.')
+    parser.add_argument("--num_classes", type=int, default=21, help="The VOC dataset class number, default is 21.")
+    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
+    parser.add_argument("--lr", type=float, default=0.01, help="Learning rate, default is 0.01.")
+    parser.add_argument("--epoch_size", type=int, default=800, help="Epoch size, default is 800.")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size, default is 32.")
+    parser.add_argument("--checkpoint_path", type=str, default=None, help="Pretrained Checkpoint file path.")
+    parser.add_argument("--pre_trained_epoch_size", type=int, default=0, help="Pretrained epoch size.")
+    parser.add_argument('--save_checkpoint_epochs', type=int, default=10,
+                        help='Specify epochs interval to save each checkpoints.')
+    parser.add_argument("--loss_scale", type=int, default=1, help="Loss scale, default is 1.")
+    args_opt = parser.parse_args()
+
+    return args_opt
+
+
+def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers=4,
                    is_training=True):
     """ create V0C2007 dataset for train or eval.
     Args:
@@ -40,12 +60,9 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
         num_parallel_workers: The number of parallel workers
     """
     # define dataset and apply the transform func
-    if is_training:
-        voc_ds = VOCDataset(data_path, task='Detection', num_parallel_workers=num_parallel_workers,
-                            shuffle=True, decode=True)
-    else:
-        voc_ds = VOCDataset(data_path, task='Detection', usage='val', num_parallel_workers=num_parallel_workers,
-                            shuffle=False, decode=True)
+    usage = 'trainval' if is_training else 'val'
+    voc_ds = VOCDataset(data_path, task='Detection', usage=usage, num_parallel_workers=num_parallel_workers,
+                        shuffle=is_training, decode=True)
     voc_ds = voc_transform.apply_ds(voc_ds,
                                     repeat_size=repeat_size,
                                     batch_size=batch_size,
@@ -64,43 +81,6 @@ def init_net_param(network, initialize_mode='TruncatedNormal'):
                 p.set_data(initializer(TruncatedNormal(0.02), p.data.shape, p.data.dtype))
             else:
                 p.set_data(initialize_mode, p.data.shape, p.data.dtype)
-
-
-def get_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_epochs, steps_per_epoch):
-    """
-    generate learning rate array
-
-    Args:
-       global_step(int): total steps of the training
-       lr_init(float): init learning rate
-       lr_end(float): end learning rate
-       lr_max(float): max learning rate
-       warmup_epochs(float): number of warmup epochs
-       total_epochs(int): total epoch of training
-       steps_per_epoch(int): steps of one epoch
-
-    Returns:
-       Tensor, learning rate array
-    """
-    lr_each_step = []
-    total_steps = steps_per_epoch * total_epochs
-    warmup_steps = steps_per_epoch * warmup_epochs
-    for i in range(total_steps):
-        if i < warmup_steps:
-            lr = lr_init + (lr_max - lr_init) * i / warmup_steps
-        else:
-            lr = lr_end + \
-                (lr_max - lr_end) * \
-                (1. + math.cos(math.pi * (i - warmup_steps) / (total_steps - warmup_steps))) / 2.
-        if lr < 0.0:
-            lr = 0.0
-        lr_each_step.append(lr)
-
-    current_step = global_step
-    lr_each_step = ts.array(lr_each_step, dtype=ts.float32)
-    learning_rate = lr_each_step[current_step:]
-
-    return learning_rate
 
 
 class TrainingWrapper(layers.Layer):
@@ -132,31 +112,6 @@ class TrainingWrapper(layers.Layer):
         sens = P.Fill()(P.DType()(loss), P.Shape()(loss), self.sens)
         grads = self.grad(self.network, weights)(*args, sens)
         return P.depend(loss, self.optimizer(grads))
-
-
-class SSD300InferWithDecoder(layers.Layer):
-    """
-    SSD300 infer wrapper to decode the bbox locations.
-
-    Args:
-        network (Layer): the origin ssd300 infer network without bbox decoder.
-        decode_fn (function): the ssd300 decode function.
-
-    Returns:
-        Tensor, the locations for bbox after decoder representing (y0, x0, y1, x1)
-        Tensor, the prediction labels.
-    """
-
-    def __init__(self, network, decode_fn):
-        super(SSD300InferWithDecoder, self).__init__()
-        self.network = network
-        self.decode_fn = decode_fn
-
-    def construct(self, *args):
-        pred_loc, pred_label = self.network(args[0])
-        pred_xy = self.decode_fn(pred_loc)
-
-        return pred_xy, pred_label
 
 
 def create_voc_label(voc_dir, voc_cls, usage='val'):
@@ -223,21 +178,7 @@ def create_voc_label(voc_dir, voc_cls, usage='val'):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="SSD300 object detection")
-    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
-                        help='device where the code will be implemented (default: CPU)')
-    parser.add_argument('--dataset_path', type=str, default=None, help='VOC2007/VOC2012 dataset path.')
-    parser.add_argument("--num_classes", type=int, default=21, help="The VOC dataset class number, default is 21.")
-    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
-    parser.add_argument("--lr", type=float, default=0.05, help="Learning rate, default is 0.05.")
-    parser.add_argument("--epoch_size", type=int, default=500, help="Epoch size, default is 500.")
-    parser.add_argument("--batch_size", type=int, default=32, help="Batch size, default is 32.")
-    parser.add_argument("--checkpoint_path", type=str, default=None, help="Pretrained Checkpoint file path.")
-    parser.add_argument("--pre_trained_epoch_size", type=int, default=0, help="Pretrained epoch size.")
-    parser.add_argument('--save_checkpoint_epochs', type=int, default=10,
-                        help='Specify epochs interval to save each checkpoints.')
-    parser.add_argument("--loss_scale", type=int, default=1024, help="Loss scale, default is 1024.")
-    args_opt = parser.parse_args()
+    args_opt = parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
 
     epoch_size = args_opt.epoch_size
@@ -245,22 +186,21 @@ if __name__ == '__main__':
     voc_path = args_opt.dataset_path
     dataset_sink_mode = not args_opt.device_target == "CPU"
 
-    # build the SSD300 network
-    net = ssd300_mobilenetv2(class_num=args_opt.num_classes,
-                             is_training=not args_opt.do_eval)
-    if args_opt.device_target == "GPU":
-        net.to_float(ts.float16)
     if not args_opt.do_eval:  # as for train, users could use model.train
         ds_train = create_dataset(voc_path, batch_size=batch_size)
         dataset_size = ds_train.get_dataset_size()
         # define the loss function
+        if args_opt.device_target == "GPU":
+            net.to_float(ts.float16)
+        # build the SSD300 network
+        net = ssd300_mobilenetv2(class_num=args_opt.num_classes)
         net = net_with_loss(net)
         init_net_param(net)
         # define the optimizer
-        lr = get_lr(global_step=args_opt.pre_trained_epoch_size * dataset_size,
-                    lr_init=0.001, lr_end=0.001 * args_opt.lr, lr_max=args_opt.lr,
-                    warmup_epochs=2, total_epochs=args_opt.epoch_size,
-                    steps_per_epoch=dataset_size)
+        lr = ssd300_lr(global_step=args_opt.pre_trained_epoch_size * dataset_size,
+                       lr_init=0.001, lr_end=0.001 * args_opt.lr, lr_max=args_opt.lr,
+                       warmup_epochs=2, total_epochs=args_opt.epoch_size,
+                       steps_per_epoch=dataset_size)
         loss_scale = 1.0 if args_opt.device_target == "CPU" else float(args_opt.loss_scale)
         opt = Momentum(filter(lambda x: x.requires_grad, net.get_parameters()), lr,
                        0.9, 1.5e-4, loss_scale)
@@ -273,10 +213,10 @@ if __name__ == '__main__':
         model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor(), TimeMonitor(data_size=dataset_size)],
                     dataset_sink_mode=dataset_sink_mode)
     else:  # as for evaluation, users could use model.eval
-        ds_eval = create_dataset(voc_path, batch_size=batch_size, is_training=False)
+        ds_eval = create_dataset(voc_path, batch_size=1, is_training=False)
         total = ds_eval.get_dataset_size()
         # define the infer wrapper
-        eval_net = SSD300InferWithDecoder(net, ssd_bboxes_decode)
+        eval_net = ssd300_infer(class_num=args_opt.num_classes)
         model = Model(eval_net)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)
@@ -289,13 +229,14 @@ if __name__ == '__main__':
         id_iter = 0
         for data in ds_eval.create_dict_iterator(output_numpy=True):
             image_np = data['image']
+            image_shape = data['image_shape']
 
             output = model.predict(Tensor(image_np))
             for batch_idx in range(image_np.shape[0]):
                 pred_data.append({"boxes": output[0].asnumpy()[batch_idx],
                                   "box_scores": output[1].asnumpy()[batch_idx],
                                   "img_id": id_iter,
-                                  "image_shape": image_np[batch_idx, 0, :, :].shape})
+                                  "image_shape": image_shape[batch_idx]})
                 id_iter += 1
         cost_time = int((time.time() - start) * 1000)
         print(f'    100% [{total}/{total}] cost {cost_time} ms')

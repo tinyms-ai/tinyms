@@ -36,10 +36,12 @@ def list_servables():
     res_body = res.json()
     if res.status_code != requests.codes.ok:
         print("Request error! Status code: ", res.status_code)
+        sys.exit(0)
     elif res_body['status'] != 0:
         print(res_body['err_msg'])
+        sys.exit(0)
     else:
-        print(res_body['servables'])
+        return res_body['servables']
 
 
 def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"):
@@ -56,7 +58,8 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
         sys.exit(0)
 
     # Perform the tranform operation for the input image
-    img_data = trans_func(Image.open(img_path))
+    img = Image.open(img_path)
+    img_data = trans_func(img)
     # Construct the request payload
     payload = {
         'instance': {
@@ -72,9 +75,16 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
     res_body = res.json()
     if res.status_code != requests.codes.ok:
         print("Request error! Status code: ", res.status_code)
+        sys.exit(0)
     elif res_body['status'] != 0:
         print(res_body['err_msg'])
+        sys.exit(0)
     else:
         instance = res_body['instance']
-        data = trans_func.postprocess(np.array(json.loads(instance['data'])), strategy)
-        print(data)
+        res_data = np.array(json.loads(instance['data']))
+        iw, ih = img.size
+        if dataset_name == 'voc':
+            data = trans_func.postprocess(res_data, (ih, iw), strategy)
+        else:
+            data = trans_func.postprocess(res_data, strategy)
+        return data

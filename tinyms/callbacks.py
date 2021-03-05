@@ -20,7 +20,7 @@ from mindspore.train.callback import *
 from . import Tensor
 
 
-__all__ = []
+__all__ = ['LossTimeMonitor']
 __all__.extend(callback.__all__)
 
 
@@ -32,7 +32,7 @@ class LossTimeMonitor(Callback):
     Returns:
         None
     Examples:
-        >>> LossTimeMonitor(100,lr_init=Tensor([0.05]*100).asnumpy())
+        >>> LossTimeMonitor(100, lr_init=Tensor([0.05] * 100).asnumpy())
     """
 
     def __init__(self, lr_init=None):

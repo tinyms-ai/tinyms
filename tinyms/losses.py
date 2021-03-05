@@ -85,10 +85,10 @@ class SSD300WithLoss(layers.Layer):
         self.class_loss = SigmoidFocalClassificationLoss(2.0, 0.75)
         self.loc_loss = SmoothL1Loss()
 
-    def construct(self, x, gt_loc, gt_label):
+    def construct(self, x, gt_loc, gt_label, num_matched_boxes):
         pred_loc, pred_label = self.network(x)
         mask = P.cast(self.less(0, gt_label), ts.float32)
-        num_matched_boxes = P.cast(P.count_nonzero(gt_label), ts.float32)
+        num_matched_boxes = self.reduce_sum(P.cast(num_matched_boxes, ts.float32))
 
         # Localization Loss
         mask_loc = self.tile(self.expand_dims(mask, -1), (1, 1, 4))

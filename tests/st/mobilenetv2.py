@@ -32,7 +32,8 @@ from tinyms.utils.train.lr_generator import mobilenetv2_lr
 from tinyms.utils.train.cb_config import mobilenetv2_cb
 
 
-def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers=4, training=True):
+def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers=4,
+                   is_training=True):
     """create Cifar10 dataset for train or eval.
     Args:
         data_path: Data path
@@ -47,7 +48,7 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
     cifar10_ds = cifar10_transform.apply_ds(cifar10_ds,
                                             repeat_size=repeat_size,
                                             batch_size=batch_size,
-                                            training=training)
+                                            is_training=is_training)
 
     return cifar10_ds
 
@@ -58,7 +59,7 @@ if __name__ == '__main__':
                         help='device where the code will be implemented (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='Cifar10 dataset path.')
     parser.add_argument('--num_classes', type=int, default=10, help='Num classes.')
-    parser.add_argument('--label_smooth', type=int, default=0.1, help='label smooth')
+    parser.add_argument('--label_smooth', type=float, default=0.1, help='label smooth')
     parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
     parser.add_argument('--epoch_size', type=int, default=100, help='Epoch size.')
     parser.add_argument('--batch_size', type=int, default=150, help='Batch size.')
@@ -108,7 +109,7 @@ if __name__ == '__main__':
 
     if args_opt.do_eval:  # as for evaluation, users could use model.eval
         # create cifar10 dataset for eval
-        ds_eval = create_dataset(cifar10_path, batch_size=batch_size, training=False)
+        ds_eval = create_dataset(cifar10_path, batch_size=batch_size, is_training=False)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
