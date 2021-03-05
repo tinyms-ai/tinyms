@@ -18,8 +18,6 @@ import json
 import math
 import itertools as it
 import numpy as np
-import tinyms as ts
-from tinyms import primitives as P, Tensor
 from easydict import EasyDict as ed
 
 ssd300_config = ed({
@@ -27,7 +25,7 @@ ssd300_config = ed({
     "num_ssd_boxes": 1917,
     "match_threshold": 0.5,
     "nms_threshold": 0.6,
-    "min_score": 0.1,
+    "min_score": 0.3,
     "max_boxes": 100,
 
     # learing rate settings
@@ -98,8 +96,6 @@ class GenerateDefaultBoxes():
 
 ssd_default_boxes_tlbr = GenerateDefaultBoxes().default_boxes_tlbr
 ssd_default_boxes = GenerateDefaultBoxes().default_boxes
-ssd_default_boxes_tensor = Tensor(ssd_default_boxes, dtype=ts.float32)
-prior_scaling_tensor = Tensor(ssd300_config.prior_scaling, dtype=ts.float32)
 
 
 def ssd_bboxes_encode(boxes):
@@ -169,31 +165,7 @@ def ssd_bboxes_encode(boxes):
     return bboxes, t_label.astype(np.int32), num_match
 
 
-def ssd_bboxes_decode(boxes):
-    """
-    Decode predict boxes to [ymin, xmin, ymax, xmax].
-
-    Args:
-    boxes: ground truth with shape [N, 4], for each row, it stores
-        [ymin, xmin, ymax, xmax].
-    """
-    default_bbox_xy = ssd_default_boxes_tensor[..., :2]
-    default_bbox_wh = ssd_default_boxes_tensor[..., 2:]
-    prior_scaling_xy = prior_scaling_tensor[0]
-    prior_scaling_wh = prior_scaling_tensor[1]
-    pred_xy = boxes[..., :2] * prior_scaling_xy * default_bbox_wh + default_bbox_xy
-    pred_wh = P.Exp()(boxes[..., 2:] * prior_scaling_wh) * default_bbox_wh
-
-    pred_xy_0 = pred_xy - pred_wh / 2.0
-    pred_xy_1 = pred_xy + pred_wh / 2.0
-    pred_xy = P.Concat(-1)((pred_xy_0, pred_xy_1))
-    pred_xy = P.Maximum()(pred_xy, 0)
-    pred_xy = P.Minimum()(pred_xy, 1)
-
-    return pred_xy
-
-
-def ssd_bboxes_filter(boxes, box_scores, image_shape=(300, 300)):
+def ssd_bboxes_filter(boxes, box_scores, image_shape):
     """
     Filter predict boxes with minimum score and nms threshold.
 
@@ -201,11 +173,12 @@ def ssd_bboxes_filter(boxes, box_scores, image_shape=(300, 300)):
     boxes: ground truth with shape [N, 4], for each row, it stores
         [ymin, xmin, ymax, xmax].
     box_scores: class scores with shape [N, 21].
+    image_shape: the shape of original image with the format [h, w].
     """
     final_boxes = []
     final_label = []
     final_score = []
-    w, h = image_shape
+    h, w = image_shape
     # Ignore background(0) label class
     for c in range(1, box_scores.shape[1]):
         class_box_scores = box_scores[:, c]
@@ -221,7 +194,7 @@ def ssd_bboxes_filter(boxes, box_scores, image_shape=(300, 300)):
 
             final_boxes += class_boxes.tolist()
             final_score += class_box_scores.tolist()
-            final_label += [c] * len(class_box_scores)
+            final_label += [c+1] * len(class_box_scores)
 
     return final_boxes, final_score, final_label
 
@@ -287,10 +260,9 @@ def coco_eval(pred_data, anno_file):
         img_id = sample['img_id']
         img_ids.append(img_id)
 
-        final_pred = ssd_bboxes_filter(pred_boxes, box_scores,
-                                       image_shape=sample['image_shape'])
+        final_pred = ssd_bboxes_filter(pred_boxes, box_scores, sample['image_shape'])
 
-        for loc, label, score in zip(final_pred[0], final_pred[1], final_pred[2]):
+        for loc, score, label in zip(final_pred[0], final_pred[1], final_pred[2]):
             res = {}
             res['image_id'] = img_id
             res['bbox'] = [loc[1], loc[0], loc[3] - loc[1], loc[2] - loc[0]]

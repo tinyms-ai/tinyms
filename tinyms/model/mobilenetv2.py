@@ -77,7 +77,7 @@ class ConvBNReLU(layers.Layer):
 
 
 class InvertedResidual(layers.Layer):
-    def __init__(self, inp, oup, stride, expand_ratio, use_relu=False):
+    def __init__(self, inp, oup, stride, expand_ratio):
         super(InvertedResidual, self).__init__()
         assert stride in [1, 2]
 
@@ -89,20 +89,16 @@ class InvertedResidual(layers.Layer):
             residual_layers.append(ConvBNReLU(inp, hidden_dim, kernel_size=1))
         residual_layers.extend([
             ConvBNReLU(hidden_dim, hidden_dim, stride=stride, groups=hidden_dim),
-            layers.Conv2d(hidden_dim, oup, kernel_size=1, stride=1),
+            layers.Conv2d(hidden_dim, oup, kernel_size=1, stride=1, has_bias=False),
             layers.BatchNorm2d(oup),
         ])
         self.conv = layers.SequentialLayer(residual_layers)
-        self.use_relu = use_relu
-        self.relu = layers.ReLU6()
 
     def construct(self, x):
         identity = x
         x = self.conv(x)
         if self.use_res_connect:
             return tensor_add(identity, x)
-        if self.use_relu:
-            x = self.relu(x)
         return x
 
 
@@ -151,7 +147,7 @@ class MobileNetV2Backbone(layers.Layer):
                 if m.bias is not None:
                     m.bias.set_data(ts.zeros(m.bias.data.shape))
             elif isinstance(m, layers.BatchNorm2d):
-                m.gamma.set_data(ts.zeros(m.gamma.data.shape))
+                m.gamma.set_data(ts.ones(m.gamma.data.shape))
                 m.beta.set_data(ts.zeros(m.beta.data.shape))
 
 
