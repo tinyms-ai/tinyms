@@ -115,7 +115,7 @@ class UnetSkipConnectionBlock(layers.Layer):
             if dropout:
                 model.append(layers.Dropout(0.5))
 
-        self.model = layers.SequentialCell(model)
+        self.model = layers.SequentialLayer(model)
         self.skip_connections = not outermost
         self.concat = Concat(axis=1)
 

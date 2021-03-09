@@ -16,7 +16,7 @@
 """Cycle GAN network."""
 
 import tinyms as ts
-from tinyms import layers, context
+from tinyms import layers
 from tinyms.primitives import OnesLike, GradOperation, Fill, DType, Shape, depend
 from .resnet import ResNetGenerator
 from .unet import UnetGenerator
@@ -28,11 +28,11 @@ def get_generator(model):
     if model == "resnet":
         net = ResNetGenerator(in_planes=3, ngf=64, n_layers=9, alpha=0.2,
                               norm_mode='instance', dropout=True, pad_mode='REFLECT')
-        init_weights(net, 'normal', 0.02)
+        init_weights(net, init_type='normal', init_gain=0.02)
     elif model == "unet":
         net = UnetGenerator(in_planes=3, out_planes=3, ngf=64, n_layers=9,
                             alpha=0.2, norm_mode='instance', dropout=True)
-        init_weights(net, 'normal', 0.02)
+        init_weights(net, init_type='normal', init_gain=0.02)
     else:
         raise NotImplementedError(f'Model {model} not recognized.')
     return net
@@ -40,8 +40,8 @@ def get_generator(model):
 
 def get_discriminator():
     """Return discriminator."""
-    net = Discriminator(in_planes=3, ndf=64, n_layers=9, alpha=0.2, norm_mode='instance')
-    init_weights(net, 'normal', 0.02)
+    net = Discriminator(in_planes=3, ndf=64, n_layers=3, alpha=0.2, norm_mode='instance')
+    init_weights(net, init_type='normal', init_gain=0.02)
     return net
 
 
@@ -78,7 +78,7 @@ class Discriminator(layers.Layer):
         nf_mult = min(2 ** n_layers, 8) * ndf
         layer_list.append(ConvNormReLU(nf_mult_prev, nf_mult, kernel_size, 1, alpha, norm_mode, padding=1))
         layer_list.append(layers.Conv2d(nf_mult, 1, kernel_size, 1, pad_mode='pad', padding=1))
-        self.features = layers.SequentialCell(layer_list)
+        self.features = layers.SequentialLayer(layer_list)
 
     def construct(self, x):
         output = self.features(x)
@@ -100,6 +100,7 @@ class Generator(layers.Layer):
     Examples:
         >>> Generator(G_A, G_B)
     """
+
     def __init__(self, G_A, G_B, use_identity=True):
         super(Generator, self).__init__()
         self.G_A = G_A
@@ -151,24 +152,24 @@ class TrainOneStepG(layers.Layer):
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
-    def __init__(self, G, generator, optimizer, sens=1.0):
+    def __init__(self, loss_G, generator, optimizer, sens=1.0):
         super(TrainOneStepG, self).__init__(auto_prefix=False)
         self.optimizer = optimizer
-        self.G = G
-        self.G.set_grad()
-        self.G.set_train()
-        self.G.D_A.set_grad(False)
-        self.G.D_A.set_train(False)
-        self.G.D_B.set_grad(False)
-        self.G.D_B.set_train(False)
+        self.loss_G = loss_G
+        self.loss_G.set_grad()
+        self.loss_G.set_train()
+        self.loss_G.D_A.set_grad(False)
+        self.loss_G.D_A.set_train(False)
+        self.loss_G.D_B.set_grad(False)
+        self.loss_G.D_B.set_train(False)
         self.grad = GradOperation(get_by_list=True, sens_param=True)
         self.sens = sens
         self.weights = ts.ParameterTuple(generator.trainable_params())
-        self.net = WithLossCell(G)
+        self.net = WithLossCell(loss_G)
 
     def construct(self, img_A, img_B):
         weights = self.weights
-        fake_A, fake_B, lg, lga, lgb, lca, lcb, lia, lib = self.G(img_A, img_B)
+        fake_A, fake_B, lg, lga, lgb, lca, lcb, lia, lib = self.loss_G(img_A, img_B)
         sens = Fill()(DType()(lg), Shape()(lg), self.sens)
         grads_g = self.grad(self.net, weights)(img_A, img_B, sens)
         return fake_A, fake_B, depend(lg, self.optimizer(grads_g)), lga, lgb, lca, lcb, lia, lib
@@ -242,6 +243,7 @@ def cycle_gan(G_A, G_B):
         Examples:
             >>> gan_net = cycle_gan(G_A, G_B)
         """
-    if G_A is not isinstance(layers.Layer) or G_B is not isinstance(layers.Layer):
+    if not isinstance(G_A, layers.Layer) or not isinstance(G_B, layers.Layer):
         raise NotImplementedError(f'G_A and G_B are not the instance of layers.Layer')
     return Generator(G_A, G_B)
+

@@ -16,7 +16,7 @@
 """ResNet Generator."""
 from tinyms import layers
 from tinyms.primitives import Tanh
-from .networks import ConvNormReLU, ConvTransposeNormReLU
+from .common_net import ConvNormReLU, ConvTransposeNormReLU
 
 
 class ResidualBlock(layers.Layer):
@@ -34,7 +34,7 @@ class ResidualBlock(layers.Layer):
         Tensor, output tensor.
     """
 
-    def __init__(self, dim, norm_mode='batch', dropout=False, pad_mode="CONSTANT"):
+    def __init__(self, dim, norm_mode='batch', dropout=True, pad_mode="CONSTANT"):
         super(ResidualBlock, self).__init__()
         self.conv1 = ConvNormReLU(dim, dim, 3, 1, 0, norm_mode, pad_mode)
         self.conv2 = ConvNormReLU(dim, dim, 3, 1, 0, norm_mode, pad_mode, use_relu=False)
@@ -67,14 +67,14 @@ class ResNetGenerator(layers.Layer):
     Returns:
         Tensor, output tensor.
     """
-    def __init__(self, in_planes=3, ngf=64, n_layers=9, alpha=0.2, norm_mode='batch', dropout=False,
+    def __init__(self, in_planes=3, ngf=64, n_layers=9, alpha=0.2, norm_mode='batch', dropout=True,
                  pad_mode="CONSTANT"):
         super(ResNetGenerator, self).__init__()
-        self.conv_in = ConvNormReLU(in_planes, ngf, 7, 1, alpha, norm_mode, pad_mode=pad_mode)
+        self.conv_in = ConvNormReLU(in_planes, ngf, 7, 1, alpha=alpha, norm_mode=norm_mode, pad_mode=pad_mode)
         self.down_1 = ConvNormReLU(ngf, ngf * 2, 3, 2, alpha, norm_mode)
         self.down_2 = ConvNormReLU(ngf * 2, ngf * 4, 3, 2, alpha, norm_mode)
-        layers = [ResidualBlock(ngf * 4, norm_mode, dropout=dropout, pad_mode=pad_mode)] * n_layers
-        self.residuals = layers.SequentialCell(layers)
+        layer_list = [ResidualBlock(ngf * 4, norm_mode, dropout=dropout, pad_mode=pad_mode)] * n_layers
+        self.residuals = layers.SequentialLayer(layer_list)
         self.up_2 = ConvTransposeNormReLU(ngf * 4, ngf * 2, 3, 2, alpha, norm_mode)
         self.up_1 = ConvTransposeNormReLU(ngf * 2, ngf, 3, 2, alpha, norm_mode)
         if pad_mode == "CONSTANT":
@@ -82,7 +82,7 @@ class ResNetGenerator(layers.Layer):
         else:
             pad = layers.Pad(paddings=((0, 0), (0, 0), (3, 3), (3, 3)), mode=pad_mode)
             conv = layers.Conv2d(ngf, 3, kernel_size=7, stride=1, pad_mode='pad')
-            self.conv_out = layers.SequentialCell([pad, conv])
+            self.conv_out = layers.SequentialLayer([pad, conv])
         self.activate = Tanh()
 
     def construct(self, x):

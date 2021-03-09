@@ -20,7 +20,7 @@ import tinyms as ts
 
 def mobilenetv2_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_epochs, steps_per_epoch):
     """
-    generate learning rate array
+    generate learning rate array for mobilenetv2
 
     Args:
        global_step(int): total steps of the training
@@ -54,4 +54,17 @@ def mobilenetv2_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_ep
 
     return learning_rate
 
+
+def cyclegan_lr(max_epoch_size, epoch_size, dataset_size):
+    """generate learning rate array for cycle_gan."""
+    if max_epoch_size < epoch_size:
+        raise Exception("epoch_size should not be larger than max_epoch_size")
+    lrs = [0.0002] * dataset_size * epoch_size
+    n_epochs = max_epoch_size - epoch_size
+    lr_epoch = 0
+    for epoch in range(n_epochs):
+        lr_epoch = 0.0002 * (n_epochs - epoch) / n_epochs
+        lrs += [lr_epoch] * dataset_size
+    lrs += [lr_epoch] * dataset_size * (max_epoch_size - n_epochs - epoch_size)
+    return ts.array(lrs, dtype=ts.float32)
 

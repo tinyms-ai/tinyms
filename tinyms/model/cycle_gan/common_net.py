@@ -14,113 +14,146 @@
 # ============================================================================
 
 """Common network."""
-
+from tinyms.initializers import initializer, Normal, XavierUniform
 from tinyms import layers
-from tinyms.primitives import Concat
 
 
-class UnetGenerator(layers.Layer):
+def init_weights(net, init_type='normal', init_gain=0.02):
     """
-    Unet-based generator.
+    Initialize network weights.
+
+    Parameters:
+        net (layer): Network to be initialized
+        init_type (str): The name of an initialization method: normal | xavier.
+        init_gain (float): Gain factor for normal and xavier.
+
+    """
+    for _, layer in net.cells_and_names():
+        if isinstance(layer, (layers.Conv2d, layers.Conv2dTranspose)):
+            if init_type == 'normal':
+                layer.weight.set_data(initializer(Normal(init_gain), layer.weight.shape))
+            elif init_type == 'xavier':
+                layer.weight.set_data(initializer(XavierUniform(init_gain), layer.weight.shape))
+            elif init_type == 'constant':
+                layer.weight.set_data(initializer(0.001, layer.weight.shape))
+            else:
+                raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
+        elif isinstance(layer, layers.BatchNorm2d):
+            layer.gamma.set_data(initializer('ones', layer.gamma.shape))
+            layer.beta.set_data(initializer('zeros', layer.beta.shape))
+
+
+class ConvNormReLU(layers.Layer):
+    """
+    Convolution fused with BatchNorm/InstanceNorm and ReLU/LackyReLU block definition.
 
     Args:
-        in_planes (int): the number of channels in input images.
-        out_planes (int): the number of channels in output images.
-        ngf (int): the number of filters in the last conv layer.
-        n_layers (int): the number of downsamplings in UNet.
-        alpha (float): LeakyRelu slope. Default: 0.2.
+        in_planes (int): Input channel.
+        out_planes (int): Output channel.
+        kernel_size (int): Input kernel size. Default: 4.
+        stride (int): Stride size for the first convolutional layer. Default: 2.
+        alpha (float): Slope of LackyReLU. Default: 0.2.
         norm_mode (str): Specifies norm method. The optional values are "batch", "instance".
-        dropout (bool): Use dropout or not. Default: False.
+        pad_mode (str): Specifies padding mode. The optional values are "CONSTANT", "REFLECT", "SYMMETRIC".
+            Default: "CONSTANT".
+        use_relu (bool): Use relu or not. Default: True.
+        padding (int): Pad size, if it is None, it will calculate by kernel_size. Default: None.
 
     Returns:
         Tensor, output tensor.
     """
-    def __init__(self, in_planes, out_planes, ngf=64, n_layers=7, alpha=0.2, norm_mode='bn', dropout=False):
-        super(UnetGenerator, self).__init__()
-        # construct unet structure
-        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, in_planes=None, submodule=None,
-                                             norm_mode=norm_mode, innermost=True)
-        for _ in range(n_layers - 5):
-            unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, in_planes=None, submodule=unet_block,
-                                                 norm_mode=norm_mode, dropout=dropout)
-        # gradually reduce the number of filters from ngf * 8 to ngf
-        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, in_planes=None, submodule=unet_block,
-                                             norm_mode=norm_mode)
-        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, in_planes=None, submodule=unet_block,
-                                             norm_mode=norm_mode)
-        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, in_planes=None, submodule=unet_block, norm_mode=norm_mode)
-        self.model = UnetSkipConnectionBlock(out_planes, ngf, in_planes=in_planes, submodule=unet_block,
-                                             outermost=True, norm_mode=norm_mode)
-
-    def construct(self, x):
-        return self.model(x)
-
-
-class UnetSkipConnectionBlock(layers.Layer):
-    """Unet submodule with skip connection.
-
-    Args:
-        outer_nc (int): The number of filters in the outer conv layer
-        inner_nc (int): The number of filters in the inner conv layer
-        in_planes (int): The number of channels in input images/features
-        dropout (bool): Use dropout or not. Default: False.
-        submodule (Cell): Previously defined submodules
-        outermost (bool): If this module is the outermost module
-        innermost (bool): If this module is the innermost module
-        alpha (float): LeakyRelu slope. Default: 0.2.
-        norm_mode (str): Specifies norm method. The optional values are "batch", "instance".
-
-    Returns:
-        Tensor, output tensor.
-    """
-    def __init__(self, outer_nc, inner_nc, in_planes=None, dropout=False,
-                 submodule=None, outermost=False, innermost=False, alpha=0.2, norm_mode='batch'):
-        super(UnetSkipConnectionBlock, self).__init__()
-        downnorm = layers.BatchNorm2d(inner_nc)
-        upnorm = layers.BatchNorm2d(outer_nc)
-        use_bias = False
+    def __init__(self,
+                 in_planes,
+                 out_planes,
+                 kernel_size=4,
+                 stride=2,
+                 alpha=0.2,
+                 norm_mode='batch',
+                 pad_mode='CONSTANT',
+                 use_relu=True,
+                 padding=None):
+        super(ConvNormReLU, self).__init__()
+        self.norm = layers.BatchNorm2d(out_planes)
         if norm_mode == 'instance':
-            downnorm = layers.BatchNorm2d(inner_nc, affine=False)
-            upnorm = layers.BatchNorm2d(outer_nc, affine=False)
-            use_bias = True
-        if in_planes is None:
-            in_planes = outer_nc
-        downconv = layers.Conv2d(in_planes, inner_nc, kernel_size=4,
-                             stride=2, padding=1, has_bias=use_bias, pad_mode='pad')
-        downrelu = layers.LeakyReLU(alpha)
-        uprelu = layers.ReLU()
-
-        if outermost:
-            upconv = layers.Conv2dTranspose(inner_nc * 2, outer_nc,
-                                            kernel_size=4, stride=2,
-                                            padding=1, pad_mode='pad')
-            down = [downconv]
-            up = [uprelu, upconv, layers.Tanh()]
-            model = down + [submodule] + up
-        elif innermost:
-            upconv = layers.Conv2dTranspose(inner_nc, outer_nc,
-                                            kernel_size=4, stride=2,
-                                            padding=1, has_bias=use_bias, pad_mode='pad')
-            down = [downrelu, downconv]
-            up = [uprelu, upconv, upnorm]
-            model = down + up
+            # Use BatchNorm2d with batchsize=1, affine=False, training=True instead of InstanceNorm2d
+            norm = layers.BatchNorm2d(out_planes, affine=False)
+        has_bias = (norm_mode == 'instance')
+        if padding is None:
+            padding = (kernel_size - 1) // 2
+        if pad_mode == 'CONSTANT':
+            conv = layers.Conv2d(in_planes, out_planes, kernel_size, stride, pad_mode='pad',
+                                 has_bias=has_bias, padding=padding)
+            layer_list = [conv, norm]
         else:
-            upconv = layers.Conv2dTranspose(inner_nc * 2, outer_nc,
-                                            kernel_size=4, stride=2,
-                                            padding=1, has_bias=use_bias, pad_mode='pad')
-            down = [downrelu, downconv, downnorm]
-            up = [uprelu, upconv, upnorm]
-
-            model = down + [submodule] + up
-            if dropout:
-                model.append(layers.Dropout(0.5))
-
-        self.model = layers.SequentialCell(model)
-        self.skip_connections = not outermost
-        self.concat = Concat(axis=1)
+            paddings = ((0, 0), (0, 0), (padding, padding), (padding, padding))
+            pad = layers.Pad(paddings=paddings, mode=pad_mode)
+            conv = layers.Conv2d(in_planes, out_planes, kernel_size, stride, pad_mode='pad', has_bias=has_bias)
+            layer_list = [pad, conv, norm]
+        if use_relu:
+            relu = layers.ReLU()
+            if alpha > 0:
+                relu = layers.LeakyReLU(alpha)
+            layer_list.append(relu)
+        self.features = layers.SequentialLayer(layer_list)
 
     def construct(self, x):
-        out = self.model(x)
-        if self.skip_connections:
-            out = self.concat((out, x))
-        return out
+        output = self.features(x)
+        return output
+
+
+class ConvTransposeNormReLU(layers.Layer):
+    """
+    ConvTranspose2d fused with BatchNorm/InstanceNorm and ReLU/LackyReLU block definition.
+
+    Args:
+        in_planes (int): Input channel.
+        out_planes (int): Output channel.
+        kernel_size (int): Input kernel size. Default: 4.
+        stride (int): Stride size for the first convolutional layer. Default: 2.
+        alpha (float): Slope of LackyReLU. Default: 0.2.
+        norm_mode (str): Specifies norm method. The optional values are "batch", "instance".
+        pad_mode (str): Specifies padding mode. The optional values are "CONSTANT", "REFLECT", "SYMMETRIC".
+                        Default: "CONSTANT".
+        use_relu (bool): use relu or not. Default: True.
+        padding (int): pad size, if it is None, it will calculate by kernel_size. Default: None.
+
+    Returns:
+        Tensor, output tensor.
+    """
+    def __init__(self,
+                 in_planes,
+                 out_planes,
+                 kernel_size=4,
+                 stride=2,
+                 alpha=0.2,
+                 norm_mode='batch',
+                 pad_mode='CONSTANT',
+                 use_relu=True,
+                 padding=None):
+        super(ConvTransposeNormReLU, self).__init__()
+        conv = layers.Conv2dTranspose(in_planes, out_planes, kernel_size, stride=stride, pad_mode='same')
+        norm = layers.BatchNorm2d(out_planes)
+        if norm_mode == 'instance':
+            # Use BatchNorm2d with batchsize=1, affine=False, training=True instead of InstanceNorm2d
+            norm = layers.BatchNorm2d(out_planes, affine=False)
+        has_bias = (norm_mode == 'instance')
+        if padding is None:
+            padding = (kernel_size - 1) // 2
+        if pad_mode == 'CONSTANT':
+            conv = layers.Conv2dTranspose(in_planes, out_planes, kernel_size, stride, pad_mode='same', has_bias=has_bias)
+            layer_list = [conv, norm]
+        else:
+            paddings = ((0, 0), (0, 0), (padding, padding), (padding, padding))
+            pad = layers.Pad(paddings=paddings, mode=pad_mode)
+            conv = layers.Conv2dTranspose(in_planes, out_planes, kernel_size, stride, pad_mode='pad', has_bias=has_bias)
+            layer_list = [pad, conv, norm]
+        if use_relu:
+            relu = layers.ReLU()
+            if alpha > 0:
+                relu = layers.LeakyReLU(alpha)
+            layer_list.append(relu)
+        self.features = layers.SequentialLayer(layer_list)
+
+    def construct(self, x):
+        output = self.features(x)
+        return output
