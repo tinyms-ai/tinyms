@@ -31,7 +31,7 @@ def list_servables():
     elif res_body['status'] != 0:
         print(res_body['err_msg'])
     else:
-        return (res_body['servables'])
+        return res_body['servables']
 
 
 def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"):
