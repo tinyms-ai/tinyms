@@ -68,7 +68,7 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
         print("Currently strategy only supports `TOP1_CLASS` and `TOP5_CLASS`!")
         sys.exit(0)
 
-    # Perform the tranform operation for the input image
+    # Perform the transform operation for the input image
     img = Image.open(img_path)
     img_data = trans_func(img)
     # Construct the request payload
