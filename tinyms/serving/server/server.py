@@ -15,49 +15,53 @@
 import subprocess
 import signal
 import sys
-import socket
+import logging
 
 from flask import request, Flask, jsonify
 from ..servable import predict, servable_search
+from ..client import server_started
 
 app = Flask(__name__)
 
 
 @app.route('/predict', methods=['POST'])
 def predict_server():
-    json_data = request.get_json()
-    instance = json_data['instance']
-    servable_name = json_data['servable_name']
+    if server_started() is True:
+        json_data = request.get_json()
+        instance = json_data['instance']
+        servable_name = json_data['servable_name']
 
-    res = servable_search(servable_name)
-    if res['status'] != 0:
+        res = servable_search(servable_name)
+        if res['status'] != 0:
+            return jsonify(res)
+        servable = res['servables'][0]
+        res = predict(instance, servable_name, servable['model'])
         return jsonify(res)
-    servable = res['servables'][0]
-    res = predict(instance, servable_name, servable['model'])
-    return jsonify(res)
+    else:
+        return 'No server detected'
 
 
 @app.route('/servables', methods=['GET'])
 def list_servables():
-    return jsonify(servable_search())
+    if server_started() is True:
+        return jsonify(servable_search())
+    else:
+        return 'No server detected'
 
 
 def run_flask(host='127.0.0.1', port=5000):
-    def net_is_used(host='127.0.0.1', port=5000):
-        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        try:
-            s.connect(('127.0.0.1', 5000))
-            s.shutdown(2)
-            print('Using exiting host...')
-        except:
-            app.run(host=host, port=port)
-    
-    net_is_used()
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    app.run(host=host, port=port)
 
 
-def start_server():
-    cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
-    server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+def start_server(host='127.0.0.1', port=5000):
+    if server_started() is True:
+        print('Server already started at host %s, port %d'%(host, port))
+    else:
+        cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
+        server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        print('Server starts at host %s, port %d' %(host, port))
 
     def signal_handler(signal, frame):
         shutdown()    
@@ -68,6 +72,9 @@ def start_server():
    
 
 def shutdown():
-    server_pid = subprocess.getoutput("netstat -anp | grep 5000 | awk '{printf $7}' | cut -d/ -f1")
-    subprocess.run("kill -9 " + str(server_pid), shell=True)
-    return 'Server shutting down...'
+    if server_started() is True:
+        server_pid = subprocess.getoutput("netstat -anp | grep 5000 | awk '{printf $7}' | cut -d/ -f1")
+        subprocess.run("kill -9 " + str(server_pid), shell=True)
+        return 'Server shutting down...'
+    else:
+        return 'No server detected'
