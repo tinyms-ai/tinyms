@@ -14,8 +14,19 @@
 # ============================================================================
 """SSD300 network based on MobileNetV2 backbone."""
 import tinyms as ts
-from .. import layers, primitives as P
-from .mobilenetv2 import InvertedResidual, ConvBNReLU, _make_divisible
+from .. import layers, primitives as P, Tensor
+from ..vision.utils import ssd_default_boxes
+
+
+def _make_divisible(v, divisor, min_value=None):
+    """ensures that all layers have a channel number that is divisible by 8."""
+    if min_value is None:
+        min_value = divisor
+    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
+    # Make sure that round down does not go down by more than 10%.
+    if new_v < 0.9 * v:
+        new_v += divisor
+    return new_v
 
 
 def _conv2d(in_channel, out_channel, kernel_size=3, stride=1, pad_mod='same'):
@@ -35,6 +46,72 @@ def _last_conv2d(in_channel, out_channel, kernel_size=3, stride=1, pad_mod='same
                                    padding=pad, group=in_channels)
     conv = _conv2d(in_channel, out_channel, kernel_size=1)
     return layers.SequentialLayer([depthwise_conv, _bn(in_channel), layers.ReLU6(), conv])
+
+
+class ConvBNReLU(layers.Layer):
+    """
+    Convolution/Depthwise fused with Batchnorm and ReLU block definition.
+
+    Args:
+        in_channels (int): Input channel.
+        out_channels (int): Output channel.
+        kernel_size (int): Input kernel size. Default: 3.
+        stride (int): Stride size for the first convolutional layer. Default: 1.
+        groups (int): channel group. Convolution is 1 while Depthwise is input channel. Default: 1.
+
+    Returns:
+        Tensor, output tensor.
+
+    Examples:
+        >>> ConvBNReLU(16, 256, kernel_size=1, stride=1, groups=1)
+    """
+
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, groups=1):
+        super(ConvBNReLU, self).__init__()
+        padding = 0
+        if groups == 1:
+            conv = layers.Conv2d(in_channels, out_channels, kernel_size, stride,
+                                 pad_mode='same', padding=padding)
+        else:
+            conv = layers.Conv2d(in_channels, in_channels, kernel_size, stride,
+                                 pad_mode='same', padding=padding, group=in_channels)
+        self.features = layers.SequentialLayer([conv,
+                                                _bn(out_channels),
+                                                layers.ReLU6()])
+
+    def construct(self, x):
+        output = self.features(x)
+        return output
+
+
+class InvertedResidual(layers.Layer):
+    def __init__(self, inp, oup, stride, expand_ratio, use_relu=False):
+        super(InvertedResidual, self).__init__()
+        assert stride in [1, 2]
+
+        hidden_dim = int(round(inp * expand_ratio))
+        self.use_res_connect = stride == 1 and inp == oup
+
+        residual_layers = []
+        if expand_ratio != 1:
+            residual_layers.append(ConvBNReLU(inp, hidden_dim, kernel_size=1))
+        residual_layers.extend([
+            ConvBNReLU(hidden_dim, hidden_dim, stride=stride, groups=hidden_dim),
+            layers.Conv2d(hidden_dim, oup, kernel_size=1, stride=1, has_bias=False),
+            _bn(oup),
+        ])
+        self.conv = layers.SequentialLayer(residual_layers)
+        self.use_relu = use_relu
+        self.relu = layers.ReLU6()
+
+    def construct(self, x):
+        identity = x
+        x = self.conv(x)
+        if self.use_res_connect:
+            return P.tensor_add(identity, x)
+        if self.use_relu:
+            x = self.relu(x)
+        return x
 
 
 class FlattenConcat(layers.Layer):
@@ -210,3 +287,45 @@ class SSD300(layers.Layer):
 
 def ssd300_mobilenetv2(class_num=21, is_training=True):
     return SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=is_training)
+
+
+class SSDInferWithDecoder(layers.Layer):
+    """
+    SSD300 infer wrapper to decode the bbox locations.
+
+    Args:
+        network (Layer): the origin ssd300 infer network without bbox decoder.
+        default_boxes (Tensor): the default_boxes from anchor generator
+
+    Returns:
+        Tensor, the locations for bbox after decoder representing (y0, x0, y1, x1)
+        Tensor, the prediction labels.
+    """
+
+    def __init__(self, network):
+        super(SSDInferWithDecoder, self).__init__()
+        self.network = network
+        self.default_boxes = Tensor(ssd_default_boxes, dtype=ts.float32)
+        prior_scaling_tensor = Tensor((0.1, 0.2), dtype=ts.float32)
+        self.prior_scaling_xy = prior_scaling_tensor[0]
+        self.prior_scaling_wh = prior_scaling_tensor[1]
+
+    def construct(self, x):
+        pred_loc, pred_label = self.network(x)
+
+        default_bbox_xy = self.default_boxes[..., :2]
+        default_bbox_wh = self.default_boxes[..., 2:]
+        pred_xy = pred_loc[..., :2] * self.prior_scaling_xy * default_bbox_wh + default_bbox_xy
+        pred_wh = P.Exp()(pred_loc[..., 2:] * self.prior_scaling_wh) * default_bbox_wh
+
+        pred_xy_0 = pred_xy - pred_wh / 2.0
+        pred_xy_1 = pred_xy + pred_wh / 2.0
+        pred_xy = P.Concat(-1)((pred_xy_0, pred_xy_1))
+        pred_xy = P.Maximum()(pred_xy, 0)
+        pred_xy = P.Minimum()(pred_xy, 1)
+        return pred_xy, pred_label
+
+
+def ssd300_infer(class_num=21):
+    net = SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=False)
+    return SSDInferWithDecoder(net)

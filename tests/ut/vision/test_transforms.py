@@ -77,3 +77,7 @@ def test_voc_transform():
     img = np.ones((1080, 1080, 3))
     img = voc_transform(img)
     print(img)
+
+
+def test_voc_transform_postprocess():
+    pass

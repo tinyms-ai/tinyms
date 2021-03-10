@@ -18,8 +18,6 @@ import json
 import math
 import itertools as it
 import numpy as np
-import tinyms as ts
-from tinyms import primitives as P, Tensor
 from easydict import EasyDict as ed
 
 ssd300_config = ed({
@@ -27,7 +25,7 @@ ssd300_config = ed({
     "num_ssd_boxes": 1917,
     "match_threshold": 0.5,
     "nms_threshold": 0.6,
-    "min_score": 0.1,
+    "min_score": 0.3,
     "max_boxes": 100,
 
     # learing rate settings
@@ -98,8 +96,6 @@ class GenerateDefaultBoxes():
 
 ssd_default_boxes_tlbr = GenerateDefaultBoxes().default_boxes_tlbr
 ssd_default_boxes = GenerateDefaultBoxes().default_boxes
-ssd_default_boxes_tensor = Tensor(ssd_default_boxes, dtype=ts.float32)
-prior_scaling_tensor = Tensor(ssd300_config.prior_scaling, dtype=ts.float32)
 
 
 def ssd_bboxes_encode(boxes):
@@ -169,28 +165,38 @@ def ssd_bboxes_encode(boxes):
     return bboxes, t_label.astype(np.int32), num_match
 
 
-def ssd_bboxes_decode(boxes):
+def ssd_bboxes_filter(boxes, box_scores, image_shape):
     """
-    Decode predict boxes to [ymin, xmin, ymax, xmax].
+    Filter predict boxes with minimum score and nms threshold.
 
     Args:
     boxes: ground truth with shape [N, 4], for each row, it stores
         [ymin, xmin, ymax, xmax].
+    box_scores: class scores with shape [N, 21].
+    image_shape: the shape of original image with the format [h, w].
     """
-    default_bbox_xy = ssd_default_boxes_tensor[..., :2]
-    default_bbox_wh = ssd_default_boxes_tensor[..., 2:]
-    prior_scaling_xy = prior_scaling_tensor[0]
-    prior_scaling_wh = prior_scaling_tensor[1]
-    pred_xy = boxes[..., :2] * prior_scaling_xy * default_bbox_wh + default_bbox_xy
-    pred_wh = P.Exp()(boxes[..., 2:] * prior_scaling_wh) * default_bbox_wh
+    final_boxes = []
+    final_label = []
+    final_score = []
+    h, w = image_shape
+    # Ignore background(0) label class
+    for c in range(1, box_scores.shape[1]):
+        class_box_scores = box_scores[:, c]
+        score_mask = class_box_scores > ssd300_config.min_score
+        class_box_scores = class_box_scores[score_mask]
+        class_boxes = boxes[score_mask] * [h, w, h, w]
 
-    pred_xy_0 = pred_xy - pred_wh / 2.0
-    pred_xy_1 = pred_xy + pred_wh / 2.0
-    pred_xy = P.Concat(-1)((pred_xy_0, pred_xy_1))
-    pred_xy = P.Maximum()(pred_xy, 0)
-    pred_xy = P.Minimum()(pred_xy, 1)
+        if score_mask.any():
+            nms_index = apply_nms(class_boxes, class_box_scores,
+                                  ssd300_config.nms_threshold)
+            class_boxes = class_boxes[nms_index]
+            class_box_scores = class_box_scores[nms_index]
 
-    return pred_xy
+            final_boxes += class_boxes.tolist()
+            final_score += class_box_scores.tolist()
+            final_label += [c+1] * len(class_box_scores)
+
+    return final_boxes, final_score, final_label
 
 
 def jaccard_numpy(box_a, box_b):
@@ -241,53 +247,22 @@ def apply_nms(all_boxes, all_scores, thres=0.6, max_boxes=100):
     return keep
 
 
-def coco_eval(pred_data, anno_file, val_cls):
+def coco_eval(pred_data, anno_file):
     """Calculate mAP of predicted bboxes."""
     from pycocotools.coco import COCO
     from pycocotools.cocoeval import COCOeval
 
-    # Classes need to train or test.
-    num_classes = len(val_cls)
-    val_cls_dict = {}
-    for i, cls in enumerate(val_cls):
-        val_cls_dict[i] = cls
-    coco_gt = COCO(anno_file)
-    class_dict = {}
-    cat_ids = coco_gt.loadCats(coco_gt.getCatIds())
-    for cat in cat_ids:
-        class_dict[cat["name"]] = cat["id"]
-
     predictions = []
     img_ids = []
-
     for sample in pred_data:
         pred_boxes = sample['boxes']
         box_scores = sample['box_scores']
         img_id = sample['img_id']
-        _, h, w = sample['image_shape']
-
-        final_boxes = []
-        final_label = []
-        final_score = []
         img_ids.append(img_id)
 
-        for c in range(1, num_classes):
-            class_box_scores = box_scores[:, c]
-            score_mask = class_box_scores > ssd300_config.min_score
-            class_box_scores = class_box_scores[score_mask]
-            class_boxes = pred_boxes[score_mask] * [h, w, h, w]
+        final_pred = ssd_bboxes_filter(pred_boxes, box_scores, sample['image_shape'])
 
-            if score_mask.any():
-                nms_index = apply_nms(class_boxes, class_box_scores,
-                                      ssd300_config.nms_threshold)
-                class_boxes = class_boxes[nms_index]
-                class_box_scores = class_box_scores[nms_index]
-
-                final_boxes += class_boxes.tolist()
-                final_score += class_box_scores.tolist()
-                final_label += [class_dict[val_cls_dict[c]]] * len(class_box_scores)
-
-        for loc, label, score in zip(final_boxes, final_label, final_score):
+        for loc, score, label in zip(final_pred[0], final_pred[1], final_pred[2]):
             res = {}
             res['image_id'] = img_id
             res['bbox'] = [loc[1], loc[0], loc[3] - loc[1], loc[2] - loc[0]]
@@ -297,6 +272,7 @@ def coco_eval(pred_data, anno_file, val_cls):
     with open('predictions.json', 'w') as f:
         json.dump(predictions, f)
 
+    coco_gt = COCO(anno_file)
     coco_dt = coco_gt.loadRes('predictions.json')
     E = COCOeval(coco_gt, coco_dt, iouType='bbox')
     E.params.imgIds = img_ids

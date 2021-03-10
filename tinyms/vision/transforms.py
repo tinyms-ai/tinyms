@@ -16,12 +16,11 @@
 import numpy as np
 import tinyms as ts
 from PIL import Image
-from tinyms import Tensor
 from tinyms.primitives import Softmax
 
 from . import _transform_ops
 from ._transform_ops import *
-from .utils import ssd_bboxes_encode, jaccard_numpy
+from .utils import ssd_bboxes_encode, ssd_bboxes_filter, jaccard_numpy
 from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset, VOCDataset
 
 __all__ = [
@@ -61,12 +60,12 @@ class DatasetTransform():
             raise TypeError("Input should be 2-D Numpy, got {}.".format(input.ndim))
         if strategy not in self.transform_strategy:
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
-        
+
         softmax = Softmax()
         score_list = softmax(ts.array(input)).asnumpy()
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
-            return ('TOP1: '+ str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))
+            return ('TOP1: ' + str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))
         else:
             label_index = np.argsort(input[0])[::-1]
             score_index = np.sort(score_list[0])[::-1]
@@ -74,8 +73,9 @@ class DatasetTransform():
             res = ''
             top5_scores = score_index[:5].tolist()
             for i in range(5):
-                top5_labels.append(self.labels[label_index[i]])  
-                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + ", score: " + str(format(top5_scores[i], '.20f')) + '\n'
+                top5_labels.append(self.labels[label_index[i]])
+                res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + \
+                    ", score: " + str(format(top5_scores[i], '.20f')) + '\n'
             return res
 
 
@@ -296,14 +296,16 @@ class VOCTransform(DatasetTransform):
 
         # Only perform resize operation of data evaluation step
         if not is_training:
-            return self.resize(image), labels
+            img_h, img_w, _ = image.shape
+            image = self.resize(image)
+            return image, np.array((img_h, img_w), dtype=np.float32), labels
         # Merge [x, y, w, h] and cls to [x, y, w, h, cls]
         boxes = np.hstack((boxes, labels)).astype(np.float32)
         # Change [x, y, w, h, cls] to [ymin, xmin, ymax, xmax, cls]
         boxes_yxyx = np.zeros(boxes.shape, dtype=np.float32)
         boxes_yxyx[:, 4] = boxes[:, 4]
-        boxes_yxyx[:, [0, 1]] = boxes[:, [1, 0]]
-        boxes_yxyx[:, [2, 3]] = boxes[:, [0, 1]] + boxes[:, [2, 3]]
+        boxes_yxyx[:, [1, 0]] = boxes[:, [0, 1]]
+        boxes_yxyx[:, [3, 2]] = boxes[:, [0, 1]] + boxes[:, [2, 3]]
         # Random crop image and bbox
         image, boxes_yxyx = _random_sample_crop(image, boxes_yxyx)
         # Resize image and bbox
@@ -321,8 +323,8 @@ class VOCTransform(DatasetTransform):
             image = np.expand_dims(image, axis=-1)
             image = np.concatenate([image, image, image], axis=-1)
 
-        boxes_yxyx, label, _ = ssd_bboxes_encode(boxes_yxyx)
-        return image, boxes_yxyx, label
+        boxes_yxyx, label, num_match = ssd_bboxes_encode(boxes_yxyx)
+        return image, boxes_yxyx, label, num_match
 
     def __call__(self, img):
         """
@@ -349,10 +351,10 @@ class VOCTransform(DatasetTransform):
 
         compose_map_func = (lambda image, boxes, labels: self._preprocess_fn(image, boxes, labels, is_training))
         if is_training:
-            output_columns = ['image', 'bbox', 'label']
+            output_columns = ["image", "bbox", "label", "num_match"]
             trans_func = [self.random_color_adjust, self.normalize, hwc2chw]
         else:
-            output_columns = ["image", "label"]
+            output_columns = ["image", "image_shape", "label"]
             trans_func = [self.normalize, hwc2chw]
         # apply transform functions on voc dataset
         voc_ds = voc_ds.map(operations=compose_map_func,
@@ -360,14 +362,29 @@ class VOCTransform(DatasetTransform):
                             output_columns=output_columns,
                             column_order=output_columns,
                             num_parallel_workers=num_parallel_workers)
-        if is_training:
-            voc_ds = voc_ds.filter(predicate=lambda label: len(np.nonzero(label)[0]) != 0,
-                                   input_columns=['label'],
-                                   num_parallel_workers=num_parallel_workers)
         voc_ds = super().apply_ds(voc_ds, trans_func=trans_func, repeat_size=repeat_size,
-                                  batch_size=1, num_parallel_workers=num_parallel_workers)
+                                  batch_size=batch_size, num_parallel_workers=num_parallel_workers)
 
         return voc_ds
+
+    def postprocess(self, input, image_shape, strategy='TOP1_CLASS'):
+        if not isinstance(input, np.ndarray):
+            raise TypeError("Input should be NumPy, got {}.".format(type(input)))
+        if not input.ndim == 3:
+            raise TypeError("Input should be 3-D Numpy, got {}.".format(input.ndim))
+        if not strategy == 'TOP1_CLASS':
+            raise ValueError("Currently VOC transform only supports 'TOP1_CLASS' strategy!")
+
+        pred_res = []
+        pred_loc, pred_cls, pred_label = ssd_bboxes_filter(input[0, :, :4], input[0, :, 4:], image_shape)
+        for loc, score, label in zip(pred_loc, pred_cls, pred_label):
+            pred_res.append({
+                'bbox': [loc[1], loc[0], loc[3] - loc[1], loc[2] - loc[0]],
+                'score': score,
+                'category_id': self.labels[label],
+            })
+
+        return pred_res
 
 
 mnist_transform = MnistTransform()
