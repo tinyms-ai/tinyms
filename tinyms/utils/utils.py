@@ -95,3 +95,4 @@ def gan_load_ckpt(args, G_A, G_B, D_A=None, D_B=None):
     if D_B is not None and args.D_B_ckpt is not None:
         param_DB = load_checkpoint(args.D_B_ckpt)
         load_param_into_net(D_B, param_DB)
+

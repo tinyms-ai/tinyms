@@ -18,7 +18,7 @@ The sample can be run on CPU, GPU and Ascend 910 AI processor.
 import os
 import argparse
 
-from tinyms import context
+from tinyms import context, Tensor
 from tinyms.data import GeneratorDataset, UnalignedDataset, GanImageFolderDataset, DistributedSampler
 from tinyms.vision import cyclegan_transform
 from tinyms.model.cycle_gan.cycle_gan import get_generator_discriminator, cycle_gan, TrainOneStepG, TrainOneStepD
@@ -27,6 +27,7 @@ from tinyms.losses import DiscriminatorLoss, GeneratorLoss
 from tinyms.optimizers import Adam
 from tinyms.utils.train.lr_generator import cyclegan_lr
 from tinyms.utils.gan_reporter import GanReporter
+from tinyms.data.utils import save_image
 
 
 def create_dataset(dataset_path, batch_size=1, repeat_size=1, max_dataset_size=None,
@@ -58,77 +59,11 @@ def create_dataset(dataset_path, batch_size=1, repeat_size=1, max_dataset_size=N
                                                    num_parallel_workers=num_parallel_workers,
                                                    shuffle=shuffle,
                                                    phase=phase)
-    data_size = len(ds)
-    return gan_generator_ds, data_size
+    dataset_size = len(ds)
+    return gan_generator_ds, dataset_size
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='MindSpore Cycle GAN Example')
-    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
-                        help='device where the code will be implemented (default: CPU)')
-    parser.add_argument('--dataset_path', type=str, default=None, help='cityscape dataset path.')
-    parser.add_argument('--phase', type=str, default="train", help='train, eval or predict.')
-    parser.add_argument('--model', type=str, default="resnet", choices=("resnet", "unet"),
-                        help='generator model, should be in [resnet, unet].')
-    parser.add_argument('--max_epoch_size', type=int, default=200, help='epoch size for training, default is 200.')
-    parser.add_argument('--epoch_size', type=int, default=1, help='Epoch size.')
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size.')
-    parser.add_argument('--checkpoint_path', type=str, default=None, help='CheckPoint file path.')
-    parser.add_argument("--save_checkpoint_epochs", type=int, default=1, help="Save checkpoint epochs, default is 10.")
-    parser.add_argument("--G_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_A.")
-    parser.add_argument("--G_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_B.")
-    parser.add_argument("--D_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_A.")
-    parser.add_argument("--D_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_B.")
-    parser.add_argument('--outputs_dir', type=str, default='./outputs',
-                        help='models are saved here, default is ./outputs.')
-    parser.add_argument('--save_imgs', type=bool, default=True,
-                        help='whether save imgs when epoch end, default is True.')
-    args_opt = parser.parse_args()
-
-    context.set_context(mode=context.PYNATIVE_MODE, device_target=args_opt.device_target)
-
-    dataset_path = args_opt.dataset_path
-    batch_size = args_opt.batch_size
-    phase = args_opt.phase
-    model = args_opt.model
-    max_epoch_size = args_opt.max_epoch_size
-    epoch_size = args_opt.epoch_size
-
-    if phase != "train" and (args_opt.G_A_ckpt is None or args_opt.G_B_ckpt is None):
-        raise ValueError('Must set G_A_ckpt and G_B_ckpt in predict phase!')
-
-    if dataset_path is None and (phase in ["train", "predict"]):
-        raise ValueError('Must set dataset_path!')
-
-    max_dataset_size = float("inf")
-
-    dataset, dataset_size = create_dataset(dataset_path, batch_size=batch_size, repeat_size=1,
-                                           max_dataset_size=max_dataset_size, shuffle=True,
-                                           num_parallel_workers=1,
-                                           phase=phase,
-                                           data_dir=None)
-    G_A, G_B, D_A, D_B = get_generator_discriminator(model)
-
-    gan_load_ckpt(args_opt, G_A, G_B, D_A, D_B)
-    generator_net = cycle_gan(G_A, G_B)
-
-    loss_D = DiscriminatorLoss(D_A, D_B)
-    loss_G = GeneratorLoss(generator_net, D_A, D_B)
-    lr = cyclegan_lr(max_epoch_size, epoch_size, dataset_size)
-
-    optimizer_G = Adam(generator_net.trainable_params(),
-                       cyclegan_lr(max_epoch_size, epoch_size, dataset_size), beta1=0.5)
-    optimizer_D = Adam(loss_D.trainable_params(),
-                       cyclegan_lr(max_epoch_size, epoch_size, dataset_size), beta1=0.5)
-
-    net_G = TrainOneStepG(loss_G, generator_net, optimizer_G)
-    net_D = TrainOneStepD(loss_D, optimizer_D)
-
-    imgae_pool_A = ImagePool(pool_size=50)
-    imgae_pool_B = ImagePool(pool_size=50)
-
-    data_loader = dataset.create_dict_iterator()
-    reporter = GanReporter(args_opt, dataset_size)
+def train_process(reporter, data_loader, net_G, net_D, imgae_pool_A, imgae_pool_B):
     reporter.info('==========start training===============')
     for _ in range(max_epoch_size):
         reporter.epoch_start()
@@ -144,3 +79,125 @@ if __name__ == "__main__":
         reporter.epoch_end(net_G)
 
     reporter.info('==========end training===============')
+
+
+def predict_process(reporter, data_loader, G_generator, predict_name='A_to_B', fake_name='fake_B'):
+    reporter.start_predict('predict ', predict_name, " start.")
+    for data in data_loader:
+        img = Tensor(data["image"])
+        path = str(data["image_name"][0], encoding="utf-8")
+        fake = G_generator(img)
+        save_image(fake, os.path.join(imgs_out, fake_name, path))
+    reporter.info('save ', fake_name, ' at %s', os.path.join(imgs_out, fake_name, path))
+    reporter.end_predict('predict ', predict_name, " end.")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='MindSpore Cycle GAN Example')
+    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
+                        help='device where the code will be implemented (default: CPU)')
+    parser.add_argument('--dataset_path', type=str, default=None, help='cityscape dataset path.')
+    parser.add_argument('--phase', type=str, default="train", help='train, eval or predict.')
+    parser.add_argument('--model', type=str, default="resnet", choices=("resnet", "unet"),
+                        help='generator model, should be in [resnet, unet].')
+    parser.add_argument('--max_epoch_size', type=int, default=2, help='epoch size for training, default is 200.')
+    parser.add_argument('--epoch_size', type=int, default=1, help='Epoch size.')
+    parser.add_argument('--batch_size', type=int, default=1, help='Batch size.')
+    parser.add_argument('--checkpoint_path', type=str, default=None, help='CheckPoint file path.')
+    parser.add_argument("--save_checkpoint_epochs", type=int, default=1, help="Save checkpoint epochs, default is 10.")
+    parser.add_argument("--G_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_A.")
+    parser.add_argument("--G_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_B.")
+    parser.add_argument("--D_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_A.")
+    parser.add_argument("--D_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_B.")
+    parser.add_argument('--outputs_dir', type=str, default='./outputs',
+                        help='models are saved here, default is ./outputs.')
+    parser.add_argument('--save_imgs', type=bool, default=True,
+                        help='whether save imgs when epoch end, default is True.')
+    args_opt = parser.parse_args()
+
+    context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
+
+    dataset_path = args_opt.dataset_path
+    phase = args_opt.phase
+
+    if phase != "train" and (args_opt.G_A_ckpt is None or args_opt.G_B_ckpt is None):
+        raise ValueError('Must set G_A_ckpt and G_B_ckpt in predict phase!')
+
+    if dataset_path is None and (phase in ["train", "predict"]):
+        raise ValueError('Must set dataset_path!')
+
+    model = args_opt.model
+
+    batch_size = args_opt.batch_size
+    max_epoch_size = args_opt.max_epoch_size
+    epoch_size = args_opt.epoch_size
+    max_dataset_size = float("inf")
+
+    if phase == "train":
+        # create dataset
+        dataset, args_opt.dataset_size = create_dataset(dataset_path, batch_size=batch_size, repeat_size=1,
+                                                        max_dataset_size=max_dataset_size, shuffle=True,
+                                                        num_parallel_workers=1,
+                                                        phase=phase, data_dir=None)
+        # build cycle gan generator
+        G_A, G_B, D_A, D_B = get_generator_discriminator(model)
+        gan_load_ckpt(args_opt, G_A, G_B, D_A, D_B)
+        generator_net = cycle_gan(G_A, G_B)
+
+        # define loss function and optimizer
+        loss_D = DiscriminatorLoss(D_A, D_B)
+        loss_G = GeneratorLoss(generator_net, D_A, D_B)
+        lr = cyclegan_lr(max_epoch_size, epoch_size, args_opt.dataset_size)
+
+        optimizer_G = Adam(generator_net.trainable_params(),
+                           cyclegan_lr(max_epoch_size, epoch_size, args_opt.dataset_size), beta1=0.5)
+        optimizer_D = Adam(loss_D.trainable_params(),
+                           cyclegan_lr(max_epoch_size, epoch_size, args_opt.dataset_size), beta1=0.5)
+
+        # build two net: generator net and descrinator net
+        net_G = TrainOneStepG(loss_G, generator_net, optimizer_G)
+        net_D = TrainOneStepD(loss_D, optimizer_D)
+
+        # train process
+        imgae_pool_A = ImagePool(pool_size=50)
+        imgae_pool_B = ImagePool(pool_size=50)
+
+        data_loader = dataset.create_dict_iterator()
+        reporter = GanReporter(args_opt)
+        train_process(reporter, data_loader, net_G, net_D, imgae_pool_A, imgae_pool_B)
+
+    elif phase == 'predict':
+        # build cycle gan generator
+        G_A, G_B, _, _ = get_generator_discriminator(model)
+        G_A.set_train(True)
+        G_B.set_train(True)
+        gan_load_ckpt(args_opt, G_A, G_B)
+
+        imgs_out = os.path.join(args_opt.outputs_dir, "predict")
+        if not os.path.exists(imgs_out):
+            os.makedirs(imgs_out)
+        if not os.path.exists(os.path.join(imgs_out, "fake_A")):
+            os.makedirs(os.path.join(imgs_out, "fake_A"))
+        if not os.path.exists(os.path.join(imgs_out, "fake_B")):
+            os.makedirs(os.path.join(imgs_out, "fake_B"))
+
+        # create test dataset A
+        dataset, args_opt.dataset_size = create_dataset(dataset_path, batch_size=batch_size, repeat_size=1,
+                                                        max_dataset_size=max_dataset_size, shuffle=True,
+                                                        num_parallel_workers=1, phase=phase,
+                                                        data_dir='testA')
+        # predict first time, G_A to testA dataset, then generate fake image into fake_B dir
+        data_loader = dataset.create_dict_iterator(output_numpy=True)
+        reporter = GanReporter(args_opt)
+        predict_process(reporter, data_loader, G_generator=G_A, predict_name='A_to_B', fake_name='fake_B')
+
+        # create test dataset B
+        dataset, args_opt.dataset_size = create_dataset(dataset_path, batch_size=batch_size, repeat_size=1,
+                                                        max_dataset_size=max_dataset_size, shuffle=True,
+                                                        num_parallel_workers=1, phase=phase,
+                                                        data_dir='testB')
+
+        # predict second time, G_B to testB dataset, then generate fake image into fake_A dir
+        data_loader = dataset.create_dict_iterator(output_numpy=True)
+        predict_process(reporter, data_loader, G_generator=G_B, predict_name='B_to_A', fake_name='fake_A')
+

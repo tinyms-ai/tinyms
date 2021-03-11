@@ -152,24 +152,24 @@ class TrainOneStepG(layers.Layer):
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
-    def __init__(self, loss_G, generator, optimizer, sens=1.0):
+    def __init__(self, G, generator, optimizer, sens=1.0):
         super(TrainOneStepG, self).__init__(auto_prefix=False)
         self.optimizer = optimizer
-        self.loss_G = loss_G
-        self.loss_G.set_grad()
-        self.loss_G.set_train()
-        self.loss_G.D_A.set_grad(False)
-        self.loss_G.D_A.set_train(False)
-        self.loss_G.D_B.set_grad(False)
-        self.loss_G.D_B.set_train(False)
+        self.G = G
+        self.G.set_grad()
+        self.G.set_train()
+        self.G.D_A.set_grad(False)
+        self.G.D_A.set_train(False)
+        self.G.D_B.set_grad(False)
+        self.G.D_B.set_train(False)
         self.grad = GradOperation(get_by_list=True, sens_param=True)
         self.sens = sens
         self.weights = ts.ParameterTuple(generator.trainable_params())
-        self.net = WithLossCell(loss_G)
+        self.net = WithLossCell(G)
 
     def construct(self, img_A, img_B):
         weights = self.weights
-        fake_A, fake_B, lg, lga, lgb, lca, lcb, lia, lib = self.loss_G(img_A, img_B)
+        fake_A, fake_B, lg, lga, lgb, lca, lcb, lia, lib = self.G(img_A, img_B)
         sens = Fill()(DType()(lg), Shape()(lg), self.sens)
         grads_g = self.grad(self.net, weights)(img_A, img_B, sens)
         return fake_A, fake_B, depend(lg, self.optimizer(grads_g)), lga, lgb, lca, lcb, lia, lib

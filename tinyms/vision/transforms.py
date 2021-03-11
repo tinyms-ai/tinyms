@@ -16,7 +16,6 @@
 import numpy as np
 import tinyms as ts
 from PIL import Image
-from tinyms import Tensor
 from tinyms.primitives import Softmax
 
 from . import _transform_ops
@@ -235,23 +234,23 @@ class CycleGanDatasetTransform():
         self.random_resized_crop = RandomResizedCrop(256, scale=(0.5, 1.0), ratio=(0.75, 1.333))
         self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
         self.resize = Resize((256, 256)),
-        self.normalize = Normalize([0.5 * 255] * 3, [0.5 * 255] * 3)
-        self.hwc2chw = HWC2CHW()
+        self.normalize = Normalize(mean=[0.5 * 255] * 3, std=[0.5 * 255] * 3)
 
     def __call__(self, img):
         """
         Call method.
 
         Args:
-            img (NumPy or PIL image): Image to be transformed in Cifar10-style.
+            img (NumPy or PIL image): Image to be transformed in city_scape.
 
         Returns:
             img (NumPy), Transformed image.
         """
         if not isinstance(img, (np.ndarray, Image.Image)):
             raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(img)))
+        img = self.random_resized_crop(img)
+        img = self.random_horizontal_flip(img)
         img = self.resize(img)
-        img = self.rescale(img)
         img = self.normalize(img)
         img = hwc2chw(img)
 
@@ -265,11 +264,11 @@ class CycleGanDatasetTransform():
         trans_func = []
         if phase == 'train':
             if shuffle:
-                trans_func += [self.random_resized_crop, self.random_horizontal_flip, self.normalize, self.hwc2chw]
+                trans_func += [self.random_resized_crop, self.random_horizontal_flip, self.normalize, hwc2chw]
             else:
-                trans_func += [self.resize, self.normalize, self.hwc2chw]
+                trans_func += [self.resize, self.normalize, hwc2chw]
 
-        # apply transform functions on gan_generator_ds dataset
+            # apply transform functions on gan_generator_ds dataset
             gan_generator_ds = gan_generator_ds.map(operations=trans_func,
                                                     input_columns=["image_A"],
                                                     num_parallel_workers=num_parallel_workers)
@@ -277,7 +276,10 @@ class CycleGanDatasetTransform():
                                                     input_columns=["image_B"],
                                                     num_parallel_workers=num_parallel_workers)
         else:
-            trans_func += [self.resize, self.normalize, self.hwc2chw]
+            trans_func += [self.resize, self.normalize, hwc2chw]
+            print('trans_func[0]:', type(trans_func[0]))
+            print('trans_func[1]:', type(trans_func[1]))
+            print('trans_func[2]:', type(trans_func[2]))
             gan_generator_ds = gan_generator_ds.map(operations=trans_func,
                                                     input_columns=["image"],
                                                     num_parallel_workers=num_parallel_workers)

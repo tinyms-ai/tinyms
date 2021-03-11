@@ -29,7 +29,7 @@ class GanReporter(logging.Logger):
     Args:
         args (class): Option class.
     """
-    def __init__(self, args, dataset_size):
+    def __init__(self, args):
         super(GanReporter, self).__init__("cyclegan")
         self.log_dir = os.path.join(args.outputs_dir, 'log')
         self.imgs_dir = os.path.join(args.outputs_dir, 'imgs')
@@ -59,7 +59,7 @@ class GanReporter(logging.Logger):
         self.save_args(args)
         self.step = 0
         self.epoch = 0
-        self.dataset_size = dataset_size
+        self.dataset_size = args.dataset_size
         self.print_iter = 100
         self.G_loss = []
         self.D_loss = []
