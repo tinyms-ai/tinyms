@@ -16,6 +16,7 @@ import os
 import json
 import sys
 import requests
+import socket
 import numpy as np
 from PIL import Image
 from tinyms.vision import mnist_transform, cifar10_transform, \
@@ -28,20 +29,30 @@ transform_checker = {
     'voc': voc_transform,
 }
 
+def server_started(host='127.0.0.1', port=5000):
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    try:
+        s.connect((host, port))
+        s.shutdown(2)
+        return True
+    except:
+        return False
 
+    
 def list_servables():
     headers = {'Content-Type': 'application/json'}
     url = "http://127.0.0.1:5000/servables"
-    res = requests.get(url=url, headers=headers)
-    res_body = res.json()
-    if res.status_code != requests.codes.ok:
-        print("Request error! Status code: ", res.status_code)
-        sys.exit(0)
-    elif res_body['status'] != 0:
-        print(res_body['err_msg'])
-        sys.exit(0)
+    if server_started() is True:
+        res = requests.get(url=url, headers=headers)
+        res_body = res.json()
+        if res.status_code != requests.codes.ok:
+            print("Request error! Status code: ", res.status_code)
+        elif res_body['status'] != 0:
+            print(res_body['err_msg'])
+        else:
+            return res_body['servables']
     else:
-        return res_body['servables']
+        return 'Server not started'
 
 
 def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"):
@@ -57,7 +68,7 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
         print("Currently strategy only supports `TOP1_CLASS` and `TOP5_CLASS`!")
         sys.exit(0)
 
-    # Perform the tranform operation for the input image
+    # Perform the transform operation for the input image
     img = Image.open(img_path)
     img_data = trans_func(img)
     # Construct the request payload

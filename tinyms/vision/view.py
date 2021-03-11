@@ -65,9 +65,11 @@ class ImageViewer():
             ymin = sample['bbox'][1]
             width = sample['bbox'][2]
             height = sample['bbox'][3]
-            cls = sample['category_id']
-            color = colors.index(cls)
-            label = '{}: {:.2f}'.format(cls, sample['score'])
+            category_id = sample['category_id']
+            cls = labels.index(category_id)
+            color = colors[cls]
+            
+            label = '{}: {:.2f}'.format(category_id, sample['score'])
             current_axis.add_patch(plt.Rectangle((xmin, ymin), width, height,
                                                  color=color, fill=False, linewidth=2))
             current_axis.text(xmin, ymin, label, size='x-large', color='white',
