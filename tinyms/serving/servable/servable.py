@@ -22,7 +22,7 @@ servable_path = '/etc/tinyms/serving/servable.json'
 model_checker = {
     "lenet5": model.lenet5,
     "resnet50": model.resnet50,
-    "mobilenetv2": model.mobilenetv2,
+    "mobilenetv2": model.mobilenetv2_infer,
     "ssd300": model.ssd300_infer,
 }
 

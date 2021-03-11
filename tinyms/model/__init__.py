@@ -19,14 +19,14 @@ from mindspore.train.serialization import load_checkpoint as _load_checkpoint, \
 
 from .lenet5 import lenet5, LeNet
 from .resnet50 import resnet50, ResNet
-from .mobilenetv2 import mobilenetv2, MobileNetV2
+from .mobilenetv2 import mobilenetv2, mobilenetv2_infer, MobileNetV2
 from .ssd300 import ssd300_mobilenetv2, ssd300_infer, SSD300
 
 __all__ = [
     'Model',
     'lenet5', 'LeNet',
     'resnet50', 'ResNet',
-    'mobilenetv2', 'MobileNetV2',
+    'mobilenetv2', 'mobilenetv2_infer', 'MobileNetV2',
     'ssd300_mobilenetv2', 'ssd300_infer', 'SSD300',
 ]
 

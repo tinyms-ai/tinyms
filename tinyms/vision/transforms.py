@@ -302,7 +302,7 @@ class VOCTransform(DatasetTransform):
         # Merge [x, y, w, h] and cls to [x, y, w, h, cls]
         boxes = np.hstack((boxes, labels)).astype(np.float32)
         # Change [x, y, w, h, cls] to [ymin, xmin, ymax, xmax, cls]
-        boxes_yxyx = np.zeros(boxes.shape, dtype=np.float32)
+        boxes_yxyx = np.zeros_like(boxes)
         boxes_yxyx[:, 4] = boxes[:, 4]
         boxes_yxyx[:, [1, 0]] = boxes[:, [0, 1]]
         boxes_yxyx[:, [3, 2]] = boxes[:, [0, 1]] + boxes[:, [2, 3]]

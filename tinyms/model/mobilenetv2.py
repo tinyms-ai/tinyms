@@ -152,16 +152,19 @@ class MobileNetV2Backbone(layers.Layer):
 
 
 class MobileNetV2Head(layers.Layer):
-    def __init__(self, input_channel=1280, class_num=1000):
+    def __init__(self, input_channel=1280, class_num=1000, use_activation=False):
         super(MobileNetV2Head, self).__init__()
         # mobilenet head
         self.head = layers.SequentialLayer(([GlobalAvgPooling(),
                                              layers.Dense(input_channel, class_num)]))
+        self.use_activation = use_activation
         self.activation = Softmax()
         self._initialize_weights()
 
     def construct(self, x):
-        x = self.activation(self.head(x))
+        x = self.head(x)
+        if self.use_activation:
+            x = self.activation(x)
         return x
 
     def _initialize_weights(self):
@@ -189,14 +192,14 @@ class MobileNetV2(layers.Layer):
     """
 
     def __init__(self, class_num=1000, width_mult=1.,
-                 round_nearest=8, input_channel=32, last_channel=1280):
+                 round_nearest=8, input_channel=32, last_channel=1280, is_training=True):
         super(MobileNetV2, self).__init__()
         self.backbone = MobileNetV2Backbone(width_mult=width_mult,
                                             round_nearest=round_nearest,
                                             input_channel=input_channel,
                                             last_channel=last_channel)
         self.head = MobileNetV2Head(input_channel=self.backbone.last_channel,
-                                    class_num=class_num)
+                                    class_num=class_num, use_activation=not is_training)
 
     def construct(self, x):
         x = self.backbone(x)
@@ -204,5 +207,9 @@ class MobileNetV2(layers.Layer):
         return x
 
 
-def mobilenetv2(class_num=1000):
-    return MobileNetV2(class_num=class_num)
+def mobilenetv2(class_num=1000, is_training=True):
+    return MobileNetV2(class_num=class_num, is_training=is_training)
+
+
+def mobilenetv2_infer(class_num=1000):
+    return MobileNetV2(class_num=class_num, is_training=False)
