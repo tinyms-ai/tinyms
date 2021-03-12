@@ -17,7 +17,7 @@ from mindspore.nn import loss
 from mindspore.nn.loss import *
 from mindspore.nn.loss.loss import _Loss
 import tinyms as ts
-from . import layers, primitives as P, Tensor, dtype
+from . import layers, primitives as P, Tensor
 from .model import SSD300
 
 
@@ -130,15 +130,15 @@ class CrossEntropyWithLabelSmooth(_Loss):
     def __init__(self, smooth_factor=0., num_classes=1000):
         super(CrossEntropyWithLabelSmooth, self).__init__()
         self.onehot = P.OneHot()
-        self.on_value = Tensor(1.0 - smooth_factor, dtype.float32)
+        self.on_value = Tensor(1.0 - smooth_factor, ts.float32)
         self.off_value = Tensor(1.0 * smooth_factor /
-                                (num_classes - 1), dtype.float32)
+                                (num_classes - 1), ts.float32)
         self.ce = SoftmaxCrossEntropyWithLogits()
         self.mean = P.ReduceMean(False)
         self.cast = P.Cast()
 
     def construct(self, logit, label):
-        one_hot_label = self.onehot(self.cast(label, dtype.int32), P.shape(logit)[1],
+        one_hot_label = self.onehot(self.cast(label, ts.int32), P.shape(logit)[1],
                                     self.on_value, self.off_value)
         out_loss = self.ce(logit, one_hot_label)
         out_loss = self.mean(out_loss, 0)

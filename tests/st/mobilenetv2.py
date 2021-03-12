@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
 """MobileNetV2 Tutorial
 The sample can be run on CPU, GPU and Ascend 910 AI processors
 """
-
-
 import argparse
 
 from tinyms import context
@@ -26,10 +23,29 @@ from tinyms.vision import cifar10_transform
 from tinyms.model import Model, mobilenetv2
 from tinyms.metrics import Accuracy
 from tinyms.optimizers import Momentum
-from tinyms.losses import SoftmaxCrossEntropyWithLogits, CrossEntropyWithLabelSmooth
+from tinyms.losses import CrossEntropyWithLabelSmooth
 from tinyms.utils.train.loss_manager import FixedLossScaleManager
 from tinyms.utils.train.lr_generator import mobilenetv2_lr
 from tinyms.utils.train.cb_config import mobilenetv2_cb
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='MobileNetV2 Image classification')
+    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
+                        help='device where the code will be implemented. (default: CPU)')
+    parser.add_argument('--dataset_path', type=str, default=None, help='Cifar10 dataset path.')
+    parser.add_argument('--num_classes', type=int, default=10, help='Num classes. (default: 10)')
+    parser.add_argument('--label_smooth', type=float, default=0.1, help='label smooth. (default: 0.1)')
+    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
+    parser.add_argument('--epoch_size', type=int, default=60, help='Epoch size. (default: 60)')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size. (default: 32)')
+    parser.add_argument('--is_saving_checkpoint', type=bool, default=True, help='Whether to save checkpoint.')
+    parser.add_argument('--save_checkpoint_epochs', type=int, default=10,
+                        help='Specify epochs interval to save each checkpoints. (default: 10)')
+    parser.add_argument('--checkpoint_path', type=str, default="", help='Checkpoint file path.')
+    args_opt = parser.parse_args()
+
+    return args_opt
 
 
 def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers=4,
@@ -54,20 +70,7 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='MobileNetV2 Image classification')
-    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
-                        help='device where the code will be implemented (default: CPU)')
-    parser.add_argument('--dataset_path', type=str, default=None, help='Cifar10 dataset path.')
-    parser.add_argument('--num_classes', type=int, default=10, help='Num classes.')
-    parser.add_argument('--label_smooth', type=float, default=0.1, help='label smooth')
-    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
-    parser.add_argument('--epoch_size', type=int, default=100, help='Epoch size.')
-    parser.add_argument('--batch_size', type=int, default=150, help='Batch size.')
-    parser.add_argument('--is_saving_checkpoint', type=bool, default=True, help='Whether to save checkpoint.')
-    parser.add_argument('--save_checkpoint_epochs', type=int, default=10,
-                        help='Specify epochs interval to save each checkpoints.')
-    parser.add_argument('--checkpoint_path', type=str, default="", help='Checkpoint file path.')
-    args_opt = parser.parse_args()
+    args_opt = parse_args()
 
     # Declare common variables and assign the args_opt value to them
     epoch_size = args_opt.epoch_size
@@ -81,40 +84,35 @@ if __name__ == '__main__':
     # download cifar10 dataset
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('cifar10')
-
-    # build the network
-    net = mobilenetv2(args_opt.num_classes)
-    model = Model(net)
-
     # create cifar10 dataset for training
     ds_train = create_dataset(cifar10_path, batch_size=batch_size)
-
-    # define the loss function
-    if args_opt.label_smooth > 0:
-        loss = CrossEntropyWithLabelSmooth(smooth_factor=args_opt.label_smooth,
-                                           num_classes=args_opt.num_classes)
-    else:
-        loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
-
-    # get learning rate
     step_size = ds_train.get_dataset_size()
-    lr = mobilenetv2_lr(global_step=0, lr_init=.0, lr_end=.0, lr_max=0.8, warmup_epochs=0,
+
+    # build the network
+    net = mobilenetv2(args_opt.num_classes, is_training=not args_opt.do_eval)
+    model = Model(net)
+    # define the loss function
+    loss = CrossEntropyWithLabelSmooth(smooth_factor=args_opt.label_smooth,
+                                       num_classes=args_opt.num_classes)
+    # get learning rate
+    lr_max = 0.001
+    lr_init_scale = 0.01
+    lr_end_scale = 0.01
+    lr = mobilenetv2_lr(global_step=0,
+                        lr_init=lr_max*lr_init_scale,
+                        lr_end=lr_max*lr_end_scale,
+                        lr_max=lr_max,
+                        warmup_epochs=2,
                         total_epochs=epoch_size,
                         steps_per_epoch=step_size)
-
     # define the optimizer
     loss_scale = FixedLossScaleManager(1024, drop_overflow_update=False)
-    opt = Momentum(filter(lambda x: x.requires_grad, net.get_parameters()), lr, 0.9, 4e-5, 1024)
-    model.compile(loss_fn=loss, optimizer=opt, metrics={"Accuracy": Accuracy()}, loss_scale_manager=loss_scale)
+    opt = Momentum(filter(lambda x: x.requires_grad, net.get_parameters()),
+                   lr, 0.9, 4e-5, 1024)
+    model.compile(loss_fn=loss, optimizer=opt, metrics={"Accuracy": Accuracy()},
+                  loss_scale_manager=loss_scale)
 
-    if args_opt.do_eval:  # as for evaluation, users could use model.eval
-        # create cifar10 dataset for eval
-        ds_eval = create_dataset(cifar10_path, batch_size=batch_size, is_training=False)
-        if args_opt.checkpoint_path:
-            model.load_checkpoint(args_opt.checkpoint_path)
-        acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
-        print("============== Accuracy:{} ==============".format(acc))
-    else:  # as for train, users could use model.train
+    if not args_opt.do_eval:  # as for train, users could use model.train
         # configure checkpoint to save weights and do training job
         save_checkpoint_epochs = args_opt.save_checkpoint_epochs
         ckpoint_cb = mobilenetv2_cb(device_target=args_opt.device_target,
@@ -123,3 +121,10 @@ if __name__ == '__main__':
                                     save_checkpoint_epochs=args_opt.save_checkpoint_epochs,
                                     step_size=step_size)
         model.train(epoch_size, ds_train, callbacks=ckpoint_cb, dataset_sink_mode=dataset_sink_mode)
+    else:  # as for evaluation, users could use model.eval
+        # create cifar10 dataset for eval
+        ds_eval = create_dataset(cifar10_path, batch_size=batch_size, is_training=False)
+        if args_opt.checkpoint_path:
+            model.load_checkpoint(args_opt.checkpoint_path)
+        acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
+        print("============== Accuracy:{} ==============".format(acc))
