@@ -25,7 +25,7 @@ ssd300_config = ed({
     "num_ssd_boxes": 1917,
     "match_threshold": 0.5,
     "nms_threshold": 0.6,
-    "min_score": 0.3,
+    "min_score": 0.4,
     "max_boxes": 100,
 
     # learing rate settings
