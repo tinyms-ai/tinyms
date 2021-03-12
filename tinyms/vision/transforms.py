@@ -233,7 +233,7 @@ class CycleGanDatasetTransform():
     def __init__(self):
         self.random_resized_crop = RandomResizedCrop(256, scale=(0.5, 1.0), ratio=(0.75, 1.333))
         self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
-        self.resize = Resize((256, 256)),
+        self.resize = Resize((256, 256))
         self.normalize = Normalize(mean=[0.5 * 255] * 3, std=[0.5 * 255] * 3)
 
     def __call__(self, img):
@@ -277,9 +277,6 @@ class CycleGanDatasetTransform():
                                                     num_parallel_workers=num_parallel_workers)
         else:
             trans_func += [self.resize, self.normalize, hwc2chw]
-            print('trans_func[0]:', type(trans_func[0]))
-            print('trans_func[1]:', type(trans_func[1]))
-            print('trans_func[2]:', type(trans_func[2]))
             gan_generator_ds = gan_generator_ds.map(operations=trans_func,
                                                     input_columns=["image"],
                                                     num_parallel_workers=num_parallel_workers)
