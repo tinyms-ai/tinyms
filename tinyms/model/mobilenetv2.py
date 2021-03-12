@@ -20,9 +20,6 @@ from tinyms import layers, Tensor
 from tinyms.primitives import tensor_add, Softmax, ReduceMean
 
 
-__all__ = ['MobileNetV2', 'mobilenetv2']
-
-
 def _make_divisible(v, divisor, min_value=None):
     if min_value is None:
         min_value = divisor
@@ -92,7 +89,7 @@ class InvertedResidual(layers.Layer):
             residual_layers.append(ConvBNReLU(inp, hidden_dim, kernel_size=1))
         residual_layers.extend([
             ConvBNReLU(hidden_dim, hidden_dim, stride=stride, groups=hidden_dim),
-            layers.Conv2d(hidden_dim, oup, kernel_size=1, stride=1),
+            layers.Conv2d(hidden_dim, oup, kernel_size=1, stride=1, has_bias=False),
             layers.BatchNorm2d(oup),
         ])
         self.conv = layers.SequentialLayer(residual_layers)
@@ -122,7 +119,7 @@ class MobileNetV2Backbone(layers.Layer):
 
         # building first layer
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
-        self.out_channels = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
+        self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
         backbone_layers = [ConvBNReLU(3, input_channel, stride=2)]
         # building inverted residual blocks
         for t, c, n, s in self.cfgs:
@@ -132,7 +129,7 @@ class MobileNetV2Backbone(layers.Layer):
                 backbone_layers.append(InvertedResidual(input_channel, output_channel, stride, expand_ratio=t))
                 input_channel = output_channel
         # building last several layers
-        backbone_layers.append(ConvBNReLU(input_channel, self.out_channels, kernel_size=1))
+        backbone_layers.append(ConvBNReLU(input_channel, self.last_channel, kernel_size=1))
         self.backbone = layers.SequentialLayer(backbone_layers)
         self._initialize_weights()
 
@@ -150,21 +147,24 @@ class MobileNetV2Backbone(layers.Layer):
                 if m.bias is not None:
                     m.bias.set_data(ts.zeros(m.bias.data.shape))
             elif isinstance(m, layers.BatchNorm2d):
-                m.gamma.set_data(ts.zeros(m.gamma.data.shape))
+                m.gamma.set_data(ts.ones(m.gamma.data.shape))
                 m.beta.set_data(ts.zeros(m.beta.data.shape))
 
 
 class MobileNetV2Head(layers.Layer):
-    def __init__(self, input_channel=1280, class_num=1000):
+    def __init__(self, input_channel=1280, class_num=1000, use_activation=False):
         super(MobileNetV2Head, self).__init__()
         # mobilenet head
         self.head = layers.SequentialLayer(([GlobalAvgPooling(),
                                              layers.Dense(input_channel, class_num)]))
+        self.use_activation = use_activation
         self.activation = Softmax()
         self._initialize_weights()
 
     def construct(self, x):
-        x = self.activation(self.head(x))
+        x = self.head(x)
+        if self.use_activation:
+            x = self.activation(x)
         return x
 
     def _initialize_weights(self):
@@ -183,8 +183,8 @@ class MobileNetV2(layers.Layer):
 
     Args:
         class_num (int): number of classes.
-        width_mult (int): Channels multiplier for round to 8/16 and others. Default is 1.
-        round_nearest (list): Channel round to. Default is 8.
+        width_mult (float): Channels multiplier for round to 8/16 and others. Default is 1.0.
+        round_nearest (int): Channel round to. Default is 8.
         input_channel (int): Input channel. Default is 32.
         last_channel (int): The channel of last layer. Default is 1280.
     Returns:
@@ -192,14 +192,14 @@ class MobileNetV2(layers.Layer):
     """
 
     def __init__(self, class_num=1000, width_mult=1.,
-                 round_nearest=8, input_channel=32, last_channel=1280):
+                 round_nearest=8, input_channel=32, last_channel=1280, is_training=True):
         super(MobileNetV2, self).__init__()
         self.backbone = MobileNetV2Backbone(width_mult=width_mult,
                                             round_nearest=round_nearest,
                                             input_channel=input_channel,
                                             last_channel=last_channel)
-        self.head = MobileNetV2Head(input_channel=self.backbone.out_channels,
-                                    class_num=class_num)
+        self.head = MobileNetV2Head(input_channel=self.backbone.last_channel,
+                                    class_num=class_num, use_activation=not is_training)
 
     def construct(self, x):
         x = self.backbone(x)
@@ -207,5 +207,9 @@ class MobileNetV2(layers.Layer):
         return x
 
 
-def mobilenetv2(class_num=1000):
-    return MobileNetV2(class_num=class_num)
+def mobilenetv2(class_num=1000, is_training=True):
+    return MobileNetV2(class_num=class_num, is_training=is_training)
+
+
+def mobilenetv2_infer(class_num=1000):
+    return MobileNetV2(class_num=class_num, is_training=False)

@@ -19,6 +19,15 @@ image augmentation module which is developed with C++ OpenCV.
 from mindspore.dataset.vision.utils import Inter, Border, ImageBatchFormat
 from . import transforms
 from .transforms import *
+from .view import ImageViewer
+from .utils import ssd_bboxes_encode, ssd_bboxes_filter, coco_eval
 
-__all__ = ['Inter', 'Border', 'ImageBatchFormat']
+vision_utils = ['Inter', 'Border', 'ImageBatchFormat']
+bbox_utils = [
+    'ssd_bboxes_encode',
+    'ssd_bboxes_filter',
+    'coco_eval',
+]
+
+__all__ = vision_utils + bbox_utils
 __all__.extend(transforms.__all__)

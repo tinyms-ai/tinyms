@@ -16,12 +16,100 @@
 from mindspore.nn import loss
 from mindspore.nn.loss import *
 from mindspore.nn.loss.loss import _Loss
-from tinyms import Tensor, dtype
-import tinyms.primitives as P
+import tinyms as ts
+from . import layers, primitives as P, Tensor
+from .model import SSD300
 
 
-__all__ = []
+__all__ = ['net_with_loss', 'SSD300WithLoss']
 __all__.extend(loss.__all__)
+
+
+class SigmoidFocalClassificationLoss(layers.Layer):
+    """"
+    Sigmoid focal-loss for classification.
+
+    Args:
+        gamma (float): Hyper-parameter to balance the easy and hard examples. Default: 2.0
+        alpha (float): Hyper-parameter to balance the positive and negative example. Default: 0.25
+
+    Returns:
+        Tensor, the focal loss.
+    """
+
+    def __init__(self, gamma=2.0, alpha=0.25):
+        super(SigmoidFocalClassificationLoss, self).__init__()
+        self.sigmiod_cross_entropy = P.SigmoidCrossEntropyWithLogits()
+        self.sigmoid = P.Sigmoid()
+        self.pow = P.Pow()
+        self.onehot = P.OneHot()
+        self.on_value = Tensor(1.0, ts.float32)
+        self.off_value = Tensor(0.0, ts.float32)
+        self.gamma = gamma
+        self.alpha = alpha
+
+    def construct(self, logits, label):
+        label = self.onehot(label, P.shape(logits)[-1], self.on_value, self.off_value)
+        sigmiod_cross_entropy = self.sigmiod_cross_entropy(logits, label)
+        sigmoid = self.sigmoid(logits)
+        label = P.cast(label, ts.float32)
+        p_t = label * sigmoid + (1 - label) * (1 - sigmoid)
+        modulating_factor = self.pow(1 - p_t, self.gamma)
+        alpha_weight_factor = label * self.alpha + (1 - label) * (1 - self.alpha)
+        focal_loss = modulating_factor * alpha_weight_factor * sigmiod_cross_entropy
+        return focal_loss
+
+
+class SSD300WithLoss(layers.Layer):
+    """"
+    Provide SSD300 training loss through network.
+
+    Args:
+        network (Layer): The training network.
+
+    Returns:
+        Tensor, the loss of the network.
+
+    Examples:
+        net = SSD300WithLoss(ssd300())
+    """
+
+    def __init__(self, network):
+        super(SSD300WithLoss, self).__init__()
+        self.network = network
+        self.less = P.Less()
+        self.tile = P.Tile()
+        self.reduce_sum = P.ReduceSum()
+        self.reduce_mean = P.ReduceMean()
+        self.expand_dims = P.ExpandDims()
+        self.class_loss = SigmoidFocalClassificationLoss(2.0, 0.75)
+        self.loc_loss = SmoothL1Loss()
+
+    def construct(self, x, gt_loc, gt_label, num_matched_boxes):
+        pred_loc, pred_label = self.network(x)
+        mask = P.cast(self.less(0, gt_label), ts.float32)
+        num_matched_boxes = self.reduce_sum(P.cast(num_matched_boxes, ts.float32))
+
+        # Localization Loss
+        mask_loc = self.tile(self.expand_dims(mask, -1), (1, 1, 4))
+        smooth_l1 = self.loc_loss(pred_loc, gt_loc) * mask_loc
+        loss_loc = self.reduce_sum(self.reduce_mean(smooth_l1, -1), -1)
+
+        # Classification Loss
+        loss_cls = self.class_loss(pred_label, gt_label)
+        loss_cls = self.reduce_sum(loss_cls, (1, 2))
+
+        return self.reduce_sum((loss_cls + loss_loc) / num_matched_boxes)
+
+
+def net_with_loss(net):
+    if not isinstance(net, layers.Layer):
+        raise TypeError("Input should be inheritted from layers.Layer!")
+
+    if isinstance(net, SSD300):
+        return SSD300WithLoss(net)
+    else:
+        raise TypeError("Input should be in [SSD300], got {}.".format(type(net)))
 
 
 class CrossEntropyWithLabelSmooth(_Loss):
@@ -42,55 +130,19 @@ class CrossEntropyWithLabelSmooth(_Loss):
     def __init__(self, smooth_factor=0., num_classes=1000):
         super(CrossEntropyWithLabelSmooth, self).__init__()
         self.onehot = P.OneHot()
-        self.on_value = Tensor(1.0 - smooth_factor, dtype.float32)
+        self.on_value = Tensor(1.0 - smooth_factor, ts.float32)
         self.off_value = Tensor(1.0 * smooth_factor /
-                                (num_classes - 1), dtype.float32)
-        self.ce = P.SoftmaxCrossEntropyWithLogits()
+                                (num_classes - 1), ts.float32)
+        self.ce = SoftmaxCrossEntropyWithLogits()
         self.mean = P.ReduceMean(False)
         self.cast = P.Cast()
 
     def construct(self, logit, label):
-        one_hot_label = self.onehot(self.cast(label, dtype.int32), P.shape(logit)[1],
+        one_hot_label = self.onehot(self.cast(label, ts.int32), P.shape(logit)[1],
                                     self.on_value, self.off_value)
         out_loss = self.ce(logit, one_hot_label)
         out_loss = self.mean(out_loss, 0)
         return out_loss
-
-
-class BCEWithLogits(_Loss):
-    """
-    BCEWithLogits creates a criterion to measure the Binary Cross Entropy between the true labels and
-    predicted labels with sigmoid logits.
-
-    Args:
-        reduction (str): Specifies the reduction to be applied to the output.
-            Its value must be one of 'none', 'mean', 'sum'. Default: 'none'.
-
-    Outputs:
-        Tensor or Scalar, if `reduction` is 'none', then output is a tensor and has the same shape as `inputs`.
-        Otherwise, the output is a scalar.
-    """
-    def __init__(self, reduction='mean'):
-        super(BCEWithLogits, self).__init__()
-        if reduction is None:
-            reduction = 'none'
-        if reduction not in ('mean', 'sum', 'none'):
-            raise ValueError(f"reduction method for {reduction.lower()} is not supported")
-
-        self.loss = P.SigmoidCrossEntropyWithLogits()
-        self.reduce = False
-        if reduction == 'sum':
-            self.reduce_mode = P.ReduceSum()
-            self.reduce = True
-        elif reduction == 'mean':
-            self.reduce_mode = P.ReduceMean()
-            self.reduce = True
-
-    def construct(self, predict, target):
-        loss = self.loss(predict, target)
-        if self.reduce:
-            loss = self.reduce_mode(loss)
-        return loss
 
 
 class GANLoss(_Loss):
@@ -198,3 +250,4 @@ class DiscriminatorLoss(_Loss):
         loss_D_B = self.dis_loss(D_fake_B, self.false) + self.dis_loss(D_img_B, self.true)
         loss_D = (loss_D_A + loss_D_B) * 0.5
         return loss_D
+

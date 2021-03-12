@@ -42,8 +42,8 @@ def mobilenetv2_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_ep
             lr = lr_init + (lr_max - lr_init) * i / warmup_steps
         else:
             lr = lr_end + \
-                 (lr_max - lr_end) * \
-                 (1. + math.cos(math.pi * (i - warmup_steps) / (total_steps - warmup_steps))) / 2.
+                (lr_max - lr_end) * \
+                (1. + math.cos(math.pi * (i - warmup_steps) / (total_steps - warmup_steps))) / 2.
         if lr < 0.0:
             lr = 0.0
         lr_each_step.append(lr)

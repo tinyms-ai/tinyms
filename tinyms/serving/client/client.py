@@ -16,45 +16,61 @@ import os
 import json
 import sys
 import requests
+import socket
 import numpy as np
 from PIL import Image
-from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform
+from tinyms.vision import mnist_transform, cifar10_transform, \
+    imagefolder_transform, voc_transform
 
+transform_checker = {
+    'mnist': mnist_transform,
+    'cifar10': cifar10_transform,
+    'imagenet2012': imagefolder_transform,
+    'voc': voc_transform,
+}
 
+def server_started(host='127.0.0.1', port=5000):
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    try:
+        s.connect((host, port))
+        s.shutdown(2)
+        return True
+    except:
+        return False
+
+    
 def list_servables():
     headers = {'Content-Type': 'application/json'}
     url = "http://127.0.0.1:5000/servables"
-    res = requests.get(url=url, headers=headers)
-    res_body = res.json()
-    if res.status_code != requests.codes.ok:
-        print("Request error! Status code: ", res.status_code)
-    elif res_body['status'] != 0:
-        print(res_body['err_msg'])
+    if server_started() is True:
+        res = requests.get(url=url, headers=headers)
+        res_body = res.json()
+        if res.status_code != requests.codes.ok:
+            print("Request error! Status code: ", res.status_code)
+        elif res_body['status'] != 0:
+            print(res_body['err_msg'])
+        else:
+            return res_body['servables']
     else:
-        print(res_body['servables'])
+        return 'Server not started'
 
 
 def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"):
-    # TODO: The preprocess would be moved to data module later
-    # check if dataset_name and img_path are valid
-    if dataset_name not in ("mnist", "cifar10", "imagenet2012"):
-        print("Currently dataset_name only supports `mnist`, `cifar10` and `imagenet2012`!")
-        sys.exit(0)
+    # Check if args are valid
     if not os.path.isfile(img_path):
-        print("The image path "+img_path+" not exist!")
+        print("The image path {} not exist!".format(img_path))
+        sys.exit(0)
+    trans_func = transform_checker.get(dataset_name)
+    if trans_func is None:
+        print("Currently dataset_name only supports {}!".format(list(transform_checker.keys())))
         sys.exit(0)
     if strategy not in ("TOP1_CLASS", "TOP5_CLASS"):
         print("Currently strategy only supports `TOP1_CLASS` and `TOP5_CLASS`!")
         sys.exit(0)
 
-    img_data = Image.open(img_path)
-    if dataset_name == "mnist":
-        img_data = mnist_transform(img_data)
-    elif dataset_name == "cifar10":
-        img_data = cifar10_transform(img_data)
-    else:
-        img_data = imagefolder_transform(img_data)
-
+    # Perform the transform operation for the input image
+    img = Image.open(img_path)
+    img_data = trans_func(img)
     # Construct the request payload
     payload = {
         'instance': {
@@ -70,16 +86,16 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
     res_body = res.json()
     if res.status_code != requests.codes.ok:
         print("Request error! Status code: ", res.status_code)
+        sys.exit(0)
     elif res_body['status'] != 0:
         print(res_body['err_msg'])
+        sys.exit(0)
     else:
         instance = res_body['instance']
-        if dataset_name == "mnist":
-            data = mnist_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
-            print(data)
-        elif dataset_name == "imagenet2012":
-            data = imagefolder_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
-            print(data)
+        res_data = np.array(json.loads(instance['data']))
+        iw, ih = img.size
+        if dataset_name == 'voc':
+            data = trans_func.postprocess(res_data, (ih, iw), strategy)
         else:
-            data = cifar10_transform.postprocess(np.array(json.loads(instance['data'])), strategy)
-            print(data)
+            data = trans_func.postprocess(res_data, strategy)
+        return data

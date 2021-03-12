@@ -19,10 +19,11 @@ import tinyms as ts
 from tinyms import model
 
 servable_path = '/etc/tinyms/serving/servable.json'
-net_dict = {
+model_checker = {
     "lenet5": model.lenet5,
     "resnet50": model.resnet50,
-    "mobilenetv2": model.mobilenetv2
+    "mobilenetv2": model.mobilenetv2_infer,
+    "ssd300": model.ssd300_infer,
 }
 
 
@@ -58,21 +59,20 @@ def predict(instance, servable_name, servable_model):
     class_num = servable_model['class_num']
 
     # check if servable model name is valid
-    net_func = net_dict.get(model_name)
+    net_func = model_checker.get(model_name)
     if net_func is None:
-        err_msg = "Currently model_name only supports " + str(list(net_dict.keys())) + "!"
+        err_msg = "Currently model_name only supports " + str(list(model_checker.keys())) + "!"
         return {"status": 1, "err_msg": err_msg}
-    net = net_func(class_num=class_num)
-
     # check if model_format is valid
     if model_format not in ("ckpt"):
         err_msg = "Currently model_format only supports `ckpt`!"
         return {"status": 1, "err_msg": err_msg}
 
     # parse the input data
-    input = ts.array(json.loads(instance['data']), dtype=instance['dtype'])
+    input_data = ts.array(json.loads(instance['data']), dtype=instance['dtype'])
 
     # build the network
+    net = net_func(class_num=class_num)
     serve_model = model.Model(net)
 
     # load checkpoint
@@ -83,7 +83,9 @@ def predict(instance, servable_name, servable_model):
     serve_model.load_checkpoint(ckpt_path)
 
     # execute the network to perform model prediction
-    data = serve_model.predict(ts.expand_dims(input, 0)).asnumpy()
+    output = serve_model.predict(ts.expand_dims(input_data, 0))
+    data = (ts.concatenate((output[0], output[1]), axis=-1).asnumpy() if model_name == "ssd300"
+            else output.asnumpy())
 
     return {
         "status": 0,
