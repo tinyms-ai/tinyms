@@ -19,15 +19,17 @@ import requests
 import socket
 import numpy as np
 from PIL import Image
-from tinyms.vision import mnist_transform, cifar10_transform, \
-    imagefolder_transform, voc_transform
+from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform, voc_transform, cyclegan_transform
+from tinyms.vision.utils import load_img
 
 transform_checker = {
     'mnist': mnist_transform,
     'cifar10': cifar10_transform,
     'imagenet2012': imagefolder_transform,
     'voc': voc_transform,
+    'cityscape': cyclegan_transform,
 }
+
 
 def server_started(host='127.0.0.1', port=5000):
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -64,13 +66,17 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
     if trans_func is None:
         print("Currently dataset_name only supports {}!".format(list(transform_checker.keys())))
         sys.exit(0)
-    if strategy not in ("TOP1_CLASS", "TOP5_CLASS"):
-        print("Currently strategy only supports `TOP1_CLASS` and `TOP5_CLASS`!")
+    if strategy not in ("TOP1_CLASS", "TOP5_CLASS", "gray2color", "color2gray"):
+        print("Currently strategy only supports `TOP1_CLASS`, `TOP5_CLASS`, `gray2color` and`color2gray`!")
         sys.exit(0)
 
     # Perform the transform operation for the input image
-    img = Image.open(img_path)
+    if servable_name == 'cyclegan_cityscape':
+        img = np.array(load_img(img_path))
+    else:
+        img = Image.open(img_path)
     img_data = trans_func(img)
+
     # Construct the request payload
     payload = {
         'instance': {
@@ -78,11 +84,13 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
             'dtype': img_data.dtype.name,
             'data': json.dumps(img_data.tolist())
         },
-        'servable_name': servable_name
+        'servable_name': servable_name,
+        'strategy': strategy
     }
     headers = {'Content-Type': 'application/json'}
     url = "http://127.0.0.1:5000/predict"
     res = requests.post(url=url, headers=headers, data=json.dumps(payload))
+    res.content.decode("utf-8")
     res_body = res.json()
     if res.status_code != requests.codes.ok:
         print("Request error! Status code: ", res.status_code)
@@ -93,9 +101,11 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
     else:
         instance = res_body['instance']
         res_data = np.array(json.loads(instance['data']))
-        iw, ih = img.size
         if dataset_name == 'voc':
+            iw, ih = img.size
             data = trans_func.postprocess(res_data, (ih, iw), strategy)
+        elif dataset_name == 'cityscape':
+            data = res_data
         else:
             data = trans_func.postprocess(res_data, strategy)
         return data

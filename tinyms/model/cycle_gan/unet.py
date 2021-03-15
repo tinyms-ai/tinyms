@@ -64,7 +64,7 @@ class UnetSkipConnectionBlock(layers.Layer):
         inner_nc (int): The number of filters in the inner conv layer
         in_planes (int): The number of channels in input images/features
         dropout (bool): Use dropout or not. Default: False.
-        submodule (Cell): Previously defined submodules
+        submodule (Layer): Previously defined submodules
         outermost (bool): If this module is the outermost module
         innermost (bool): If this module is the innermost module
         alpha (float): LeakyRelu slope. Default: 0.2.

@@ -403,10 +403,8 @@ class CycleGanDatasetTransform():
         Returns:
             img (NumPy), Transformed image.
         """
-        if not isinstance(img, (np.ndarray, Image.Image)):
-            raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(img)))
-        img = self.random_resized_crop(img)
-        img = self.random_horizontal_flip(img)
+        if not isinstance(img, np.ndarray):
+            raise TypeError("Input should be NumPy, got {}.".format(type(img)))
         img = self.resize(img)
         img = self.normalize(img)
         img = hwc2chw(img)

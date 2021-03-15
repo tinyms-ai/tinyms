@@ -200,7 +200,7 @@ class GeneratorLoss(_Loss):
         self.generator = generator
         self.D_A = D_A
         self.D_B = D_B
-        self.true = Tensor(True, dtype.bool_)
+        self.true = Tensor(True, ts.bool_)
 
     def construct(self, img_A, img_B):
         """If use_identity, identity loss will be used."""
@@ -235,8 +235,8 @@ class DiscriminatorLoss(_Loss):
         super(DiscriminatorLoss, self).__init__()
         self.D_A = D_A
         self.D_B = D_B
-        self.false = Tensor(False, dtype.bool_)
-        self.true = Tensor(True, dtype.bool_)
+        self.false = Tensor(False, ts.bool_)
+        self.true = Tensor(True, ts.bool_)
         self.dis_loss = GANLoss("lsgan")
         self.rec_loss = loss.L1Loss("mean")
         self.reduction = reduction

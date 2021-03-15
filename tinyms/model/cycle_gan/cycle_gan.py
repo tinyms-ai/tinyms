@@ -27,7 +27,7 @@ def get_generator(model):
     """Return generator by model."""
     if model == "resnet":
         net = ResNetGenerator(in_planes=3, ngf=64, n_layers=9, alpha=0.2,
-                              norm_mode='instance', dropout=True, pad_mode='REFLECT')
+                              norm_mode='instance', dropout=True, pad_mode='CONSTANT')
         init_weights(net, init_type='normal', init_gain=0.02)
     elif model == "unet":
         net = UnetGenerator(in_planes=3, out_planes=3, ngf=64, n_layers=9,
@@ -90,8 +90,8 @@ class Generator(layers.Layer):
     Generator of CycleGAN, return fake_A, fake_B, rec_A, rec_B, identity_A and identity_B.
 
     Args:
-        G_A (Cell): The generator network of domain A to domain B.
-        G_B (Cell): The generator network of domain B to domain A.
+        G_A (Layer): The generator network of domain A to domain B.
+        G_B (Layer): The generator network of domain B to domain A.
         use_identity (bool): Use identity loss or not. Default: True.
 
     Returns:
@@ -128,7 +128,7 @@ class WithLossCell(layers.Layer):
     Wrap the network with loss function to return generator loss.
 
     Args:
-        network (Cell): The target network to wrap.
+        network (Layer): The target network to wrap.
     """
     def __init__(self, network):
         super(WithLossCell, self).__init__(auto_prefix=False)
@@ -147,8 +147,8 @@ class TrainOneStepG(layers.Layer):
     function can be called to create the backward graph.
 
     Args:
-        G (Cell): Generator with loss Cell. Note that loss function should have been added.
-        generator (Cell): Generator of CycleGAN.
+        G (Layer): Generator with loss Layer. Note that loss function should have been added.
+        generator (Layer): Generator of CycleGAN.
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
@@ -183,7 +183,7 @@ class TrainOneStepD(layers.Layer):
     function can be called to create the backward graph.
 
     Args:
-        G (Cell): Generator with loss Cell. Note that loss function should have been added.
+        G (Layer): Generator with loss Layer. Note that loss function should have been added.
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
@@ -247,3 +247,11 @@ def cycle_gan(G_A, G_B):
         raise NotImplementedError(f'G_A and G_B are not the instance of layers.Layer')
     return Generator(G_A, G_B)
 
+
+def cycle_gan_infer(g_model='resnet'):
+    if g_model not in ['resnet', 'unet']:
+        raise NotImplementedError(f'Model {g_model} not recognized.')
+
+    G_A = get_generator(g_model)
+    G_B = get_generator(g_model)
+    return G_A, G_B

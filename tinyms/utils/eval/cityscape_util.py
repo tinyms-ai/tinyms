@@ -16,7 +16,7 @@
 """cityscape utils."""
 
 import numpy as np
-from tinyms.data.utils import load_img
+from tinyms.vision.utils import load_img
 
 # label name and RGB color map.
 label2color = {

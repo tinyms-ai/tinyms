@@ -13,17 +13,28 @@
 # limitations under the License.
 # ============================================================================
 
-"""Reporter class for Cycle Gan."""
+"""utils for tinyms train, eval and predict"""
+import random
 import logging
 import os
 import time
 from datetime import datetime
-from mindspore.train.serialization import save_checkpoint
-from tinyms.data.utils import save_image
+import numpy as np
+from tinyms import Tensor
+from mindspore.train.serialization import load_checkpoint, load_param_into_net, save_checkpoint
+from tinyms.vision.utils import save_image
+
+
+__all__ = [
+    'GanReporter',
+    'gan_load_ckpt',
+    'GanImagePool',
+]
 
 
 class GanReporter(logging.Logger):
     """
+    Reporter class for Cycle Gan.
     This class includes several functions that can save images/checkpoints and print/save logging information.
 
     Args:
@@ -144,4 +155,92 @@ class GanReporter(logging.Logger):
         pre_step_cost = cost / self.dataset_size
         self.info('total {} imgs cost {:.2f} ms, pre img cost {:.2f}'.format(self.dataset_size, cost, pre_step_cost))
         self.info('==========end predict %s===============\n', self.direction)
+
+    def start_eval(self):
+        self.eval_start_time = time.time()
+        self.info('==========start eval %s===============')
+
+    def end_eval(self):
+        cost = (time.time() - self.eval_start_time) * 1000
+        pre_step_cost = cost / self.dataset_size
+        self.info('total {} imgs cost {:.2f} ms, pre img cost {:.2f}'.format(self.dataset_size, cost, pre_step_cost))
+        self.info('==========end eval %s===============\n')
+
+
+class GanImagePool():
+    """
+    This class implements an image buffer that stores previously generated images.
+
+    This buffer enables us to update discriminators using a history of generated images
+    rather than the ones produced by the latest generators.
+    """
+
+    def __init__(self, pool_size):
+        """
+        Initialize the ImagePool class
+
+        Args:
+            pool_size (int): the size of image buffer, if pool_size=0, no buffer will be created.
+        """
+        self.pool_size = pool_size
+        if self.pool_size > 0:  # create an empty pool
+            self.num_imgs = 0
+            self.images = []
+
+    def query(self, images):
+        """
+        Return an image from the pool.
+
+        Args:
+            images: the latest generated images from the generator
+
+        Returns images Tensor from the buffer.
+
+        By 50/100, the buffer will return input images.
+        By 50/100, the buffer will return images previously stored in the buffer,
+        and insert the current images to the buffer.
+        """
+        if isinstance(images, Tensor):
+            images = images.asnumpy()
+        if self.pool_size == 0:  # if the buffer size is 0, do nothing
+            return Tensor(images)
+        return_images = []
+        for image in images:
+            # if the buffer is not full; keep inserting current images to the buffer
+            if self.num_imgs < self.pool_size:
+                self.num_imgs = self.num_imgs + 1
+                self.images.append(image)
+                return_images.append(image)
+            else:
+                p = random.uniform(0, 1)
+                # by 50% chance, the buffer will return a previously stored image
+                # and insert the current image into the buffer
+                if p > 0.5:
+                    random_id = random.randint(0, self.pool_size - 1)  # randint is inclusive
+                    tmp = self.images[random_id].copy()
+                    self.images[random_id] = image
+                    return_images.append(tmp)
+                else:       # by another 50% chance, the buffer will return the current image
+                    return_images.append(image)
+        return_images = np.array(return_images)   # collect all the images and return
+        if len(return_images.shape) != 4:
+            raise ValueError("img should be 4d, but get shape {}".format(return_images.shape))
+        return Tensor(return_images)
+
+
+def gan_load_ckpt(G_A_ckpt=None, G_B_ckpt=None, D_A_ckpt=None, D_B_ckpt=None,
+                  G_A=None, G_B=None, D_A=None, D_B=None):
+    """Load parameter from checkpoint."""
+    if G_A_ckpt is not None:
+        param_GA = load_checkpoint(G_A_ckpt)
+        load_param_into_net(G_A, param_GA)
+    if G_B_ckpt is not None:
+        param_GB = load_checkpoint(G_B_ckpt)
+        load_param_into_net(G_B, param_GB)
+    if D_A is not None and D_A_ckpt is not None:
+        param_DA = load_checkpoint(D_A_ckpt)
+        load_param_into_net(D_A, param_DA)
+    if D_B is not None and D_B_ckpt is not None:
+        param_DB = load_checkpoint(D_B_ckpt)
+        load_param_into_net(D_B, param_DB)
 
