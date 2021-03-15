@@ -27,7 +27,7 @@ def get_generator(model):
     """Return generator by model."""
     if model == "resnet":
         net = ResNetGenerator(in_planes=3, ngf=64, n_layers=9, alpha=0.2,
-                              norm_mode='instance', dropout=True, pad_mode='REFLECT')
+                              norm_mode='instance', dropout=True, pad_mode='CONSTANT')
         init_weights(net, init_type='normal', init_gain=0.02)
     elif model == "unet":
         net = UnetGenerator(in_planes=3, out_planes=3, ngf=64, n_layers=9,
@@ -247,3 +247,11 @@ def cycle_gan(G_A, G_B):
         raise NotImplementedError(f'G_A and G_B are not the instance of layers.Layer')
     return Generator(G_A, G_B)
 
+
+def cycle_gan_infer(g_model='resnet'):
+    if g_model not in ['resnet', 'unet']:
+        raise NotImplementedError(f'Model {g_model} not recognized.')
+
+    G_A = get_generator(g_model)
+    G_B = get_generator(g_model)
+    return G_A, G_B

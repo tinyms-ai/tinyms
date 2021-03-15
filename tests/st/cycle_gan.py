@@ -23,12 +23,11 @@ from tinyms import context, Tensor
 from tinyms.data import GeneratorDataset, UnalignedDataset, GanImageFolderDataset, DistributedSampler
 from tinyms.vision import cyclegan_transform
 from tinyms.model.cycle_gan.cycle_gan import get_generator_discriminator, cycle_gan, TrainOneStepG, TrainOneStepD
-from tinyms.utils.utils import gan_load_ckpt, ImagePool
 from tinyms.losses import DiscriminatorLoss, GeneratorLoss
 from tinyms.optimizers import Adam
-from tinyms.utils.train.lr_generator import cyclegan_lr
-from tinyms.utils.gan_reporter import GanReporter
 from tinyms.data.utils import save_image, generate_image_list
+from tinyms.utils.common_utils import GanReporter, gan_load_ckpt, GanImagePool
+from tinyms.utils.train import cyclegan_lr
 from tinyms.utils.eval import CityScapes, fast_hist, get_scores
 
 
@@ -65,9 +64,10 @@ def create_dataset(dataset_path, batch_size=1, repeat_size=1, max_dataset_size=N
     return gan_generator_ds, dataset_size
 
 
-def train_process(reporter, data_loader, net_G, net_D, imgae_pool_A, imgae_pool_B):
+def train_process(args_opt, data_loader, net_G, net_D, imgae_pool_A, imgae_pool_B):
+    reporter = GanReporter(args_opt)
     reporter.info('==========start training===============')
-    for _ in range(max_epoch_size):
+    for _ in range(max_epoch):
         reporter.epoch_start()
         for data in data_loader:
             img_A = data["image_A"]
@@ -83,7 +83,8 @@ def train_process(reporter, data_loader, net_G, net_D, imgae_pool_A, imgae_pool_
     reporter.info('==========end training===============')
 
 
-def predict_process(reporter, data_loader, G_generator, predict_name='A_to_B', fake_name='fake_B'):
+def predict_process(args_opt, data_loader, G_generator, predict_name='testA_to_fakeB', fake_name='fake_B'):
+    reporter = GanReporter(args_opt)
     reporter.start_predict(predict_name)
     for data in data_loader:
         img = Tensor(data["image"])
@@ -94,6 +95,33 @@ def predict_process(reporter, data_loader, G_generator, predict_name='A_to_B', f
     reporter.end_predict()
 
 
+def eval_process(args_opt, cityscapes_dir, result_dir):
+    CS = CityScapes()
+    hist_perframe = ts.zeros((CS.class_num, CS.class_num)).asnumpy()
+    cityscapes = generate_image_list(cityscapes_dir)
+    args_opt.dataset_size = len(cityscapes)
+    reporter = GanReporter(args_opt)
+    reporter.start_eval()
+    for i, img_path in enumerate(cityscapes):
+        if i % 100 == 0:
+            reporter.info('Evaluating: %d/%d' % (i, len(cityscapes)))
+        img_name = os.path.split(img_path)[1]
+        ids1 = CS.get_id(os.path.join(cityscapes_dir, img_name))
+        ids2 = CS.get_id(os.path.join(result_dir, img_name))
+        hist_perframe += fast_hist(ids1.flatten(), ids2.flatten(), CS.class_num)
+
+    mean_pixel_acc, mean_class_acc, mean_class_iou, per_class_acc, per_class_iou = get_scores(hist_perframe)
+    reporter.info("mean_pixel_acc:{}, mean_class_acc:{}, mean_class_iou: {}".format(mean_pixel_acc,
+                                                                                    mean_class_acc,
+                                                                                    mean_class_iou))
+    reporter.info("************ Per class numbers below ************")
+    for i, cl in enumerate(CS.classes):
+        while len(cl) < 15:
+            cl = cl + ' '
+        reporter.info("{}: acc = {}, iou = {}".format(cl, per_class_acc[i], per_class_iou[i]))
+    reporter.end_eval()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='MindSpore Cycle GAN Example')
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
@@ -102,10 +130,12 @@ if __name__ == "__main__":
     parser.add_argument('--phase', type=str, default="train", help='train, eval or predict.')
     parser.add_argument('--model', type=str, default="resnet", choices=("resnet", "unet"),
                         help='generator model, should be in [resnet, unet].')
-    parser.add_argument('--max_epoch_size', type=int, default=2, help='epoch size for training, default is 200.')
-    parser.add_argument('--epoch_size', type=int, default=1, help='Epoch size.')
+    parser.add_argument('--max_epoch', type=int, default=200, help='epoch size for training, default is 200.')
+    parser.add_argument('--n_epoch', type=int, default=100,
+                        help='number of epochs with the initial learning rate, default is 100')
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size.')
-    parser.add_argument("--save_checkpoint_epochs", type=int, default=1, help="Save checkpoint epochs, default is 10.")
+    parser.add_argument("--save_checkpoint_epochs", type=int, default=10,
+                        help="Save checkpoint epochs, default is 10.")
     parser.add_argument("--G_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_A.")
     parser.add_argument("--G_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_B.")
     parser.add_argument("--D_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_A.")
@@ -122,8 +152,10 @@ if __name__ == "__main__":
 
     dataset_path = args_opt.dataset_path
     phase = args_opt.phase
+    G_A_ckpt = args_opt.G_A_ckpt
+    G_B_ckpt = args_opt.G_B_ckpt
 
-    if phase == "predict" and (args_opt.G_A_ckpt is None or args_opt.G_B_ckpt is None):
+    if phase == "predict" and (G_A_ckpt is None or G_B_ckpt is None):
         raise ValueError('Must set G_A_ckpt and G_B_ckpt in predict phase!')
 
     if dataset_path is None and (phase in ["train", "predict"]):
@@ -133,12 +165,13 @@ if __name__ == "__main__":
         raise ValueError('Must set cityscapes_dir and result_dir in eval phase!')
 
     model = args_opt.model
-
     batch_size = args_opt.batch_size
-    max_epoch_size = args_opt.max_epoch_size
-    epoch_size = args_opt.epoch_size
     max_dataset_size = float("inf")
     outputs_dir = args_opt.outputs_dir
+
+    max_epoch = args_opt.max_epoch
+    n_epoch = args_opt.n_epoch
+    n_epoch = min(max_epoch, n_epoch)
 
     if phase == "train":
         # create dataset
@@ -148,37 +181,37 @@ if __name__ == "__main__":
                                                         phase=phase, data_dir=None)
         # build cycle gan generator
         G_A, G_B, D_A, D_B = get_generator_discriminator(model)
-        gan_load_ckpt(args_opt, G_A, G_B, D_A, D_B)
+        gan_load_ckpt(args_opt.G_A_ckpt, args_opt.G_B_ckpt, args_opt.D_A_ckpt, args_opt.D_B_ckpt,
+                      G_A, G_B, D_A, D_B)
         generator_net = cycle_gan(G_A, G_B)
 
         # define loss function and optimizer
         loss_D = DiscriminatorLoss(D_A, D_B)
         loss_G = GeneratorLoss(generator_net, D_A, D_B)
-        lr = cyclegan_lr(max_epoch_size, epoch_size, args_opt.dataset_size)
+        lr = cyclegan_lr(max_epoch, n_epoch, args_opt.dataset_size)
 
         optimizer_G = Adam(generator_net.trainable_params(),
-                           cyclegan_lr(max_epoch_size, epoch_size, args_opt.dataset_size), beta1=0.5)
+                           cyclegan_lr(max_epoch, n_epoch, args_opt.dataset_size), beta1=0.5)
         optimizer_D = Adam(loss_D.trainable_params(),
-                           cyclegan_lr(max_epoch_size, epoch_size, args_opt.dataset_size), beta1=0.5)
+                           cyclegan_lr(max_epoch, n_epoch, args_opt.dataset_size), beta1=0.5)
 
         # build two net: generator net and descrinator net
         net_G = TrainOneStepG(loss_G, generator_net, optimizer_G)
         net_D = TrainOneStepD(loss_D, optimizer_D)
 
         # train process
-        imgae_pool_A = ImagePool(pool_size=50)
-        imgae_pool_B = ImagePool(pool_size=50)
+        imgae_pool_A = GanImagePool(pool_size=50)
+        imgae_pool_B = GanImagePool(pool_size=50)
 
         data_loader = dataset.create_dict_iterator()
-        reporter = GanReporter(args_opt)
-        train_process(reporter, data_loader, net_G, net_D, imgae_pool_A, imgae_pool_B)
+        train_process(args_opt, data_loader, net_G, net_D, imgae_pool_A, imgae_pool_B)
 
     elif phase == 'predict':
         # build cycle gan generator
         G_A, G_B, _, _ = get_generator_discriminator(model)
         G_A.set_train(True)
         G_B.set_train(True)
-        gan_load_ckpt(args_opt, G_A, G_B)
+        gan_load_ckpt(G_A_ckpt=G_A_ckpt, G_B_ckpt=G_B_ckpt, G_A=G_A, G_B=G_B)
 
         imgs_out = os.path.join(outputs_dir, "predict")
         if not os.path.exists(imgs_out):
@@ -193,10 +226,10 @@ if __name__ == "__main__":
                                                         max_dataset_size=max_dataset_size, shuffle=True,
                                                         num_parallel_workers=1, phase=phase,
                                                         data_dir='testA')
+
         # predict first time, G_A to testA dataset, then generate fake image into fake_B dir
         data_loader = dataset.create_dict_iterator(output_numpy=True)
-        reporter = GanReporter(args_opt)
-        predict_process(reporter, data_loader, G_generator=G_A, predict_name='A_to_B', fake_name='fake_B')
+        predict_process(args_opt, data_loader, G_generator=G_A, predict_name='testA_to_fakeB', fake_name='fake_B')
 
         # create test dataset B
         dataset, args_opt.dataset_size = create_dataset(dataset_path, batch_size=batch_size, repeat_size=1,
@@ -206,30 +239,14 @@ if __name__ == "__main__":
 
         # predict second time, G_B to testB dataset, then generate fake image into fake_A dir
         data_loader = dataset.create_dict_iterator(output_numpy=True)
-        predict_process(reporter, data_loader, G_generator=G_B, predict_name='B_to_A', fake_name='fake_A')
+        predict_process(args_opt, data_loader, G_generator=G_B, predict_name='testB_to_fakeA', fake_name='fake_A')
     else:
+        # original image dir
         cityscapes_dir = args_opt.cityscapes_dir
-        result_dir = args_opt.result_dir
-        CS = CityScapes()
-        cityscapes = generate_image_list(cityscapes_dir)
-        hist_perframe = ts.zeros((CS.class_num, CS.class_num)).asnumpy()
-        for i, img_path in enumerate(cityscapes):
-            if i % 100 == 0:
-                print('Evaluating: %d/%d' % (i, len(cityscapes)))
-            img_name = os.path.split(img_path)[1]
-            ids1 = CS.get_id(os.path.join(cityscapes_dir, img_name))
-            ids2 = CS.get_id(os.path.join(result_dir, img_name))
-            hist_perframe += fast_hist(ids1.flatten(), ids2.flatten(), CS.class_num)
 
-        mean_pixel_acc, mean_class_acc, mean_class_iou, per_class_acc, per_class_iou = get_scores(hist_perframe)
-        print(f"mean_pixel_acc: {mean_pixel_acc}, mean_class_acc: {mean_class_acc}, mean_class_iou: {mean_class_iou}")
-        with open(os.path.join(outputs_dir, 'evaluation_results.txt'), 'w') as f:
-            f.write('Mean pixel accuracy: %f\n' % mean_pixel_acc)
-            f.write('Mean class accuracy: %f\n' % mean_class_acc)
-            f.write('Mean class IoU: %f\n' % mean_class_iou)
-            f.write('************ Per class numbers below ************\n')
-            for i, cl in enumerate(CS.classes):
-                while len(cl) < 15:
-                    cl = cl + ' '
-                f.write('%s: acc = %f, iou = %f\n' % (cl, per_class_acc[i], per_class_iou[i]))
+        # fake image dir generated after predict
+        result_dir = args_opt.result_dir
+
+        # Compare the similarity between the original image and the fake image
+        eval_process(args_opt, cityscapes_dir, result_dir)
 

@@ -30,12 +30,13 @@ def predict_server():
         json_data = request.get_json()
         instance = json_data['instance']
         servable_name = json_data['servable_name']
+        strategy = json_data['strategy']
 
         res = servable_search(servable_name)
         if res['status'] != 0:
             return jsonify(res)
         servable = res['servables'][0]
-        res = predict(instance, servable_name, servable['model'])
+        res = predict(instance, servable_name, servable['model'], strategy)
         return jsonify(res)
     else:
         return 'No server detected'

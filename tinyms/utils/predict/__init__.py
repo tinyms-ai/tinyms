@@ -13,4 +13,9 @@
 # limitations under the License.
 # ============================================================================
 
-from mindspore.train.loss_scale_manager import *
+from tinyms.utils.predict.predict import cyclegan_predict
+
+
+__all__ = [
+    'cyclegan_predict',
+]

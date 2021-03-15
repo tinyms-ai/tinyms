@@ -55,16 +55,14 @@ def mobilenetv2_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_ep
     return learning_rate
 
 
-def cyclegan_lr(max_epoch_size, epoch_size, dataset_size):
+def cyclegan_lr(max_epoch, n_epoch, dataset_size):
     """generate learning rate array for cycle_gan."""
-    if max_epoch_size < epoch_size:
-        raise Exception("epoch_size should not be larger than max_epoch_size")
-    lrs = [0.0002] * dataset_size * epoch_size
-    n_epochs = max_epoch_size - epoch_size
+    n_epochs_decay = max_epoch - n_epoch
+    lrs = [0.0002] * dataset_size * n_epoch
     lr_epoch = 0
-    for epoch in range(n_epochs):
-        lr_epoch = 0.0002 * (n_epochs - epoch) / n_epochs
+    for epoch in range(n_epochs_decay):
+        lr_epoch = 0.0002 * (n_epochs_decay - epoch) / n_epochs_decay
         lrs += [lr_epoch] * dataset_size
-    lrs += [lr_epoch] * dataset_size * (max_epoch_size - n_epochs - epoch_size)
+    lrs += [lr_epoch] * dataset_size * (max_epoch - n_epochs_decay - n_epoch)
     return ts.array(lrs, dtype=ts.float32)
 
