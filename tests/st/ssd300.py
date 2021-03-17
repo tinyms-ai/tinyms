@@ -189,11 +189,11 @@ if __name__ == '__main__':
     if not args_opt.do_eval:  # as for train, users could use model.train
         ds_train = create_dataset(voc_path, batch_size=batch_size)
         dataset_size = ds_train.get_dataset_size()
+        # build the SSD300 network
+        net = ssd300_mobilenetv2(class_num=args_opt.num_classes)
         # define the loss function
         if args_opt.device_target == "GPU":
             net.to_float(ts.float16)
-        # build the SSD300 network
-        net = ssd300_mobilenetv2(class_num=args_opt.num_classes)
         net = net_with_loss(net)
         init_net_param(net)
         # define the optimizer
