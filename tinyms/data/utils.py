@@ -22,14 +22,6 @@ import requests
 __all__ = ['download_dataset']
 
 
-download_checker = {
-    'mnist': _download_mnist,
-    'cifar10': _download_cifar10,
-    'cifar100': _download_cifar100,
-    'voc': _download_voc,
-}
-
-
 def _unzip(gzip_path):
     """unzip dataset file
     Args:
@@ -72,7 +64,7 @@ def _fetch_and_unzip(url, file_name):
             # show download progress
             sys.stdout.write("\r[{}{}] {:.2f}%".format("█" * done, " " * (100 - done), 100 * temp_size / total_size))
             sys.stdout.flush()
-    print("\n============== {} is already ==============".format(file_name))
+    print("\n============== {} is ready ==============".format(file_name))
     _unzip(file_name)
     os.remove(file_name)
 
@@ -144,10 +136,18 @@ def _download_voc(local_path):
     print("************** Downloading the VOC2007 dataset **************")
     remote_url = "http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar"
     file_name = os.path.join(dataset_path, remote_url.split('/')[-1])
-    if not os.path.exists(file_name.replace('.gz', '')):
+    if not os.path.exists(os.path.join(dataset_path, 'VOCdevkit', 'VOC2007')):
         _fetch_and_unzip(remote_url, file_name)
 
     return os.path.join(dataset_path, 'VOCdevkit', 'VOC2007')
+
+
+download_checker = {
+    'mnist': _download_mnist,
+    'cifar10': _download_cifar10,
+    'cifar100': _download_cifar100,
+    'voc': _download_voc,
+}
 
 
 def download_dataset(dataset_name, local_path='.'):
