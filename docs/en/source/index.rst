@@ -10,18 +10,19 @@ TinyMS is an Easy-to-Use deep learning development toolkit.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Install
+   :caption: QuickStart
 
-   install/install
+   quickstart/overview
+   quickstart/install
+   quickstart/quickstart_in_one_minute.ipynb
 
 .. toctree::
    :maxdepth: 2
-   :caption: Getting Started
+   :caption: Tutorials
 
-   getting_started/TinyMS_LeNet5_tutorial.ipynb
-   getting_started/TinyMS_ResNet50_tutorial.ipynb
-   getting_started/TinyMS_MobileNetV2_tutorial.ipynb
-   getting_started/TinyMS_SSD300_tutorial.ipynb
+   tutorials/TinyMS_ResNet50_tutorial.ipynb
+   tutorials/TinyMS_MobileNetV2_tutorial.ipynb
+   tutorials/TinyMS_SSD300_tutorial.ipynb
 
 .. toctree::
    :maxdepth: 2
@@ -32,6 +33,9 @@ TinyMS is an Easy-to-Use deep learning development toolkit.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contributing
+   :caption: Community
 
-   contributing/guidelines
+   community/roadmap
+   community/contributing
+   community/communication
+   community/faq

@@ -8,28 +8,32 @@ Welcome to TinyMS's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: 安装指南
-
-   install/install.md
-
-.. toctree::
-   :maxdepth: 2
    :caption: 快速入门
 
-   getting_started/TinyMS_LeNet5_tutorial_zh.ipynb
-   getting_started/TinyMS_ResNet50_tutorial_zh.ipynb
-   getting_started/TinyMS_MobileNetV2_tutorial_zh.ipynb
-   getting_started/TinyMS_SSD300_tutorial_zh.ipynb
+   quickstart/overview
+   quickstart/install
+   quickstart/quickstart_in_one_minute.ipynb
 
 .. toctree::
    :maxdepth: 2
-   :caption: 系统设计
+   :caption: 教程学习
 
-   design/overview.md
-   design/api_spec.md
+   tutorials/TinyMS_ResNet50_tutorial_zh.ipynb
+   tutorials/TinyMS_MobileNetV2_tutorial_zh.ipynb
+   tutorials/TinyMS_SSD300_tutorial_zh.ipynb
 
 .. toctree::
    :maxdepth: 2
-   :caption: 社区贡献
+   :caption: 设计文档
 
-   contributing/guidelines.md
+   design/overview
+   design/api_spec
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 社区发展
+
+   community/roadmap
+   community/contributing
+   community/communication
+   community/faq
