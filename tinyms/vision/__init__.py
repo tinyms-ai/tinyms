@@ -29,5 +29,6 @@ bbox_utils = [
     'coco_eval',
 ]
 
-__all__ = vision_utils + bbox_utils
+__all__ = ['ImageViewer']
+__all__.extend(vision_utils + bbox_utils)
 __all__.extend(transforms.__all__)
