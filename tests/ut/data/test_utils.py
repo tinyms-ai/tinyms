@@ -39,3 +39,10 @@ def test_download_dataset_cifar100():
 
     assert os.path.exists('/tmp/cifar100/cifar-100-bin/train.bin')
     assert os.path.exists('/tmp/cifar100/cifar-100-bin/test.bin')
+
+
+@pytest.mark.skip(reason="no way of currently testing this")
+def test_download_dataset_voc():
+    download_dataset(dataset_name='voc', local_path='/tmp')
+
+    assert os.path.exists('/tmp/voc/VOCdevkit/VOC2007')
