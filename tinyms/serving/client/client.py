@@ -20,7 +20,7 @@ import requests
 import numpy as np
 from PIL import Image
 from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform, voc_transform, cyclegan_transform
-from tinyms.vision.utils import load_img
+from tinyms.data.utils import load_img
 
 transform_checker = {
     'mnist': mnist_transform,
