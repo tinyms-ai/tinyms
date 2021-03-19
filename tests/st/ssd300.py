@@ -18,9 +18,10 @@ import json
 import time
 import argparse
 import xml.etree.ElementTree as et
+
 import tinyms as ts
 from tinyms import context, layers, primitives as P, Tensor
-from tinyms.data import VOCDataset
+from tinyms.data import VOCDataset, download_dataset
 from tinyms.vision import voc_transform, coco_eval
 from tinyms.model import Model, ssd300_mobilenetv2, ssd300_infer
 from tinyms.losses import net_with_loss
@@ -181,6 +182,10 @@ if __name__ == '__main__':
     args_opt = parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
 
+    # download voc dataset
+    if not args_opt.dataset_path:
+        args_opt.dataset_path = download_dataset('voc')
+
     epoch_size = args_opt.epoch_size
     batch_size = args_opt.batch_size
     voc_path = args_opt.dataset_path
@@ -189,11 +194,11 @@ if __name__ == '__main__':
     if not args_opt.do_eval:  # as for train, users could use model.train
         ds_train = create_dataset(voc_path, batch_size=batch_size)
         dataset_size = ds_train.get_dataset_size()
+        # build the SSD300 network
+        net = ssd300_mobilenetv2(class_num=args_opt.num_classes)
         # define the loss function
         if args_opt.device_target == "GPU":
             net.to_float(ts.float16)
-        # build the SSD300 network
-        net = ssd300_mobilenetv2(class_num=args_opt.num_classes)
         net = net_with_loss(net)
         init_net_param(net)
         # define the optimizer

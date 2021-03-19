@@ -30,6 +30,23 @@ from tinyms.losses import SoftmaxCrossEntropyWithLogits
 random.seed(1)
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Image classification')
+    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
+                        help='device where the code will be implemented (default: CPU)')
+    parser.add_argument('--dataset_path', type=str, default=None, help='Cifar10 dataset path.')
+    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
+    parser.add_argument('--epoch_size', type=int, default=90, help='Epoch size.')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
+    parser.add_argument('--num_classes', type=int, default=10, help='Num classes.')
+    parser.add_argument('--save_checkpoint_epochs', type=int, default=5,
+                        help='Specify epochs interval to save each checkpoints.')
+    parser.add_argument('--checkpoint_path', type=str, default=None, help='Checkpoint file path.')
+    args_opt = parser.parse_args()
+
+    return args_opt
+
+
 def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers=1,
                    is_training=True):
     """ create Cifar10 dataset for train or eval.
@@ -52,18 +69,7 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Image classification')
-    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
-                        help='device where the code will be implemented (default: CPU)')
-    parser.add_argument('--dataset_path', type=str, default=None, help='Cifar10 dataset path.')
-    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
-    parser.add_argument('--epoch_size', type=int, default=90, help='Epoch size.')
-    parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
-    parser.add_argument('--num_classes', type=int, default=10, help='Num classes.')
-    parser.add_argument('--save_checkpoint_epochs', type=int, default=5,
-                        help='Specify epochs interval to save each checkpoints.')
-    parser.add_argument('--checkpoint_path', type=str, default=None, help='Checkpoint file path.')
-    args_opt = parser.parse_args()
+    args_opt = parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
 
     # download cifar10 dataset

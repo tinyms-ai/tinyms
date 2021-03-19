@@ -1,4 +1,4 @@
-# Copyright 2generate_image_list021 Huawei Technologies Co., Ltd
+# Copyright 2021 Huawei Technologies Co., Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from mindspore.dataset.engine import *
 from tinyms.data.utils import generate_image_list, load_img
 
 
-__all__ = ['UnalignedDataset', "GanImageFolderDataset", "DistributedSampler"]
+__all__ = ['UnalignedDataset', 'GanImageFolderDataset', 'DistributedSampler']
 __all__.extend(engine.__all__)
 
 random.seed(1)

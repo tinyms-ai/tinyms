@@ -31,6 +31,34 @@ from tinyms.utils.train import cyclegan_lr
 from tinyms.utils.eval import CityScapes, fast_hist, get_scores
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='MindSpore Cycle GAN Example')
+    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
+                        help='device where the code will be implemented (default: CPU)')
+    parser.add_argument('--dataset_path', type=str, default=None, help='cityscape dataset path.')
+    parser.add_argument('--phase', type=str, default="train", help='train, eval or predict.')
+    parser.add_argument('--model', type=str, default="resnet", choices=("resnet", "unet"),
+                        help='generator model, should be in [resnet, unet].')
+    parser.add_argument('--max_epoch', type=int, default=200, help='epoch size for training, default is 200.')
+    parser.add_argument('--n_epoch', type=int, default=100,
+                        help='number of epochs with the initial learning rate, default is 100')
+    parser.add_argument('--batch_size', type=int, default=1, help='Batch size.')
+    parser.add_argument("--save_checkpoint_epochs", type=int, default=10,
+                        help="Save checkpoint epochs, default is 10.")
+    parser.add_argument("--G_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_A.")
+    parser.add_argument("--G_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_B.")
+    parser.add_argument("--D_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_A.")
+    parser.add_argument("--D_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_B.")
+    parser.add_argument('--outputs_dir', type=str, default='./outputs',
+                        help='models are saved here, default is ./outputs.')
+    parser.add_argument('--save_imgs', type=bool, default=True,
+                        help='whether save imgs when epoch end, default is True.')
+    parser.add_argument("--cityscapes_dir", type=str, help="Path to the original cityscapes dataset")
+    parser.add_argument("--result_dir", type=str, help="Path to the generated images to be evaluated")
+    args_opt = parser.parse_args()
+    return args_opt
+
+
 def create_dataset(dataset_path, batch_size=1, repeat_size=1, max_dataset_size=None,
                    shuffle=True, num_parallel_workers=1, phase='train', data_dir='testA'):
     """ create Mnist dataset for train or eval.
@@ -123,31 +151,7 @@ def eval_process(args_opt, cityscapes_dir, result_dir):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='MindSpore Cycle GAN Example')
-    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
-                        help='device where the code will be implemented (default: CPU)')
-    parser.add_argument('--dataset_path', type=str, default=None, help='cityscape dataset path.')
-    parser.add_argument('--phase', type=str, default="train", help='train, eval or predict.')
-    parser.add_argument('--model', type=str, default="resnet", choices=("resnet", "unet"),
-                        help='generator model, should be in [resnet, unet].')
-    parser.add_argument('--max_epoch', type=int, default=200, help='epoch size for training, default is 200.')
-    parser.add_argument('--n_epoch', type=int, default=100,
-                        help='number of epochs with the initial learning rate, default is 100')
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size.')
-    parser.add_argument("--save_checkpoint_epochs", type=int, default=10,
-                        help="Save checkpoint epochs, default is 10.")
-    parser.add_argument("--G_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_A.")
-    parser.add_argument("--G_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of G_B.")
-    parser.add_argument("--D_A_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_A.")
-    parser.add_argument("--D_B_ckpt", type=str, default=None, help="pretrained checkpoint file path of D_B.")
-    parser.add_argument('--outputs_dir', type=str, default='./outputs',
-                        help='models are saved here, default is ./outputs.')
-    parser.add_argument('--save_imgs', type=bool, default=True,
-                        help='whether save imgs when epoch end, default is True.')
-    parser.add_argument("--cityscapes_dir", type=str, help="Path to the original cityscapes dataset")
-    parser.add_argument("--result_dir", type=str, help="Path to the generated images to be evaluated")
-    args_opt = parser.parse_args()
-
+    args_opt = parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
 
     dataset_path = args_opt.dataset_path
