@@ -22,13 +22,14 @@ class ImageViewer():
     r'''
     ImageViewer is a class defined for visualizing the input image.
     Args:
-        image: PIL.Image, image input.
+        image: Union[PIL.Image, numpy.ndarray], image input.
         label: str, specifies the label of this image.
     Examples:
         >>> form PIL import Image
         >>> img = Image.open('example.jpg')
-        >>> img_viewer = ImageViewer(img, 'cat')
+        >>> img_viewer = ImageViewer(img, label='cat')
         >>> img_viewer.show()
+        >>> print(img_viewer.image.shape)
         >>> print(img_viewer.label)
     '''
 
@@ -49,9 +50,15 @@ class ImageViewer():
         return self._label
 
     def show(self):
-        plt.imshow(np.squeeze(self._image))
-        plt.title("label: %s" % self._label)
-        plt.show()
+        plt.figure(figsize=(16, 10))
+        if self._image.ndim == 2:
+            plt.imshow(self._image, cmap='gray')
+        else:
+            plt.imshow(self._image)
+
+        if not self._label is None:
+            plt.title("label: %s" % self._label)
+            plt.show()
 
     def draw(self, pred_res, labels):
         colors = plt.cm.hsv(np.linspace(0, 1, len(labels)+1)).tolist()
@@ -68,7 +75,7 @@ class ImageViewer():
             category_id = sample['category_id']
             cls = labels.index(category_id)
             color = colors[cls]
-            
+
             label = '{}: {:.2f}'.format(category_id, sample['score'])
             current_axis.add_patch(plt.Rectangle((xmin, ymin), width, height,
                                                  color=color, fill=False, linewidth=2))

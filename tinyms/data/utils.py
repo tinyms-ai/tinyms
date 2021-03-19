@@ -27,18 +27,22 @@ def _unzip(gzip_path):
     Args:
         gzip_path: dataset file path
     """
-    if not gzip_path.endswith('.gz'):
-        print("Currently the format of unzip dataset only supports `*.gz` and `*.tar.gz`!")
+    # decompress the file if gzip_path ends with `.tar`
+    if gzip_path.endswith('.tar'):
+        with tarfile.open(gzip_path) as f:
+            f.extractall(gzip_path[:gzip_path.rfind('/')])
+    elif gzip_path.endswith('.gz'):
+        gzip_file = gzip_path.replace('.gz', '')
+        with open(gzip_file, 'wb') as f:
+            gz_file = gzip.GzipFile(gzip_path)
+            f.write(gz_file.read())
+        # decompress the file if gz_file ends with `.tar`
+        if gzip_file.endswith('.tar'):
+            with tarfile.open(gzip_file) as f:
+                f.extractall(gzip_file[:gzip_file.rfind('/')])
+    else:
+        print("Currently the format of unzip dataset only supports `*.tar`, `*.gz` and `*.tar.gz`!")
         sys.exit(0)
-
-    gzip_file = gzip_path.replace('.gz', '')
-    with open(gzip_file, 'wb') as f:
-        gz_file = gzip.GzipFile(gzip_path)
-        f.write(gz_file.read())
-    # decompress the file if it ends with `.tar`
-    if gzip_file.endswith('.tar'):
-        with tarfile.open(gzip_file) as f:
-            f.extractall(gzip_file[:gzip_file.rfind('/')])
 
 
 def _fetch_and_unzip(url, file_name):
@@ -60,7 +64,7 @@ def _fetch_and_unzip(url, file_name):
             # show download progress
             sys.stdout.write("\r[{}{}] {:.2f}%".format("█" * done, " " * (100 - done), 100 * temp_size / total_size))
             sys.stdout.flush()
-    print("\n============== {} is already ==============".format(file_name))
+    print("\n============== {} is ready ==============".format(file_name))
     _unzip(file_name)
     os.remove(file_name)
 
@@ -123,6 +127,29 @@ def _download_cifar100(local_path):
     return os.path.join(dataset_path, 'cifar-100-binary')
 
 
+def _download_voc(local_path):
+    '''Download the dataset from http://host.robots.ox.ac.uk/pascal/VOC/voc2007/index.html.'''
+    dataset_path = os.path.join(local_path, 'voc')
+    if not os.path.exists(dataset_path):
+        os.makedirs(dataset_path)
+
+    print("************** Downloading the VOC2007 dataset **************")
+    remote_url = "http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar"
+    file_name = os.path.join(dataset_path, remote_url.split('/')[-1])
+    if not os.path.exists(os.path.join(dataset_path, 'VOCdevkit', 'VOC2007')):
+        _fetch_and_unzip(remote_url, file_name)
+
+    return os.path.join(dataset_path, 'VOCdevkit', 'VOC2007')
+
+
+download_checker = {
+    'mnist': _download_mnist,
+    'cifar10': _download_cifar10,
+    'cifar100': _download_cifar100,
+    'voc': _download_voc,
+}
+
+
 def download_dataset(dataset_name, local_path='.'):
     r'''
     This function is defined to easily download any public dataset
@@ -134,13 +161,9 @@ def download_dataset(dataset_name, local_path='.'):
     Returns:
         dataset_path: str, the source location of dataset downloaded.
     '''
-    if dataset_name not in ('mnist', 'cifar10', 'cifar100'):
-        print("Currently dataset_name only supports `mnist`, `cifar10` and `cifar100`!")
+    download_func = download_checker.get(dataset_name)
+    if download_func is None:
+        print("Currently dataset_name only supports {}!".format(list(download_checker.keys())))
         sys.exit(0)
 
-    if dataset_name == 'mnist':
-        return _download_mnist(local_path)
-    elif dataset_name == 'cifar10':
-        return _download_cifar10(local_path)
-    else:
-        return _download_cifar100(local_path)
+    return download_func(local_path)
