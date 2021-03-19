@@ -20,7 +20,7 @@ import requests
 import numpy as np
 from PIL import Image
 from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform, voc_transform, cyclegan_transform
-from tinyms.data.utils import load_img
+from tinyms.data.utils import load_resized_img
 
 transform_checker = {
     'mnist': mnist_transform,
@@ -72,7 +72,7 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
 
     # Perform the transform operation for the input image
     if servable_name == 'cyclegan_cityscape':
-        img = np.array(load_img(img_path))
+        img = np.array(load_resized_img(img_path))
     else:
         img = Image.open(img_path)
     img_data = trans_func(img)
