@@ -25,7 +25,7 @@ from tinyms.vision import cyclegan_transform
 from tinyms.model.cycle_gan.cycle_gan import get_generator_discriminator, cycle_gan, TrainOneStepG, TrainOneStepD
 from tinyms.losses import DiscriminatorLoss, GeneratorLoss
 from tinyms.optimizers import Adam
-from tinyms.data.utils import save_image, generate_image_list
+from tinyms.vision.utils import save_image, generate_image_list
 from tinyms.utils.common_utils import GanReporter, gan_load_ckpt, GanImagePool
 from tinyms.utils.train import cyclegan_lr
 from tinyms.utils.eval import CityScapes, fast_hist, get_scores

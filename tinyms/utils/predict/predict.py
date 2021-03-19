@@ -21,6 +21,9 @@ from tinyms import Tensor
 
 
 def cyclegan_predict(G_generator, input_data, ckpt_path):
+    """
+        Predict for the single image
+    """
     G_generator.set_train(True)
     # load checkpoint
     if not os.path.isfile(ckpt_path):

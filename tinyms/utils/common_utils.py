@@ -20,9 +20,9 @@ import os
 import time
 from datetime import datetime
 import numpy as np
-from mindspore import Tensor
+from tinyms import Tensor
 from mindspore.train.serialization import load_checkpoint, load_param_into_net, save_checkpoint
-from tinyms.data.utils import save_image
+from tinyms.vision.utils import save_image
 
 
 __all__ = [
