@@ -72,6 +72,10 @@ def create_dataset(data_path, batch_size=32, repeat_size=1, num_parallel_workers
 if __name__ == '__main__':
     args_opt = parse_args()
 
+    # download cifar10 dataset
+    if not args_opt.dataset_path:
+        args_opt.dataset_path = download_dataset('cifar10')
+
     # Declare common variables and assign the args_opt value to them
     epoch_size = args_opt.epoch_size
     batch_size = args_opt.batch_size
@@ -81,9 +85,6 @@ if __name__ == '__main__':
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
     dataset_sink_mode = not args_opt.device_target == "CPU"
 
-    # download cifar10 dataset
-    if not args_opt.dataset_path:
-        args_opt.dataset_path = download_dataset('cifar10')
     # create cifar10 dataset for training
     ds_train = create_dataset(cifar10_path, batch_size=batch_size)
     step_size = ds_train.get_dataset_size()
