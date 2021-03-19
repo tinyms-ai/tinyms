@@ -28,6 +28,20 @@ from tinyms.optimizers import Momentum
 from tinyms.losses import SoftmaxCrossEntropyWithLogits
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='MindSpore LeNet Example')
+    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
+                        help='device where the code will be implemented (default: CPU)')
+    parser.add_argument('--dataset_path', type=str, default=None, help='Mnist dataset path.')
+    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
+    parser.add_argument('--epoch_size', type=int, default=1, help='Epoch size.')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
+    parser.add_argument('--checkpoint_path', type=str, default=None, help='CheckPoint file path.')
+    args_opt = parser.parse_args()
+
+    return args_opt
+
+
 def create_dataset(data_path, batch_size=32, repeat_size=1,
                    num_parallel_workers=1):
     """ create Mnist dataset for train or eval.
@@ -49,15 +63,7 @@ def create_dataset(data_path, batch_size=32, repeat_size=1,
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='MindSpore LeNet Example')
-    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
-                        help='device where the code will be implemented (default: CPU)')
-    parser.add_argument('--dataset_path', type=str, default=None, help='Mnist dataset path.')
-    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
-    parser.add_argument('--epoch_size', type=int, default=1, help='Epoch size.')
-    parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
-    parser.add_argument('--checkpoint_path', type=str, default=None, help='CheckPoint file path.')
-    args_opt = parser.parse_args()
+    args_opt = parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
 
     # download mnist dataset

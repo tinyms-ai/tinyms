@@ -141,7 +141,8 @@ def ssd_bboxes_encode(boxes):
     t_boxes = np.zeros((ssd300_config.num_ssd_boxes, 4), dtype=np.float32)
     t_label = np.zeros((ssd300_config.num_ssd_boxes), dtype=np.int64)
     for bbox in boxes:
-        label = int(bbox[4])
+        # Add one for inserting background label
+        label = int(bbox[4]) + 1
         scores = jaccard_with_anchors(bbox)
         idx = np.argmax(scores)
         scores[idx] = 2.0
@@ -201,7 +202,7 @@ def ssd_bboxes_filter(boxes, box_scores, image_shape):
 
             final_boxes += class_boxes.tolist()
             final_score += class_box_scores.tolist()
-            final_label += [c+1] * len(class_box_scores)
+            final_label += [c] * len(class_box_scores)
 
     return final_boxes, final_score, final_label
 

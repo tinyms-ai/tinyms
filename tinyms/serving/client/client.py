@@ -15,8 +15,8 @@
 import os
 import json
 import sys
-import requests
 import socket
+import requests
 import numpy as np
 from PIL import Image
 from tinyms.vision import mnist_transform, cifar10_transform, imagefolder_transform, voc_transform, cyclegan_transform
@@ -32,7 +32,7 @@ transform_checker = {
 
 
 def server_started(host='127.0.0.1', port=5000):
-    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect((host, port))
         s.shutdown(2)
@@ -40,7 +40,7 @@ def server_started(host='127.0.0.1', port=5000):
     except:
         return False
 
-    
+
 def list_servables():
     headers = {'Content-Type': 'application/json'}
     url = "http://127.0.0.1:5000/servables"
