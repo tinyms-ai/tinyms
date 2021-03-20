@@ -18,8 +18,33 @@ import sys
 import gzip
 import tarfile
 import requests
+from PIL import Image
+import numpy as np
+from tinyms import Tensor
 
-__all__ = ['download_dataset']
+__all__ = ['download_dataset', 'generate_image_list', 'load_resized_img', 'load_img']
+
+IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.tif', '.tiff']
+
+
+def is_image(filename):
+    """Judge whether it is a picture."""
+    return any(filename.lower().endswith(extension) for extension in IMG_EXTENSIONS)
+
+
+def generate_image_list(dir_path, max_dataset_size=float("inf")):
+    """Traverse the directory to generate a list of images path"""
+    images = []
+    assert os.path.isdir(dir_path), '%s is not a valid directory' % dir_path
+
+    for root, _, fnames in sorted(os.walk(dir_path)):
+        for fname in fnames:
+            if is_image(fname):
+                path = os.path.join(root, fname)
+                images.append(path)
+
+    print("len(images):", len(images))
+    return images[:min(max_dataset_size, len(images))]
 
 
 def _unzip(gzip_path):
@@ -167,3 +192,32 @@ def download_dataset(dataset_name, local_path='.'):
         sys.exit(0)
 
     return download_func(local_path)
+
+
+def load_resized_img(path, width=256, height=256):
+    """Load image with RGB and resize to (256, 256)"""
+    return Image.open(path).convert('RGB').resize((width, height))
+
+
+def load_img(path):
+    if path is None or not is_image(path):
+        assert path, '%s is none or is not an image'
+    return Image.open(path).convert('RGB')
+
+
+def save_image(img, img_path):
+    """Save a numpy image to the disk
+
+    Parameters:
+        img (numpy array / Tensor): image to save.
+        image_path (str): the path of the image.
+    """
+    if isinstance(img, Tensor):
+        # Decode a [1, C, H, W] Tensor to image numpy array.
+        mean = 0.5 * 255
+        std = 0.5 * 255
+        img = (img.asnumpy()[0] * std + mean).astype(np.uint8).transpose((1, 2, 0))
+    elif not isinstance(img, np.ndarray):
+        raise ValueError("img should be Tensor or numpy array, but get {}".format(type(img)))
+    img_pil = Image.fromarray(img)
+    img_pil.save(img_path)

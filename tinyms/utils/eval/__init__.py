@@ -13,4 +13,10 @@
 # limitations under the License.
 # ============================================================================
 
-from mindspore.train.loss_scale_manager import *
+from tinyms.utils.eval.cityscape_util import CityScapes, fast_hist, get_scores
+
+__all__ = [
+    'CityScapes',
+    'fast_hist',
+    'get_scores',
+]

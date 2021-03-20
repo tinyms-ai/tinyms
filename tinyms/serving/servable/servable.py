@@ -17,6 +17,7 @@ import json
 
 import tinyms as ts
 from tinyms import model
+from tinyms.utils.predict.predict import cyclegan_predict
 
 servable_path = '/etc/tinyms/serving/servable.json'
 model_checker = {
@@ -24,6 +25,7 @@ model_checker = {
     "resnet50": model.resnet50,
     "mobilenetv2": model.mobilenetv2_infer,
     "ssd300": model.ssd300_infer,
+    "cycle_gan": model.cycle_gan_infer
 }
 
 
@@ -53,17 +55,16 @@ def servable_search(name=None):
         return {"status": 0, "servables": servable_list}
 
 
-def predict(instance, servable_name, servable_model):
-    model_name = servable_model['name']
-    model_format = servable_model['format']
-    class_num = servable_model['class_num']
-
+def predict(instance, servable_name, servable_model, strategy):
     # check if servable model name is valid
+    model_name = servable_model['name']
     net_func = model_checker.get(model_name)
     if net_func is None:
         err_msg = "Currently model_name only supports " + str(list(model_checker.keys())) + "!"
         return {"status": 1, "err_msg": err_msg}
+
     # check if model_format is valid
+    model_format = servable_model['format']
     if model_format not in ("ckpt"):
         err_msg = "Currently model_format only supports `ckpt`!"
         return {"status": 1, "err_msg": err_msg}
@@ -71,22 +72,40 @@ def predict(instance, servable_name, servable_model):
     # parse the input data
     input_data = ts.array(json.loads(instance['data']), dtype=instance['dtype'])
 
-    # build the network
-    net = net_func(class_num=class_num)
-    serve_model = model.Model(net)
+    if model_name == "cycle_gan":
+        g_model = servable_model['g_model']
+        if strategy == 'gray2color':
+            # build the network
+            G_generator, _ = net_func(g_model=g_model)
+            ckpt_name = 'G_A'
 
-    # load checkpoint
-    ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, model_name + "." + model_format)
-    if not os.path.isfile(ckpt_path):
-        err_msg = "The model path " + ckpt_path + " not exist!"
-        return {"status": 1, "err_msg": err_msg}
-    serve_model.load_checkpoint(ckpt_path)
+        elif strategy == 'color2gray':
+            _, G_generator = net_func(g_model=g_model)
+            ckpt_name = 'G_B'
+        else:
+            err_msg = "Currently cycle_gan strategy only supports `gray2color` and `color2gray`!"
+            return {"status": 1, "err_msg": err_msg}
+        ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, ckpt_name + "." + model_format)
 
-    # execute the network to perform model prediction
-    output = serve_model.predict(ts.expand_dims(input_data, 0))
-    data = (ts.concatenate((output[0], output[1]), axis=-1).asnumpy() if model_name == "ssd300"
-            else output.asnumpy())
+        data = cyclegan_predict(G_generator, input_data, ckpt_path)
+    else:
+        # build the network
+        class_num = servable_model['class_num']
+        net = net_func(class_num=class_num)
+        serve_model = model.Model(net)
 
+        # load checkpoint
+        ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, model_name + "." + model_format)
+        if not os.path.isfile(ckpt_path):
+            err_msg = "The model path " + ckpt_path + " not exist!"
+            return {"status": 1, "err_msg": err_msg}
+        serve_model.load_checkpoint(ckpt_path)
+
+        # execute the network to perform model prediction
+        output = serve_model.predict(ts.expand_dims(input_data, 0))
+
+        data = (ts.concatenate((output[0], output[1]), axis=-1).asnumpy() if model_name == "ssd300"
+                else output.asnumpy())
     return {
         "status": 0,
         "instance": {
