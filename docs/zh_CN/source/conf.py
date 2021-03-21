@@ -35,8 +35,10 @@ release = u'alpha'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
+    'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx_markdown_tables',
     'recommonmark',
@@ -69,6 +71,8 @@ templates_path = ['_templates']
 exclude_patterns = [u'_build', '**.ipynb_checkpoints', 'Thumbs.db', '.DS_Store']
 
 pygments_style = 'sphinx'
+
+autodoc_inherit_docstrings = False
 
 autosummary_generate = True
 
