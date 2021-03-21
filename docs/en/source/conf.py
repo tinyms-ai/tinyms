@@ -11,8 +11,11 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import sphinx_rtd_theme
+import os
+import sys
 
-import tinyms
+sys.path.insert(0, os.path.abspath('../../..'))
+
 
 # -- Project information -----------------------------------------------------
 
@@ -33,7 +36,6 @@ release = u'alpha'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
@@ -65,7 +67,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [u'_build', '**.ipynb_checkpoints', 'Thumbs.db', '.DS_Store']
 
 pygments_style = 'sphinx'
 
