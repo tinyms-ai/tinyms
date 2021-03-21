@@ -6,11 +6,12 @@
 Welcome to TinyMS's documentation!
 ==================================
 
-TinyMS is an Easy-to-Use deep learning development toolkit.
+TinyMS is an Easy-to-Use deep learning development toolkit based on MindSpore_,
+designed to providing quick-start guidelines for machine learning beginners.
 
 .. toctree::
    :maxdepth: 2
-   :caption: QuickStart
+   :caption: Quick Start
 
    quickstart/overview
    quickstart/install
@@ -28,8 +29,26 @@ TinyMS is an Easy-to-Use deep learning development toolkit.
    :maxdepth: 2
    :caption: Design
 
-   design/overview
+   design/concepts
    design/api_spec
+
+.. toctree::
+   :maxdepth: 3
+   :caption: API Documentation
+
+   tinyms/tinyms
+   tinyms/tinyms.context
+   tinyms/tinyms.data
+   tinyms/tinyms.vision
+   tinyms/tinyms.primitives
+   tinyms/tinyms.layers
+   tinyms/tinyms.model
+   tinyms/tinyms.initializers
+   tinyms/tinyms.losses
+   tinyms/tinyms.optimizers
+   tinyms/tinyms.callbacks
+   tinyms/tinyms.metrics
+   tinyms/tinyms.serving
 
 .. toctree::
    :maxdepth: 2
@@ -39,3 +58,5 @@ TinyMS is an Easy-to-Use deep learning development toolkit.
    community/contributing
    community/communication
    community/faq
+
+.. _MindSpore: https://www.mindspore.cn/en/

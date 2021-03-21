@@ -1,0 +1,5 @@
+tinyms
+======
+
+.. automodule:: tinyms
+   :members:

@@ -12,6 +12,8 @@
 #
 import sphinx_rtd_theme
 
+import tinyms
+
 # -- Project information -----------------------------------------------------
 
 project = u'TinyMS'
@@ -30,12 +32,23 @@ release = u'alpha'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.viewcode',
     'sphinx_markdown_tables',
     'recommonmark',
     'nbsphinx',
 ]
 
-nbsphinx_allow_errors = True
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+}
+
+nbsphinx_allow_errors = False
 nbsphinx_execute = 'never'
 
 source_suffix = {
@@ -55,6 +68,8 @@ templates_path = ['_templates']
 exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store']
 
 pygments_style = 'sphinx'
+
+autosummary_generate = True
 
 # -- Options for HTML output -------------------------------------------------
 
