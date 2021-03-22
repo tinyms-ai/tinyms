@@ -21,6 +21,7 @@ Welcome to TinyMS's documentation!
    tutorials/TinyMS_ResNet50_tutorial_zh.ipynb
    tutorials/TinyMS_MobileNetV2_tutorial_zh.ipynb
    tutorials/TinyMS_SSD300_tutorial_zh.ipynb
+   tutorials/TinyMS_CycleGAN_tutorial_zh.ipynb
 
 .. toctree::
    :maxdepth: 2

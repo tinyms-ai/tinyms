@@ -24,6 +24,7 @@ designed to providing quick-start guidelines for machine learning beginners.
    tutorials/TinyMS_ResNet50_tutorial.ipynb
    tutorials/TinyMS_MobileNetV2_tutorial.ipynb
    tutorials/TinyMS_SSD300_tutorial.ipynb
+   tutorials/TinyMS_CycleGAN_tutorial.ipynb
 
 .. toctree::
    :maxdepth: 2
