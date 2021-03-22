@@ -4,5 +4,5 @@ sphinx-markdown-tables
 sphinx_rtd_theme
 nbsphinx
 pandoc
-numpy
+numpy >= 1.17.0 , <=1.17.5
 jieba
