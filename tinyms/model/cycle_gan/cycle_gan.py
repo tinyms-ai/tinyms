@@ -24,7 +24,18 @@ from .common_net import ConvNormReLU, init_weights
 
 
 def get_generator(model):
-    """Return generator by model."""
+    """
+        Get generator by model.
+
+        Args:
+            model (str): should be in [resnet, unet].
+
+        Returns:
+            Generator, generator net.
+
+        Raises:
+            NotImplementedError: If `model` is not in [resnet, unet].
+    """
     if model == "resnet":
         net = ResNetGenerator(in_planes=3, ngf=64, n_layers=9, alpha=0.2,
                               norm_mode='instance', dropout=True, pad_mode='CONSTANT')
@@ -39,7 +50,12 @@ def get_generator(model):
 
 
 def get_discriminator():
-    """Return discriminator."""
+    """
+        Get discriminator net.
+
+        Returns:
+            Discriminator, discriminator net.
+    """
     net = Discriminator(in_planes=3, ndf=64, n_layers=3, alpha=0.2, norm_mode='instance')
     init_weights(net, init_type='normal', init_gain=0.02)
     return net
@@ -129,6 +145,9 @@ class WithLossCell(layers.Layer):
 
     Args:
         network (Layer): The target network to wrap.
+
+    Returns:
+       Generator Loss: lg
     """
     def __init__(self, network):
         super(WithLossCell, self).__init__(auto_prefix=False)

@@ -398,10 +398,21 @@ class CycleGanDatasetTransform():
     def __call__(self, img):
         """
         Call method.
+
         Args:
-            img (NumPy or PIL image): Image to be transformed in city_scape.
+            img (NumPy): Image to be transformed in city_scape.
+
         Returns:
             img (NumPy), Transformed image.
+
+        Examples:
+            cyclegan_transform = CycleGanDatasetTransform()
+            img = np.array(load_resized_img(img_path))
+            img_data = cyclegan_transform(img)
+            return img_data
+
+        Raises:
+            TypeError: If `img` is not Numpy.
         """
         if not isinstance(img, np.ndarray):
             raise TypeError("Input should be NumPy, got {}.".format(type(img)))
@@ -413,6 +424,23 @@ class CycleGanDatasetTransform():
 
     def apply_ds(self, gan_generator_ds, repeat_size=1, batch_size=1,
                  num_parallel_workers=1, shuffle=True, phase='train'):
+        """
+        apply cyclegan_transform to dataset.
+
+        Args:
+            gan_generator_ds (GeneratorDataset): GeneratorDataset instance.
+            repeat_size (int): The number of replicated data records, dedault: 1.
+            batch_size (int): The number of data records in each group, dedault: 1.
+            num_parallel_workers (int): The number of parallel workers, dedault: 1.
+            shuffle (bool): Whether the dataset needs to be shuffled, dedault: True.
+            phase (str): train or predict phase
+
+        Returns:
+            GeneratorDataset, the processed dataset.
+
+        Raises:
+            TypeError: If `gan_generator_ds` is not instance of GeneratorDataset.
+        """
         if not isinstance(gan_generator_ds, GeneratorDataset):
             raise TypeError("Input should be GeneratorDataset, got {}.".format(type(gan_generator_ds)))
 

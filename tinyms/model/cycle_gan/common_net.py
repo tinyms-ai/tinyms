@@ -22,7 +22,7 @@ def init_weights(net, init_type='normal', init_gain=0.02):
     """
     Initialize network weights.
 
-    Parameters:
+    Args:
         net (layer): Network to be initialized
         init_type (str): The name of an initialization method: normal | xavier.
         init_gain (float): Gain factor for normal and xavier.

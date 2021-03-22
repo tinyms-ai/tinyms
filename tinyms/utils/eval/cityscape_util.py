@@ -59,6 +59,12 @@ label2color = {
 
 
 def fast_hist(a, b, n):
+    """
+    Fast histogram
+
+    Returns:
+        Numpy, histogram numpy
+    """
     k = np.where((a >= 0) & (a < n))[0]
     bc = np.bincount(n * a[k].astype(int) + b[k], minlength=n**2)
     if len(bc) != n**2:
@@ -68,6 +74,12 @@ def fast_hist(a, b, n):
 
 
 def get_scores(hist):
+    """
+    Get accuracy scores
+
+    Returns:
+        Tuple, Mean pixel accuracy, mean per class accuracy, mean per class IoU, per class accuracy and per class IoU
+    """
     # Mean pixel accuracy
     acc = np.diag(hist).sum() / (hist.sum() + 1e-12)
     # Per class accuracy
@@ -78,7 +90,12 @@ def get_scores(hist):
 
 
 class CityScapes:
-    """CityScapes util class."""
+    """
+    CityScapes util class.
+
+    Returns:
+        CityScapes instance
+    """
     def __init__(self):
         self.classes = ['road', 'sidewalk', 'building', 'wall', 'fence',
                         'pole', 'traffic light', 'traffic sign', 'vegetation', 'terrain',
@@ -90,7 +107,12 @@ class CityScapes:
         self.class_num = len(self.classes)
 
     def get_id(self, img_path):
-        """Get train id by img"""
+        """
+        Get train id by img
+
+        Returns:
+            train id
+        """
         img = np.array(load_img(img_path))
         w, h, _ = img.shape
         img_tile = np.tile(img, (1, 1, self.class_num)).reshape(w, h, self.class_num, 3)

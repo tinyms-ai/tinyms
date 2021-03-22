@@ -27,12 +27,15 @@ __all__.extend(callback.__all__)
 class LossTimeMonitor(Callback):
     """
     Monitor loss and time.
+
     Args:
         lr_init (numpy array): train lr
+
     Returns:
-        None
+        LossTimeMonitor instance
+
     Examples:
-        >>> LossTimeMonitor(100, lr_init=Tensor([0.05] * 100).asnumpy())
+        >>> LossTimeMonitor(lr_init=Tensor([0.05] * 100).asnumpy())
     """
 
     def __init__(self, lr_init=None):

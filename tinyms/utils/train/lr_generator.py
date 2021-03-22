@@ -20,19 +20,19 @@ import tinyms as ts
 
 def mobilenetv2_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_epochs, steps_per_epoch):
     """
-    generate learning rate array for mobilenetv2
+    Generate learning rate for mobilenetv2.
 
     Args:
-       global_step(int): total steps of the training
-       lr_init(float): init learning rate
-       lr_end(float): end learning rate
-       lr_max(float): max learning rate
-       warmup_epochs(int): number of warmup epochs
-       total_epochs(int): total epoch of training
-       steps_per_epoch(int): steps of one epoch
+       global_step(int): total steps of the training.
+       lr_init(float): init learning rate.
+       lr_end(float): end learning rate.
+       lr_max(float): max learning rate.
+       warmup_epochs(int): number of warmup epochs.
+       total_epochs(int): total epoch of training.
+       steps_per_epoch(int): steps of one epoch.
 
     Returns:
-       np.array, learning rate array
+       Tensor, learning rate.
     """
     lr_each_step = []
     total_steps = steps_per_epoch * total_epochs
@@ -56,7 +56,17 @@ def mobilenetv2_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_ep
 
 
 def cyclegan_lr(max_epoch, n_epoch, dataset_size):
-    """generate learning rate array for cycle_gan."""
+    """
+    Generate learning rate for cycle_gan.
+
+    Args:
+       max_epoch(int): epoch size for training.
+       n_epoch(int): number of epochs with the initial learning rate.
+       dataset_size(int): total size of dataset.
+
+    Returns:
+       Tensor, learning rate.
+    """
     n_epochs_decay = max_epoch - n_epoch
     lrs = [0.0002] * dataset_size * n_epoch
     lr_epoch = 0

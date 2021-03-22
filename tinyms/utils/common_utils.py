@@ -173,15 +173,13 @@ class GanImagePool():
 
     This buffer enables us to update discriminators using a history of generated images
     rather than the ones produced by the latest generators.
+
+    Args:
+        pool_size (int): the size of image buffer, if pool_size=0, no buffer will be created.
     """
 
     def __init__(self, pool_size):
-        """
-        Initialize the ImagePool class
-
-        Args:
-            pool_size (int): the size of image buffer, if pool_size=0, no buffer will be created.
-        """
+        """Initialize the ImagePool class."""
         self.pool_size = pool_size
         if self.pool_size > 0:  # create an empty pool
             self.num_imgs = 0
@@ -189,16 +187,17 @@ class GanImagePool():
 
     def query(self, images):
         """
-        Return an image from the pool.
-
-        Args:
-            images: the latest generated images from the generator
-
-        Returns images Tensor from the buffer.
+        query an image from the pool.
 
         By 50/100, the buffer will return input images.
         By 50/100, the buffer will return images previously stored in the buffer,
         and insert the current images to the buffer.
+
+        Args:
+            images: the latest generated images from the generator
+
+        Returns:
+            images Tensor from the buffer.
         """
         if isinstance(images, Tensor):
             images = images.asnumpy()
@@ -230,7 +229,19 @@ class GanImagePool():
 
 def gan_load_ckpt(G_A_ckpt=None, G_B_ckpt=None, D_A_ckpt=None, D_B_ckpt=None,
                   G_A=None, G_B=None, D_A=None, D_B=None):
-    """Load parameter from checkpoint."""
+    """
+    Load parameter from checkpoint files.
+
+    Args:
+        G_A_ckpt (Ckeckpoint): load G_A checkpoint file.
+        G_B_ckpt (Ckeckpoint): load G_B checkpoint file.
+        D_A_ckpt (Ckeckpoint): load D_A checkpoint file.
+        D_B_ckpt (Ckeckpoint): load D_B checkpoint file.
+        G_A (Generator): G_A Generator.
+        G_B (Generator): G_B Generator.
+        D_A (Discriminator): D_A Discriminator.
+        D_B (Discriminator): D_B Discriminator.
+    """
     if G_A_ckpt is not None:
         param_GA = load_checkpoint(G_A_ckpt)
         load_param_into_net(G_A, param_GA)

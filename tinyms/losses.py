@@ -152,7 +152,7 @@ class GANLoss(_Loss):
     Args:
         mode (str): The type of GAN objective. It currently supports 'vanilla', 'lsgan'. Default: 'lsgan'.
         reduction (str): Specifies the reduction to be applied to the output.
-            Its value must be one of 'none', 'mean', 'sum'. Default: 'none'.
+            Its value must be one of 'none', 'mean', 'sum'. Default: 'mean'.
 
     Outputs:
         Tensor or Scalar, if `reduction` is 'none', then output is a tensor and has the same shape as `inputs`.
@@ -181,7 +181,6 @@ class GeneratorLoss(_Loss):
     Cycle GAN generator loss.
 
     Args:
-        args (class): Option class.
         generator (Cell): Generator of CycleGAN.
         D_A (Cell): The discriminator network of domain A to domain B.
         D_B (Cell): The discriminator network of domain B to domain A.
@@ -224,12 +223,13 @@ class DiscriminatorLoss(_Loss):
     Cycle GAN discriminator loss.
 
     Args:
-        args (class): option class.
         D_A (Cell): The discriminator network of domain A to domain B.
         D_B (Cell): The discriminator network of domain B to domain A.
+        reduction (str): Specifies the reduction to be applied to the output.
+            Its value must be one of 'none', 'mean', 'sum'. Default: 'none'.
 
     Outputs:
-        Tuple Tensor, the loss of discriminator.
+        the loss of discriminator.
     """
     def __init__(self, D_A, D_B, reduction='none'):
         super(DiscriminatorLoss, self).__init__()

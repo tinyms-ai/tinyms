@@ -21,6 +21,21 @@ from tinyms import Tensor
 
 
 def cyclegan_predict(G_generator, input_data, ckpt_path):
+    """
+    Single image predict.
+
+    Args:
+       G_generator (Generator): Generator, such as 'G_A'.
+       input_data (Tensor): input image data.
+       ckpt_path (str): the checkpoint path.
+
+    Returns:
+        Tensor, generated fake image data.
+
+    Raises:
+        ValueError: If `ckpt_path` does not exist.
+        ValueError: If `fake_img` is not Tensor or Numpy.
+    """
     G_generator.set_train(True)
     # load checkpoint
     if not os.path.isfile(ckpt_path):
