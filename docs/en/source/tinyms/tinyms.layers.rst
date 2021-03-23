@@ -1,14 +1,12 @@
 tinyms.layers
 =============
 
-.. autoclass:: tinyms.layers.SequentialLayer
-   :members:
-   :inherited-members:
+.. automodule:: tinyms.layers
 
-.. autoclass:: tinyms.layers.LayerList
+.. autoclass:: tinyms.layers.Layer
    :members:
    :inherited-members:
 
 .. automodule:: tinyms.layers
    :members:
-   :exclude-members: SequentialLayer, LayerList
+   :exclude-members: Layer

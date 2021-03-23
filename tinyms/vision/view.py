@@ -24,12 +24,15 @@ class ImageViewer():
 
     Args:
         image (Union[PIL.Image, numpy.ndarray]): image input.
-        label (str): specifies the label of this image.
+        label (str, optional): specifies the label of this image. Default: None.
+
+    Raises:
+        TypeError: When image input is not `numpy.ndarray` or `PIL.Image`.
     '''
 
     def __init__(self, image, label=None):
         if not isinstance(image, (np.ndarray, Image.Image)):
-            raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(image)))
+            raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(image)))
         if isinstance(image, Image.Image):
             image = np.array(image)
         self._image = image
