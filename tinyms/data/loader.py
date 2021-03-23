@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+"""
+Introduction to data/loader:
 
+data/loader supports various formats of datasets, including ImageNet, TFData,
+MNIST, Cifar10/100, Manifest, MindRecord, etc. This module could load data in
+high performance and parse data precisely. It also provides the following
+operations for users to preprocess data: shuffle, batch, repeat, map, and zip.
+"""
 import os
 import random
 import numpy as np
@@ -34,7 +41,7 @@ class UnalignedDataset:
     This dataset class can load unaligned/unpaired datasets.
 
     Args:
-        dataset_path (str): path of images (should have subfolders trainA, trainB, testA, testB, etc).
+        dataset_path (str): The path of images (should have subfolders trainA, trainB, testA, testB, etc).
         phase (str): Train or test. It requires two directories in dataset_path, like trainA and trainB to.
             host training images from domain A '{dataset_path}/trainA' and from domain B '{dataset_path}/trainB'
             respectively.
@@ -105,10 +112,10 @@ class DistributedSampler:
     Distributed sampler.
 
     Args:
-        dataset_size (int): dataset list length
-        num_replicas (int): replicas num.
-        rank (int): device rank.
-        shuffle (bool): Whether the dataset needs to be shuffled, dedault: True.
+        dataset_size (int): Dataset list length
+        num_replicas (int): Replicas num.
+        rank (int): Device rank.
+        shuffle (bool): Whether the dataset needs to be shuffled. Default: True.
 
     Returns:
         DistributedSampler instance.

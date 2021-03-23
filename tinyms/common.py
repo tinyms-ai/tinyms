@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+"""Common module."""
 from mindspore import common
 from mindspore.common import *
 from mindspore import numpy

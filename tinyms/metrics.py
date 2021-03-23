@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
+"""
+Metrics module provides functions to measure the performance of the machine learning
+models on the evaluation dataset. It's used to choose the best model.
+"""
 from mindspore.nn import metrics
 from mindspore.nn.metrics import *
 

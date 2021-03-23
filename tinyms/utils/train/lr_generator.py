@@ -13,7 +13,7 @@
 # limitations under the License.
 # ============================================================================
 
-"""learning rate generator"""
+"""Learning rate generator"""
 import math
 import tinyms as ts
 
@@ -23,13 +23,13 @@ def mobilenetv2_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_ep
     Generate learning rate for mobilenetv2.
 
     Args:
-       global_step(int): total steps of the training.
-       lr_init(float): init learning rate.
-       lr_end(float): end learning rate.
-       lr_max(float): max learning rate.
-       warmup_epochs(int): number of warmup epochs.
-       total_epochs(int): total epoch of training.
-       steps_per_epoch(int): steps of one epoch.
+       global_step (int): Total steps of the training.
+       lr_init (float): Init learning rate.
+       lr_end (float): End learning rate.
+       lr_max (float): Max learning rate.
+       warmup_epochs (int): Number of warmup epochs.
+       total_epochs (int): Total epoch of training.
+       steps_per_epoch (int): Steps of one epoch.
 
     Returns:
        Tensor, learning rate.
@@ -60,9 +60,9 @@ def cyclegan_lr(max_epoch, n_epoch, dataset_size):
     Generate learning rate for cycle_gan.
 
     Args:
-       max_epoch(int): epoch size for training.
-       n_epoch(int): number of epochs with the initial learning rate.
-       dataset_size(int): total size of dataset.
+       max_epoch (int): Epoch size for training.
+       n_epoch (int): Number of epochs with the initial learning rate.
+       dataset_size (int): Total size of dataset.
 
     Returns:
        Tensor, learning rate.

@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
+"""
+The context of TinyMS, used to configure the current execution environment,
+includeing the execution mode, execution backend and other feature switches.
+"""
 from mindspore import context
 from mindspore.context import *
 

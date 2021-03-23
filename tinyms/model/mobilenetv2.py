@@ -89,8 +89,8 @@ class InvertedResidual(layers.Layer):
     Args:
         inp (int): Input channel.
         oup (int): Output channel.
-        stride (int): stride.
-        expand_ratio (float): expand ratio.
+        stride (int): Stride size.
+        expand_ratio (float): Expand ratio.
 
     Returns:
         Tensor, output tensor.
@@ -125,7 +125,7 @@ class MobileNetV2Backbone(layers.Layer):
     MobileNetV2 Backbone net.
 
     Args:
-        width_mult (int): number of classes.
+        width_mult (int): The number of classes.
         round_nearest (int): Channel round to. Default is 8.
         input_channel (int): Input channel. Default is 32.
         last_channel (int): The channel of last layer. Default is 1280.
@@ -187,7 +187,7 @@ class MobileNetV2Head(layers.Layer):
 
     Args:
         input_channel (int): Input channel. Default is 1280.
-        class_num (int): the class num. Default is 1000.
+        class_num (int): The number of classes. Default is 1000.
         use_activation (bool): Whether to use activation functions. Default is False.
 
     Returns:
@@ -223,7 +223,7 @@ class MobileNetV2(layers.Layer):
     MobileNetV2 architecture.
 
     Args:
-        class_num (int): number of classes.
+        class_num (int): The number of classes.
         width_mult (float): Channels multiplier for round to 8/16 and others. Default is 1.0.
         round_nearest (int): Channel round to. Default is 8.
         input_channel (int): Input channel. Default is 32.
@@ -253,8 +253,8 @@ def mobilenetv2(class_num=1000, is_training=True):
     Get MobileNetV2 instance for training.
 
     Args:
-        class_num (int): number of classes.
-        is_training (bool): whether to do training job, default: True.
+        class_num (int): The number of classes.
+        is_training (bool): Whether to do training job, default: True.
 
     Returns:
         MobileNetV2 instance.
@@ -267,7 +267,7 @@ def mobilenetv2_infer(class_num=1000):
     Get MobileNetV2 instance for predict.
 
     Args:
-        class_num (int): number of classes.
+        class_num (int): The number of classes.
 
     Returns:
         MobileNetV2 instance.

@@ -13,7 +13,7 @@
 # limitations under the License.
 # ============================================================================
 
-"""cityscape utils."""
+"""The CityScapes util class for evaluation."""
 
 import numpy as np
 from tinyms.data.utils import load_img
@@ -62,6 +62,11 @@ def fast_hist(a, b, n):
     """
     Fast histogram
 
+    Args:
+        a (numpy.ndarray): The flatten train ids of cityscapes_dir image
+        b (numpy.ndarray): The flatten train ids of result_dir image
+        n (int): The number of cityscapes classes
+
     Returns:
         Numpy, histogram numpy
     """
@@ -77,6 +82,9 @@ def get_scores(hist):
     """
     Get accuracy scores
 
+    Args:
+        hist (numpy.ndarray): Histogram numpy
+
     Returns:
         Tuple, Mean pixel accuracy, mean per class accuracy, mean per class IoU, per class accuracy and per class IoU
     """
@@ -91,7 +99,7 @@ def get_scores(hist):
 
 class CityScapes:
     """
-    CityScapes util class.
+    The CityScapes util class for evaluation.
 
     Returns:
         CityScapes instance
@@ -110,8 +118,11 @@ class CityScapes:
         """
         Get train id by img
 
+        Args:
+            img_path (str): The path of the image.
+
         Returns:
-            train id
+            numpy.ndarray, train ids
         """
         img = np.array(load_img(img_path))
         w, h, _ = img.shape

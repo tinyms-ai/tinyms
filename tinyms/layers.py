@@ -13,9 +13,9 @@
 # limitations under the License.
 # ============================================================================
 """
-Layer.
+Layer module contains pre-defined building blocks or computing units to construct neural networks.
 
-The high-level components(Cells) used to construct the neural network.
+The high-level components (Layers) used to construct the neural network.
 """
 from mindspore.nn import Cell
 from mindspore.nn.layer.container import SequentialCell, CellList

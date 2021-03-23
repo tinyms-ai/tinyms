@@ -28,7 +28,7 @@ def get_generator(model):
         Get generator by model.
 
         Args:
-            model (str): should be in [resnet, unet].
+            model (str): Currently it should be in [resnet, unet].
 
         Returns:
             Generator, generator net.
@@ -106,8 +106,8 @@ class Generator(layers.Layer):
     Generator of CycleGAN, return fake_A, fake_B, rec_A, rec_B, identity_A and identity_B.
 
     Args:
-        G_A (Layer): The generator network of domain A to domain B.
-        G_B (Layer): The generator network of domain B to domain A.
+        G_A (layers.Layer): The generator network of domain A to domain B.
+        G_B (layers.Layer): The generator network of domain B to domain A.
         use_identity (bool): Use identity loss or not. Default: True.
 
     Returns:
@@ -147,7 +147,7 @@ class WithLossCell(layers.Layer):
         network (Layer): The target network to wrap.
 
     Returns:
-       Generator Loss: lg
+       Generator Loss lg
     """
     def __init__(self, network):
         super(WithLossCell, self).__init__(auto_prefix=False)
@@ -166,8 +166,8 @@ class TrainOneStepG(layers.Layer):
     function can be called to create the backward graph.
 
     Args:
-        G (Layer): Generator with loss Layer. Note that loss function should have been added.
-        generator (Layer): Generator of CycleGAN.
+        G (layers.Layer): Generator with loss Layer. Note that loss function should have been added.
+        generator (layers.Layer): Generator of CycleGAN.
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
@@ -202,7 +202,7 @@ class TrainOneStepD(layers.Layer):
     function can be called to create the backward graph.
 
     Args:
-        G (Layer): Generator with loss Layer. Note that loss function should have been added.
+        G (layers.Layer): Generator with loss Layer. Note that loss function should have been added.
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
@@ -229,7 +229,7 @@ def get_generator_discriminator(model='resnet'):
     Get G_A, G_B generator network and  D_A, D_B discriminator network.
 
     Args:
-        model: generator model, should be in [resnet, unet].
+        model: The generator model, currently it should be in [resnet, unet].
 
     Returns:
         G_A, G_B, D_A, D_B network.
@@ -250,24 +250,37 @@ def get_generator_discriminator(model='resnet'):
 
 def cycle_gan(G_A, G_B):
     """
-        Get Cycle GAN network.
+    Get Cycle GAN network.
 
-        Args:
-            G_A: generator net, should be in [resnet, unet].
-            G_B: generator net, should be in [resnet, unet].
+    Args:
+        G_A (layers.Layer): The generator net, currently it should be in [resnet, unet].
+        G_B (layers.Layer): The generator net, currently it should be in [resnet, unet].
 
-        Returns:
-            Cycle GAN network.
+    Returns:
+        Cycle GAN instance.
 
-        Examples:
-            >>> gan_net = cycle_gan(G_A, G_B)
-        """
+    Examples:
+        >>> gan_net = cycle_gan(G_A, G_B)
+    """
     if not isinstance(G_A, layers.Layer) or not isinstance(G_B, layers.Layer):
         raise NotImplementedError(f'G_A and G_B are not the instance of layers.Layer')
     return Generator(G_A, G_B)
 
 
 def cycle_gan_infer(g_model='resnet'):
+    """
+    Get Cycle GAN network for predict.
+
+    Args:
+        G_A (layers.Layer): The generator net, currently it should be in [resnet, unet].
+        G_B (layers.Layer): The generator net, currently it should be in [resnet, unet].
+
+    Returns:
+        Cycle GAN instance.
+
+    Examples:
+        >>> gan_net = cycle_gan(G_A, G_B)
+    """
     if g_model not in ['resnet', 'unet']:
         raise NotImplementedError(f'Model {g_model} not recognized.')
 

@@ -198,12 +198,19 @@ def download_dataset(dataset_name, local_path='.'):
     r'''
     This function is defined to easily download any public dataset
     without specifing much details.
+
     Args:
-        dataset_name: str, the official name of dataset, currently supports `mnist`, `cifar10` and `cifar100`.
-        local_path: str, specifies the local location of dataset to be downloaded.
+        dataset_name (str): The official name of dataset, currently supports `mnist`, `cifar10` and `cifar100`.
+        local_path (str): Specifies the local location of dataset to be downloaded.
             Default: `.`.
+
     Returns:
-        dataset_path: str, the source location of dataset downloaded.
+        str, the source location of dataset downloaded.
+
+    Examples:
+        >>> from tinyms.data import download_dataset
+        >>>
+        >>> ds_path = download_dataset('mnist')
     '''
     download_func = download_checker.get(dataset_name)
     if download_func is None:
@@ -248,8 +255,8 @@ def save_image(img, img_path):
     Save a numpy image to the disk.
 
     Args:
-        img (numpy array / Tensor): image to save.
-        img_path (str): the path of the image.
+        img (Union[numpy.ndarray, Tensor]): Image to save.
+        img_path (str): The path of the image.
     """
     if isinstance(img, Tensor):
         # Decode a [1, C, H, W] Tensor to image numpy array.

@@ -21,16 +21,10 @@ from PIL import Image
 class ImageViewer():
     r'''
     ImageViewer is a class defined for visualizing the input image.
+
     Args:
-        image: Union[PIL.Image, numpy.ndarray], image input.
-        label: str, specifies the label of this image.
-    Examples:
-        >>> form PIL import Image
-        >>> img = Image.open('example.jpg')
-        >>> img_viewer = ImageViewer(img, label='cat')
-        >>> img_viewer.show()
-        >>> print(img_viewer.image.shape)
-        >>> print(img_viewer.label)
+        image (Union[PIL.Image, numpy.ndarray]): image input.
+        label (str): specifies the label of this image.
     '''
 
     def __init__(self, image, label=None):
@@ -50,6 +44,19 @@ class ImageViewer():
         return self._label
 
     def show(self):
+        r'''
+        Directly show the visualized picture.
+
+        Note:
+            This function is only valid when being called in interactive environment, such like `Jupyter notebook`.
+
+        Examples:
+            >>> form PIL import Image
+            >>>
+            >>> img = Image.open('example.jpg')
+            >>> img_viewer = ImageViewer(img, label='cat')
+            >>> img_viewer.show()
+        '''
         plt.figure(figsize=(16, 10))
         if self._image.ndim == 2:
             plt.imshow(self._image, cmap='gray')
@@ -61,6 +68,25 @@ class ImageViewer():
             plt.show()
 
     def draw(self, pred_res, labels):
+        r'''
+        Draw the predicting boxes on the picture and show the visualized picture.
+
+        Args:
+            pred_res (dict): The predcition result from `tinyms.serving.predict` method.
+            labels (list): The labels should be input manually with a list of string.
+                This argument is required for distinguishing the color from different classes.
+
+        Note:
+            This function is only valid when being called in interactive environment, such like `Jupyter notebook`.
+
+        Examples:
+            >>> form PIL import Image
+            >>>
+            >>> img = Image.open('example.jpg')
+            >>> img_viewer = ImageViewer(img)
+            >>> labels = ['1', '2', '3']
+            >>> img_viewer.draw(pred_res, labels)
+        '''
         colors = plt.cm.hsv(np.linspace(0, 1, len(labels)+1)).tolist()
         plt.figure(figsize=(20, 12))
         plt.imshow(np.squeeze(self._image))
