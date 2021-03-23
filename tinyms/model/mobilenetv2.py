@@ -187,6 +187,7 @@ class MobileNetV2(layers.Layer):
         round_nearest (int): Channel round to. Default is 8.
         input_channel (int): Input channel. Default is 32.
         last_channel (int): The channel of last layer. Default is 1280.
+
     Returns:
         Tensor, output tensor.
     """

@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
+"""
+Optimizers module provides common optimizers for training, such as SGD, ADAM, Momentum.
+The optimizer is used to calculate and update the gradients.
+"""
 from mindspore.nn import optim
 from mindspore.nn.optim import *
 

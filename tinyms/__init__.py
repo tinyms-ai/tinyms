@@ -12,7 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-""".. TinyMS package."""
+"""
+.. TinyMS package.
+
+Top-level reference to dtype of common module.
+This module also provides Numpy-like interfaces in TinyMS.
+
+Examples:
+    >>> import tinyms as ts
+    >>>
+    >>> print(ts.ones([2, 3]))
+    [[1. 1. 1.]
+    [1. 1. 1.]]
+"""
 from .version import __version__
 from . import common
 from .common import *
