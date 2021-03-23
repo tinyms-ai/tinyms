@@ -60,7 +60,7 @@ def lenet5(class_num=10):
         class_num (int): Class number.
 
     Returns:
-        Layer, layer instance of LeNet5 neural network.
+        layers.Layer, layer instance of LeNet5 neural network.
 
     Examples:
         >>> net = lenet5(class_num=10)

@@ -34,6 +34,10 @@ __all__.extend(_transform_ops.__all__)
 
 
 class DatasetTransform():
+    r'''
+    Base class for all dataset transforms.
+    '''
+
     def __init__(self, labels=None):
         self.labels = labels
         self.transform_strategy = ['TOP1_CLASS', 'TOP5_CLASS']
@@ -55,6 +59,16 @@ class DatasetTransform():
         return ds
 
     def postprocess(self, input, strategy='TOP1_CLASS'):
+        r'''
+        Apply postprocess operation for prediction result.
+
+        Args:
+            input (numpy.ndarray): Prediction result.
+            strategy (str): Specifies the postprocess strategy. Default: TOP1_CLASS.
+
+        Returns:
+            str, the postprocess result.
+        '''
         if not isinstance(input, np.ndarray):
             raise TypeError("Input should be NumPy, got {}.".format(type(input)))
         if not input.ndim == 2:
@@ -81,6 +95,24 @@ class DatasetTransform():
 
 
 class MnistTransform(DatasetTransform):
+    r'''
+    Mnist dataset transform class.
+
+    Inputs:
+        img (Union[numpy.ndarray, PIL.Image]): Image to be transformed in Mnist-style.
+
+    Outputs:
+        numpy.ndarray, transformed image.
+
+    Examples:
+        >>> from PIL import Image
+        >>> from tinyms.vision import MnistTransform
+        >>>
+        >>> mnist_transform = MnistTransform()
+        >>> img = Image.open('example.jpg')
+        >>> img = mnist_transform(img)
+    '''
+
     def __init__(self):
         labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         super().__init__(labels=labels)
@@ -90,17 +122,8 @@ class MnistTransform(DatasetTransform):
         self.rescale = Rescale(1.0 / 255.0, 0.0)
 
     def __call__(self, img):
-        """
-        Call method for model prediction.
-
-        Args:
-            img (NumPy or PIL image): Image to be transformed in Mnist-style.
-
-        Returns:
-            img (NumPy), Transformed image.
-        """
         if not isinstance(img, (np.ndarray, Image.Image)):
-            raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(img)))
+            raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(img)))
         if isinstance(img, np.ndarray):
             img = Image.fromarray(img, mode='RGB')
         img = np.asarray(self.grayscale(img), dtype=np.float32)
@@ -113,8 +136,26 @@ class MnistTransform(DatasetTransform):
         return img
 
     def apply_ds(self, mnist_ds, repeat_size=1, batch_size=32, num_parallel_workers=None):
+        r'''
+        Apply preprocess operation on MnistDataset instance.
+
+        Args:
+            mnist_ds (data.MnistDataset): MnistDataset instance.
+            repeat_size (int): The repeat size of dataset. Default: 1.
+            batch_size (int): Batch size. Default: 32.
+            num_parallel_workers (int): The number of concurrent workers. Default: None.
+
+        Returns:
+            data.MnistDataset, the preprocessed MnistDataset instance.
+
+        Examples:
+            >>> from tinyms.vision import MnistTransform
+            >>>
+            >>> mnist_transform = MnistTransform()
+            >>> mnist_ds = mnist_transform.apply_ds(mnist_ds)
+        '''
         if not isinstance(mnist_ds, MnistDataset):
-            raise TypeError("Input should be MnistDataset, got {}.".format(type(mnist_ds)))
+            raise TypeError("Input type should be MnistDataset, got {}.".format(type(mnist_ds)))
 
         trans_func = [self.resize, self.normalize, self.rescale, hwc2chw]
         # apply transform functions on mnist dataset
@@ -125,6 +166,25 @@ class MnistTransform(DatasetTransform):
 
 
 class Cifar10Transform(DatasetTransform):
+    r'''
+    Cifar10 dataset transform class.
+
+    Inputs:
+        img (Union[numpy.ndarray, PIL.Image]): Image to be transformed in Cifar10-style.
+
+    Outputs:
+        numpy.ndarray, Transformed image.
+
+    Examples:
+        >>> from PIL import Image
+        >>> from tinyms.vision import Cifar10Transform
+        >>>
+        >>> cifar10_transform = Cifar10Transform()
+        >>> img = Image.open('example.jpg')
+        >>> img = cifar10_transform(img)
+    """
+    '''
+
     def __init__(self):
         labels = ['airplane', 'automobile', 'bird', 'cat', 'deer',
                   'dog', 'frog', 'horse', 'ship', 'truck']
@@ -136,17 +196,8 @@ class Cifar10Transform(DatasetTransform):
         self.normalize = Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])
 
     def __call__(self, img):
-        """
-        Call method for model prediction.
-
-        Args:
-            img (NumPy or PIL image): Image to be transformed in Cifar10-style.
-
-        Returns:
-            img (NumPy), Transformed image.
-        """
         if not isinstance(img, (np.ndarray, Image.Image)):
-            raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(img)))
+            raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(img)))
         img = self.resize(img)
         img = self.rescale(img)
         img = self.normalize(img)
@@ -156,8 +207,27 @@ class Cifar10Transform(DatasetTransform):
 
     def apply_ds(self, cifar10_ds, repeat_size=1, batch_size=32,
                  num_parallel_workers=None, is_training=True):
+        r'''
+        Apply preprocess operation on Cifar10Dataset instance.
+
+        Args:
+            cifar10_ds (data.Cifar10Dataset): Cifar10Dataset instance.
+            repeat_size (int): The repeat size of dataset. Default: 1.
+            batch_size (int): Batch size. Default: 32.
+            num_parallel_workers (int): The number of concurrent workers. Default: None.
+            is_training (bool): Specifies if is in training step. Default: True.
+
+        Returns:
+            data.Cifar10Dataset, the preprocessed Cifar10Dataset instance.
+
+        Examples:
+            >>> from tinyms.vision import Cifar10Transform
+            >>>
+            >>> cifar10_transform = Cifar10Transform()
+            >>> cifar10_ds = cifar10_transform.apply_ds(cifar10_ds)
+        '''
         if not isinstance(cifar10_ds, Cifar10Dataset):
-            raise TypeError("Input should be Cifar10Dataset, got {}.".format(type(cifar10_ds)))
+            raise TypeError("Input type should be Cifar10Dataset, got {}.".format(type(cifar10_ds)))
 
         trans_func = []
         if is_training:
@@ -171,6 +241,24 @@ class Cifar10Transform(DatasetTransform):
 
 
 class ImageFolderTransform(DatasetTransform):
+    r'''
+    ImageFolder dataset transform class.
+
+    Inputs:
+        img(Union[numpy.ndarray, PIL.Image]): Image to be transformed in ImageFolder-style.
+
+    Outputs:
+        numpy.ndarray, transformed image.
+
+    Examples:
+        >>> from PIL import Image
+        >>> from tinyms.vision import ImageFolderTransform
+        >>>
+        >>> imagefolder_transform = ImageFolderTransform()
+        >>> img = Image.open('example.jpg')
+        >>> img = imagefolder_transform(img)
+    '''
+
     def __init__(self):
         labels = ["Agaricus双孢蘑菇,伞菌目,蘑菇科,蘑菇属,广泛分布于北半球温带,无毒",
                   "Amanita毒蝇伞,伞菌目,鹅膏菌科,鹅膏菌属,主要分布于我国黑龙江、吉林、四川、西藏、云南等地,有毒",
@@ -197,17 +285,8 @@ class ImageFolderTransform(DatasetTransform):
         return img[starty:starty + 224, startx:startx + 224, :]
 
     def __call__(self, img):
-        """
-        Call method for model prediction.
-
-        Args:
-            img (NumPy or PIL image): Image to be transformed in ImageFolder-style.
-
-        Returns:
-            img (NumPy), Transformed image.
-        """
         if not isinstance(img, (np.ndarray, Image.Image)):
-            raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(img)))
+            raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(img)))
         img = self.resize(img)
         img = self._center_crop(img)
         img = self.normalize(img)
@@ -217,8 +296,27 @@ class ImageFolderTransform(DatasetTransform):
 
     def apply_ds(self, imagefolder_ds, repeat_size=1, batch_size=32,
                  num_parallel_workers=None, is_training=True):
+        r'''
+        Apply preprocess operation on ImageFolderDataset instance.
+
+        Args:
+            cifar10_ds (data.ImageFolderDataset): ImageFolderDataset instance.
+            repeat_size (int): The repeat size of dataset. Default: 1.
+            batch_size (int): Batch size. Default: 32.
+            num_parallel_workers (int): The number of concurrent workers. Default: None.
+            is_training (bool): Specifies if is in training step. Default: True.
+
+        Returns:
+            data.ImageFolderDataset, the preprocessed ImageFolderDataset instance.
+
+        Examples:
+            >>> from tinyms.vision import ImageFolderTransform
+            >>>
+            >>> imagefolder_transform = ImageFolderTransform()
+            >>> imagefolder_ds = imagefolder_transform.apply_ds(imagefolder_ds)
+        '''
         if not isinstance(imagefolder_ds, ImageFolderDataset):
-            raise TypeError("Input should be ImageFolderDataset, got {}.".format(type(imagefolder_ds)))
+            raise TypeError("Input type should be ImageFolderDataset, got {}.".format(type(imagefolder_ds)))
 
         if is_training:
             trans_func = [self.random_crop_decode_resize, self.random_horizontal_flip]
@@ -238,6 +336,24 @@ def _rand(a=0., b=1.):
 
 
 class VOCTransform(DatasetTransform):
+    r'''
+    VOC dataset transform class.
+
+    Inputs:
+        img(Union[numpy.ndarray, PIL.Image]): Image to be transformed in VOC-style.
+
+    Outputs:
+        numpy.ndarray, transformed image.
+
+    Examples:
+        >>> from PIL import Image
+        >>> from tinyms.vision import VOCTransform
+        >>>
+        >>> voc_transform = VOCTransform()
+        >>> img = Image.open('example.jpg')
+        >>> img = voc_transform(img)
+    '''
+
     def __init__(self):
         labels = ['background',
                   'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
@@ -328,17 +444,8 @@ class VOCTransform(DatasetTransform):
         return image, boxes_yxyx, label, num_match
 
     def __call__(self, img):
-        """
-        Call method for model prediction.
-
-        Args:
-            img (NumPy or PIL image): Image to be transformed in VOC-style.
-
-        Returns:
-            img (NumPy), Transformed image.
-        """
         if not isinstance(img, (np.ndarray, Image.Image)):
-            raise TypeError("Input should be NumPy or PIL image, got {}.".format(type(img)))
+            raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(img)))
         img = self.resize(img)
         img = self.normalize(img)
         img = hwc2chw(img)
@@ -347,8 +454,27 @@ class VOCTransform(DatasetTransform):
 
     def apply_ds(self, voc_ds, repeat_size=1, batch_size=32,
                  num_parallel_workers=None, is_training=True):
+        r'''
+        Apply preprocess operation on VOCDataset instance.
+
+        Args:
+            cifar10_ds (data.VOCDataset): VOCDataset instance.
+            repeat_size (int): The repeat size of dataset. Default: 1.
+            batch_size (int): Batch size. Default: 32.
+            num_parallel_workers (int): The number of concurrent workers. Default: None.
+            is_training (bool): Specifies if is in training step. Default: True.
+
+        Returns:
+            data.VOCDataset, the preprocessed VOCDataset instance.
+
+        Examples:
+            >>> from tinyms.vision import VOCTransform
+            >>>
+            >>> VOC_transform = VOCTransform()
+            >>> voc_ds = voc_transform.apply_ds(voc_ds)
+        '''
         if not isinstance(voc_ds, VOCDataset):
-            raise TypeError("Input should be VOCDataset, got {}.".format(type(voc_ds)))
+            raise TypeError("Input type should be VOCDataset, got {}.".format(type(voc_ds)))
 
         compose_map_func = (lambda image, boxes, labels: self._preprocess_fn(image, boxes, labels, is_training))
         if is_training:
@@ -369,8 +495,19 @@ class VOCTransform(DatasetTransform):
         return voc_ds
 
     def postprocess(self, input, image_shape, strategy='TOP1_CLASS'):
+        r'''
+        Apply postprocess operation for prediction result.
+
+        Args:
+            input (numpy.ndarray): Prediction result.
+            image_shape (tuple): Image shape.
+            strategy (str): Specifies the postprocess strategy. Default: TOP1_CLASS.
+
+        Returns:
+            dict, the postprocess result.
+        '''
         if not isinstance(input, np.ndarray):
-            raise TypeError("Input should be NumPy, got {}.".format(type(input)))
+            raise TypeError("Input type should be numpy.ndarray, got {}.".format(type(input)))
         if not input.ndim == 3:
             raise TypeError("Input should be 3-D Numpy, got {}.".format(input.ndim))
         if not strategy == 'TOP1_CLASS':
@@ -389,6 +526,24 @@ class VOCTransform(DatasetTransform):
 
 
 class CycleGanDatasetTransform():
+    r'''
+    CycleGan dataset transform class.
+
+    Inputs:
+        img(Union[numpy.ndarray, PIL.Image]): Image to be transformed in city_scape.
+
+    Outputs:
+        numpy.ndarray, transformed image.
+
+    Examples:
+        >>> from PIL import Image
+        >>> from tinyms.vision import CycleGanDatasetTransform
+        >>>
+        >>> cyclegan_transform = CycleGanDatasetTransform()
+        >>> img = Image.open('example.jpg')
+        >>> img = cyclegan_transform(img)
+    '''
+
     def __init__(self):
         self.random_resized_crop = RandomResizedCrop(256, scale=(0.5, 1.0), ratio=(0.75, 1.333))
         self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
@@ -396,15 +551,8 @@ class CycleGanDatasetTransform():
         self.normalize = Normalize(mean=[0.5 * 255] * 3, std=[0.5 * 255] * 3)
 
     def __call__(self, img):
-        """
-        Call method.
-        Args:
-            img (NumPy or PIL image): Image to be transformed in city_scape.
-        Returns:
-            img (NumPy), Transformed image.
-        """
-        if not isinstance(img, np.ndarray):
-            raise TypeError("Input should be NumPy, got {}.".format(type(img)))
+        if not isinstance(img, (np.ndarray, Image.Image)):
+            raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(img)))
         img = self.resize(img)
         img = self.normalize(img)
         img = hwc2chw(img)
@@ -413,8 +561,28 @@ class CycleGanDatasetTransform():
 
     def apply_ds(self, gan_generator_ds, repeat_size=1, batch_size=1,
                  num_parallel_workers=1, shuffle=True, phase='train'):
+        r'''
+        Apply preprocess operation on GeneratorDataset instance.
+
+        Args:
+            gan_generator_ds (data.GeneratorDataset): GeneratorDataset instance.
+            repeat_size (int): The repeat size of dataset. Default: 1.
+            batch_size (int): Batch size. Default: 32.
+            num_parallel_workers (int): The number of concurrent workers. Default: 1.
+            shuffle (bool): Specifies if applying shuffle operation. Default: True.
+            phase (str): Specifies the current phase. Default: train.
+
+        Returns:
+            data.GeneratorDataset, the preprocessed GeneratorDataset instance.
+
+        Examples:
+            >>> from tinyms.vision import CycleGanDatasetTransform
+            >>>
+            >>> cyclegan_transform = CycleGanDatasetTransform()
+            >>> gan_generator_ds = cyclegan_transform.apply_ds(gan_generator_ds)
+        '''
         if not isinstance(gan_generator_ds, GeneratorDataset):
-            raise TypeError("Input should be GeneratorDataset, got {}.".format(type(gan_generator_ds)))
+            raise TypeError("Input type should be GeneratorDataset, got {}.".format(type(gan_generator_ds)))
 
         trans_func = []
         if phase == 'train':

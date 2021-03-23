@@ -40,7 +40,21 @@ class Model(_Model):
     `Model` groups layers into an object with training and inference features.
 
     Args:
-        network (Layer): A training or testing network.
+        network (layers.Layer): A training or testing network.
+
+    Examples:
+        >>> from tinyms.model import Model, lenet5
+        >>> form tinyms.losses import SoftmaxCrossEntropyWithLogits
+        >>> from tinyms.optimizers import Momentum
+        >>>
+        >>> net = lenet5(class_num=10)
+        >>> model = Model(net)
+        >>> net_loss = SoftmaxCrossEntropyWithLogits()
+        >>> net_opt = Momentum(params=net.trainable_params(), learning_rate=0.1, momentum=0.9)
+        >>> model.compile(loss_fn=net_loss, optimizer=net_opt, metrics=None)
+        >>> # For details about how to build the dataset, please refer to the API document on the official website.
+        >>> ds_train = create_custom_dataset()
+        >>> model.train(2, ds_train)
     """
 
     def __init__(self, network):
@@ -52,13 +66,13 @@ class Model(_Model):
         High-Level API for configure the train or eval network.
 
         Args:
-            loss_fn (Layer): Objective function, if loss_fn is None, the
+            loss_fn (layers.Layer): Objective function, if loss_fn is None, the
                                 network should contain the logic of loss and grads calculation, and the logic
                                 of parallel if needed. Default: None.
-            optimizer (Layer): Optimizer for updating the weights. Default: None.
+            optimizer (layers.Layer): Optimizer for updating the weights. Default: None.
             metrics (Union[dict, set]): A Dictionary or a set of metrics to be evaluated by the model during
                             training and testing. eg: {'accuracy', 'recall'}. Default: None.
-            eval_network (Layer): Network for evaluation. If not defined, `network` and `loss_fn` would be wrapped as
+            eval_network (layers.Layer): Network for evaluation. If not defined, `network` and `loss_fn` would be wrapped as
                             `eval_network`. Default: None.
             amp_level (str): Option for argument `level` in `mindspore.amp.build_train_network`, level for mixed
                 precision training. Supports ["O0", "O2", "O3", "auto"]. Default: "O0".
@@ -85,12 +99,65 @@ class Model(_Model):
         self._build_predict_network()
 
     def load_checkpoint(self, ckpt_file_name, strict_load=False):
+        """
+        Loads checkpoint info from a specified file.
+
+        Args:
+            ckpt_file_name (str): Checkpoint file name.
+            strict_load (bool): Whether to strict load the parameter into net. If False, it will load parameter
+                            in the param_dict into net with the same suffix. Default: False.
+
+        Returns:
+            Dict, key is parameter name, value is a Parameter.
+
+        Raises:
+            ValueError: Checkpoint file is incorrect.
+
+        Examples:
+            >>> ckpt_file_name = "./checkpoint/LeNet5-1_32.ckpt"
+            >>> param_dict = model.load_checkpoint(ckpt_file_name)
+        """
         return _load_checkpoint(ckpt_file_name, net=self._network,
                                 strict_load=strict_load)
 
     def save_checkpoint(self, ckpt_file_name):
+        """
+        Saves checkpoint info to a specified file.
+
+        Args:
+            ckpt_file_name (str): Checkpoint file name. If the file name already exists, it will be overwritten.
+
+        Raises:
+            TypeError: If the parameter save_obj is not layers.Layer or list type.
+        """
         return _save_checkpoint(self._network, ckpt_file_name)
 
     def export(self, *inputs, file_name, file_format='MINDIR', **kwargs):
+        """
+        Export the TinyMS prediction model to a file in the specified format.
+
+        Args:
+            inputs (Tensor): Inputs of the `net`.
+            file_name (str): File name of the model to be exported.
+            file_name (str): File name of the model to be exported.
+            file_format (str): MindSpore currently supports `AIR`, `ONNX` and `MINDIR` format for exported model.
+                Default: MINDIR.
+
+                - AIR: Ascend Intermediate Representation. An intermediate representation format of Ascend model.
+                Recommended suffix for output file is '.air'.
+
+                - ONNX: Open Neural Network eXchange. An open format built to represent machine learning models.
+                Recommended suffix for output file is '.onnx'.
+
+                - MINDIR: MindSpore Native Intermediate Representation for Anf. An intermediate representation format
+                for MindSpore models.
+                Recommended suffix for output file is '.mindir'.
+
+            kwargs (dict): Configuration options dictionary.
+
+                - quant_mode: The mode of quant.
+                - mean: Input data mean. Default: 127.5.
+                - std_dev: Input data variance. Default: 127.5.
+        """
         return _export(self._network, inputs, file_name,
                        file_format=file_format, **kwargs)

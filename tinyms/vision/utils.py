@@ -99,17 +99,17 @@ ssd_default_boxes = GenerateDefaultBoxes().default_boxes
 
 
 def ssd_bboxes_encode(boxes):
-    """
+    r"""
     Labels anchors with ground truth inputs.
 
     Args:
-        boxes: ground truth with shape [N, 5], for each row, it stores
+        boxes (numpy.ndarray): Ground truth with shape [N, 5], for each row, it stores
             [ymin, xmin, ymax, xmax, cls].
 
     Returns:
-        gt_loc: location ground truth with shape [num_anchors, 4].
-        gt_label: class ground truth with shape [num_anchors, 1].
-        num_matched_boxes: number of positives in an image.
+        numpy.ndarray, location ground truth with shape [num_anchors, 4].
+        numpy.ndarray, class ground truth with shape [num_anchors, 1].
+        numpy.ndarray, number of positives in an image.
     """
     y1, x1, y2, x2 = np.split(ssd_default_boxes_tlbr[:, :4], 4, axis=-1)
     vol_anchors = (x2 - x1) * (y2 - y1)
@@ -167,14 +167,20 @@ def ssd_bboxes_encode(boxes):
 
 
 def ssd_bboxes_filter(boxes, box_scores, image_shape):
-    """
+    r"""
     Filter predict boxes with minimum score and nms threshold.
 
     Args:
-    boxes: ground truth with shape [N, 4], for each row, it stores
+        boxes (numpy.ndarray): Ground truth with shape [N, 4], for each row, it stores
         [ymin, xmin, ymax, xmax].
-    box_scores: class scores with shape [N, 21].
-    image_shape: the shape of original image with the format [h, w].
+        box_scores (numpy.ndarray): Class scores with shape [N, 21].
+        image_shape (tuple): Shape of original image with the format [h, w].
+
+    Returns:
+        list[list[float]], ground truth with shape [N, 4], for each row, it stores
+        [ymin, xmin, ymax, xmax].
+        list[list[float]], class scores with shape [N, 21].
+        list[list[int]], class label with shape [N, 21].
     """
     final_boxes = []
     final_label = []

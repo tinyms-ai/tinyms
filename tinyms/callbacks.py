@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
+"""Callback related classes and functions in model training phase."""
 import time
 import numpy as np
 from mindspore.train import callback
 from mindspore.train.callback import *
 from . import Tensor
-
 
 __all__ = ['LossTimeMonitor']
 __all__.extend(callback.__all__)
@@ -27,11 +26,17 @@ __all__.extend(callback.__all__)
 class LossTimeMonitor(Callback):
     """
     Monitor loss and time.
+
     Args:
-        lr_init (numpy array): train lr
+        lr_init (numpy.ndarray): Train learning rate. Default: None.
+
     Returns:
         None
+
     Examples:
+        >>> from tinyms import Tensor
+        >>> from tinyms.callbacks import LossTimeMonitor
+        >>>
         >>> LossTimeMonitor(100, lr_init=Tensor([0.05] * 100).asnumpy())
     """
 

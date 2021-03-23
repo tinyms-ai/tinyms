@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+"""
+Introduction to data/loader:
 
+data/loader supports various formats of datasets, including ImageNet, TFData,
+MNIST, Cifar10/100, Manifest, MindRecord, etc. This module could load data in
+high performance and parse data precisely. It also provides the following
+operations for users to preprocess data: shuffle, batch, repeat, map, and zip.
+"""
 import os
 import random
 import numpy as np
@@ -101,6 +108,7 @@ class GanImageFolderDataset:
 # Dataset distributed sampler
 class DistributedSampler:
     """Distributed sampler."""
+
     def __init__(self, dataset_size, num_replicas=None, rank=None, shuffle=True):
         if num_replicas is None:
             print("***********Setting world_size to 1 since it is not passed in ******************")

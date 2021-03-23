@@ -126,12 +126,13 @@ class ResNet(layers.Layer):
     ResNet architecture.
 
     Args:
-        block (Cell): Block for network.
+        block (layers.Layer): Block for network.
         layer_nums (list): Numbers of block in different layers.
         in_channels (list): Input channel in each layer.
         out_channels (list): Output channel in each layer.
         strides (list):  Stride size in each layer.
         num_classes (int): The number of classes that the training images are belonging to.
+
     Returns:
         Tensor, output tensor.
 
@@ -190,13 +191,14 @@ class ResNet(layers.Layer):
         Make stage network of ResNet.
 
         Args:
-            block (Cell): Resnet block.
+            block (layers.Layer): Resnet block.
             layer_num (int): Layer number.
             in_channel (int): Input channel.
             out_channel (int): Output channel.
             stride (int): Stride size for the first convolutional layer.
+
         Returns:
-            SequentialCell, the output layer.
+            SequentialLayer, the output layer.
 
         Examples:
             >>> _make_layer(ResidualBlock, 3, 128, 256, 2)
@@ -224,10 +226,10 @@ def resnet50(class_num=10):
     Get ResNet50 neural network.
 
     Args:
-        class_num (int): Class number.
+        class_num (int): Class number. Default: 10.
 
     Returns:
-        Layer, layer instance of ResNet50 neural network.
+        layers.Layer, layer instance of ResNet50 neural network.
 
     Examples:
         >>> net = resnet50(10)

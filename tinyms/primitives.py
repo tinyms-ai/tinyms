@@ -13,7 +13,17 @@
 # limitations under the License.
 # ============================================================================
 """
-Primitive.
+Primitives module. Operators can be used in the construct function of Layer.
+
+Examples:
+    >>> import tinyms as ts
+    >>> from tinyms.primitives import tensor_add
+    >>>
+    >>> x = ts.ones([2, 3])
+    >>> y = ts.ones([2, 3])
+    >>> print(tensor_add(x, y))
+    [[2. 2. 2.]
+    [2. 2. 2.]]
 """
 from mindspore.ops import composite, operations, functional
 from mindspore.ops.composite import *
