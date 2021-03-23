@@ -188,7 +188,7 @@ class GANLoss(_Loss):
     Args:
         mode (str): The type of GAN objective. It currently supports 'vanilla', 'lsgan'. Default: 'lsgan'.
         reduction (str): Specifies the reduction to be applied to the output.
-            Its value must be one of 'none', 'mean', 'sum'. Default: 'none'.
+            Its value must be one of 'none', 'mean', 'sum'. Default: 'mean'.
 
     Outputs:
         Tensor or Scalar, if `reduction` is 'none', then output is a tensor and has the same shape as `inputs`.
@@ -269,7 +269,7 @@ class CycleGANDiscriminatorLoss(_Loss):
         reduction (str): The discriminator network of reduction. Default: none.
 
     Outputs:
-        Tuple Tensor, the loss of discriminator.
+        the loss of discriminator.
     """
 
     def __init__(self, D_A, D_B, reduction='none'):

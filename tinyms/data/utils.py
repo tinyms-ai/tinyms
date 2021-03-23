@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-""".. TinyMS data utils package."""
+"""TinyMS data utils package."""
 import os
 import sys
 import gzip
@@ -28,12 +28,31 @@ IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.tif', '.tiff']
 
 
 def is_image(filename):
-    """Judge whether it is a picture."""
+    """
+    Judge whether it is a picture.
+
+    Args:
+        filename (str): image name.
+
+    Returns:
+        bool, True or False.
+
+    """
     return any(filename.lower().endswith(extension) for extension in IMG_EXTENSIONS)
 
 
 def generate_image_list(dir_path, max_dataset_size=float("inf")):
-    """Traverse the directory to generate a list of images path"""
+    """
+    Traverse the directory to generate a list of images path.
+
+    Args:
+        dir_path (str): image directory.
+        max_dataset_size (int): Maximum number of return image paths.
+
+    Returns:
+        Image path list.
+
+    """
     images = []
     assert os.path.isdir(dir_path), '%s is not a valid directory' % dir_path
 
@@ -191,7 +210,7 @@ def download_dataset(dataset_name, local_path='.'):
     Examples:
         >>> from tinyms.data import download_dataset
         >>>
-        >>> ds_path = download_dataset('mnist)
+        >>> ds_path = download_dataset('mnist')
     '''
     download_func = download_checker.get(dataset_name)
     if download_func is None:
@@ -202,22 +221,42 @@ def download_dataset(dataset_name, local_path='.'):
 
 
 def load_resized_img(path, width=256, height=256):
-    """Load image with RGB and resize to (256, 256)"""
+    """
+    Load image with RGB and resize to (256, 256).
+
+    Args:
+        path (str): image path.
+        width (int): image width, default: 256.
+        height (int): image height, default: 256.
+
+    Returns:
+        PIL image class.
+    """
     return Image.open(path).convert('RGB').resize((width, height))
 
 
 def load_img(path):
+    """
+    Load image with RGB.
+
+    Args:
+        path (str): image path.
+
+    Returns:
+        PIL image class.
+    """
     if path is None or not is_image(path):
         assert path, '%s is none or is not an image'
     return Image.open(path).convert('RGB')
 
 
 def save_image(img, img_path):
-    """Save a numpy image to the disk
+    """
+    Save a numpy image to the disk.
 
     Args:
-        img (Union[numpy.ndarray, Tensor]): image to save.
-        image_path (str): the path of the image.
+        img (Union[numpy.ndarray, Tensor]): Image to save.
+        img_path (str): The path of the image.
     """
     if isinstance(img, Tensor):
         # Decode a [1, C, H, W] Tensor to image numpy array.

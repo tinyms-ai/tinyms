@@ -63,10 +63,13 @@ def create_dataset(dataset_path, batch_size=1, repeat_size=1, max_dataset_size=N
                    shuffle=True, num_parallel_workers=1, phase='train', data_dir='testA'):
     """ create Mnist dataset for train or eval.
     Args:
-        data_path: Data path
-        batch_size: The number of data records in each group
-        repeat_size: The number of replicated data records
-        num_parallel_workers: The number of parallel workers
+        dataset_path (str): Data path
+        batch_size (int): The number of data records in each group
+        repeat_size (int): The number of replicated data records
+        num_parallel_workers (int): The number of parallel workers
+        shuffle (bool): True or False
+        phase (str): train or predict phase
+        data_dir (str): in predict phase, it can be 'testA' or 'testB'.
     """
     # define dataset and apply the transform func
     if phase == 'train':

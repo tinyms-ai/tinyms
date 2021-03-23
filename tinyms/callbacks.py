@@ -37,7 +37,7 @@ class LossTimeMonitor(Callback):
         >>> from tinyms import Tensor
         >>> from tinyms.callbacks import LossTimeMonitor
         >>>
-        >>> LossTimeMonitor(100, lr_init=Tensor([0.05] * 100).asnumpy())
+        >>> LossTimeMonitor(lr_init=Tensor([0.05] * 100).asnumpy())
     """
 
     def __init__(self, lr_init=None):

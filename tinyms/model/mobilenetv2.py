@@ -31,6 +31,12 @@ def _make_divisible(v, divisor, min_value=None):
 
 
 class GlobalAvgPooling(layers.Layer):
+    """
+    Pooling Layer, do average pooling operation.
+
+    Returns:
+        Tensor, output tensor.
+    """
     def __init__(self):
         super(GlobalAvgPooling, self).__init__()
         self.mean = ReduceMean(keep_dims=False)
@@ -55,7 +61,7 @@ class ConvBNReLU(layers.Layer):
         Tensor, output tensor.
 
     Examples:
-        >>> ConvBNReLU(16, 256, kernel_size=1, stride=1, groups=1)
+        >>> ConvBNReLU(16, 256, kernel_size=3, stride=1, groups=1)
     """
 
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, groups=1):
@@ -77,6 +83,18 @@ class ConvBNReLU(layers.Layer):
 
 
 class InvertedResidual(layers.Layer):
+    """
+    Inverted residual module.
+
+    Args:
+        inp (int): Input channel.
+        oup (int): Output channel.
+        stride (int): Stride size.
+        expand_ratio (float): Expand ratio.
+
+    Returns:
+        Tensor, output tensor.
+    """
     def __init__(self, inp, oup, stride, expand_ratio):
         super(InvertedResidual, self).__init__()
         assert stride in [1, 2]
@@ -103,6 +121,18 @@ class InvertedResidual(layers.Layer):
 
 
 class MobileNetV2Backbone(layers.Layer):
+    """
+    MobileNetV2 Backbone net.
+
+    Args:
+        width_mult (int): The number of classes.
+        round_nearest (int): Channel round to. Default is 8.
+        input_channel (int): Input channel. Default is 32.
+        last_channel (int): The channel of last layer. Default is 1280.
+
+    Returns:
+        Tensor, output tensor.
+    """
     def __init__(self, width_mult=1., round_nearest=8, input_channel=32, last_channel=1280):
         super(MobileNetV2Backbone, self).__init__()
         # setting of inverted residual blocks
@@ -152,6 +182,17 @@ class MobileNetV2Backbone(layers.Layer):
 
 
 class MobileNetV2Head(layers.Layer):
+    """
+    MobileNetV2 Head net.
+
+    Args:
+        input_channel (int): Input channel. Default is 1280.
+        class_num (int): The number of classes. Default is 1000.
+        use_activation (bool): Whether to use activation functions. Default is False.
+
+    Returns:
+        Tensor, output tensor.
+    """
     def __init__(self, input_channel=1280, class_num=1000, use_activation=False):
         super(MobileNetV2Head, self).__init__()
         # mobilenet head
@@ -182,7 +223,7 @@ class MobileNetV2(layers.Layer):
     MobileNetV2 architecture.
 
     Args:
-        class_num (int): number of classes.
+        class_num (int): The number of classes.
         width_mult (float): Channels multiplier for round to 8/16 and others. Default is 1.0.
         round_nearest (int): Channel round to. Default is 8.
         input_channel (int): Input channel. Default is 32.
@@ -191,7 +232,6 @@ class MobileNetV2(layers.Layer):
     Returns:
         Tensor, output tensor.
     """
-
     def __init__(self, class_num=1000, width_mult=1.,
                  round_nearest=8, input_channel=32, last_channel=1280, is_training=True):
         super(MobileNetV2, self).__init__()
@@ -209,8 +249,27 @@ class MobileNetV2(layers.Layer):
 
 
 def mobilenetv2(class_num=1000, is_training=True):
+    """
+    Get MobileNetV2 instance for training.
+
+    Args:
+        class_num (int): The number of classes.
+        is_training (bool): Whether to do training job, default: True.
+
+    Returns:
+        MobileNetV2 instance.
+    """
     return MobileNetV2(class_num=class_num, is_training=is_training)
 
 
 def mobilenetv2_infer(class_num=1000):
+    """
+    Get MobileNetV2 instance for predict.
+
+    Args:
+        class_num (int): The number of classes.
+
+    Returns:
+        MobileNetV2 instance.
+    """
     return MobileNetV2(class_num=class_num, is_training=False)

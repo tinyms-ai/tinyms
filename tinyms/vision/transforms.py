@@ -580,6 +580,9 @@ class CycleGanDatasetTransform():
             >>>
             >>> cyclegan_transform = CycleGanDatasetTransform()
             >>> gan_generator_ds = cyclegan_transform.apply_ds(gan_generator_ds)
+
+        Raises:
+            TypeError: If `gan_generator_ds` is not instance of GeneratorDataset.
         '''
         if not isinstance(gan_generator_ds, GeneratorDataset):
             raise TypeError("Input type should be GeneratorDataset, got {}.".format(type(gan_generator_ds)))

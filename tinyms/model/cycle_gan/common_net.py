@@ -13,7 +13,7 @@
 # limitations under the License.
 # ============================================================================
 
-"""Common network."""
+"""Cycle GAN Common network."""
 from tinyms.initializers import initializer, Normal, XavierUniform
 from tinyms import layers
 
@@ -22,8 +22,8 @@ def init_weights(net, init_type='normal', init_gain=0.02):
     """
     Initialize network weights.
 
-    Parameters:
-        net (layer): Network to be initialized
+    Args:
+        net (layers.Layer): Network to be initialized
         init_type (str): The name of an initialization method: normal | xavier.
         init_gain (float): Gain factor for normal and xavier.
 
@@ -114,8 +114,8 @@ class ConvTransposeNormReLU(layers.Layer):
         norm_mode (str): Specifies norm method. The optional values are "batch", "instance".
         pad_mode (str): Specifies padding mode. The optional values are "CONSTANT", "REFLECT", "SYMMETRIC".
                         Default: "CONSTANT".
-        use_relu (bool): use relu or not. Default: True.
-        padding (int): pad size, if it is None, it will calculate by kernel_size. Default: None.
+        use_relu (bool): Use relu or not. Default: True.
+        padding (int): The pad size, if it is None, it will calculate by kernel_size. Default: None.
 
     Returns:
         Tensor, output tensor.

@@ -80,6 +80,7 @@ class GanReporter(logging.Logger):
             self._log(logging.INFO, msg, args, **kwargs)
 
     def save_args(self, args):
+        """Show args configuration info."""
         self.info('Args:')
         args_dict = vars(args)
         for key in args_dict.keys():
@@ -98,6 +99,7 @@ class GanReporter(logging.Logger):
             self.info(important_msg, *args, **kwargs)
 
     def epoch_start(self):
+        """Print log when step start."""
         self.step_start_time = time.time()
         self.epoch_start_time = time.time()
         self.step = 0
@@ -106,7 +108,13 @@ class GanReporter(logging.Logger):
         self.D_loss = []
 
     def step_end(self, res_G, res_D):
-        """print log when step end."""
+        """
+        Print log when step end.
+
+        Args:
+            res_G (layers.Layer): TrainOneStepG instance.
+            res_D (layers.Layer): TrainOneStepD instance.
+        """
         self.step += 1
         loss_D = float(res_D.asnumpy())
         res = []
@@ -124,7 +132,12 @@ class GanReporter(logging.Logger):
             self.step_start_time = time.time()
 
     def epoch_end(self, net):
-        """print log and save cgeckpoints when epoch end."""
+        """
+        Print log and save cgeckpoints when epoch end.
+
+        Args:
+            net (layers.Layer): TrainOneStepG instance.
+        """
         epoch_cost = (time.time() - self.epoch_start_time) * 1000
         pre_step_time = epoch_cost / self.dataset_size
         mean_loss_G = sum(self.G_loss) / self.dataset_size
@@ -139,6 +152,15 @@ class GanReporter(logging.Logger):
             save_checkpoint(net.G.D_B, os.path.join(self.ckpts_dir, f"D_B_{self.epoch}.ckpt"))
 
     def visualizer(self, img_A, img_B, fake_A, fake_B):
+        """
+        Save visualized image.
+
+        Args:
+            img_A (numpy.ndarray): Image data.
+            img_B (numpy.ndarray): Image data.
+            fake_A (numpy.ndarray): Generated image data.
+            fake_B (numpy.ndarray): Generated image data.
+        """
         if self.save_imgs and self.step % self.dataset_size == 0 and self.rank == 0:
             save_image(img_A, os.path.join(self.imgs_dir, f"{self.epoch}_img_A.jpg"))
             save_image(img_B, os.path.join(self.imgs_dir, f"{self.epoch}_img_B.jpg"))
@@ -146,21 +168,30 @@ class GanReporter(logging.Logger):
             save_image(fake_B, os.path.join(self.imgs_dir, f"{self.epoch}_fake_B.jpg"))
 
     def start_predict(self, direction):
+        """
+        Print log when predict start.
+
+        Args:
+            direction (str): The predict name.
+        """
         self.predict_start_time = time.time()
         self.direction = direction
         self.info('==========start predict %s===============', self.direction)
 
     def end_predict(self):
+        """Print log when predict end."""
         cost = (time.time() - self.predict_start_time) * 1000
         pre_step_cost = cost / self.dataset_size
         self.info('total {} imgs cost {:.2f} ms, pre img cost {:.2f}'.format(self.dataset_size, cost, pre_step_cost))
         self.info('==========end predict %s===============\n', self.direction)
 
     def start_eval(self):
+        """Print log when eval start."""
         self.eval_start_time = time.time()
         self.info('==========start eval %s===============')
 
     def end_eval(self):
+        """Print log when eval end."""
         cost = (time.time() - self.eval_start_time) * 1000
         pre_step_cost = cost / self.dataset_size
         self.info('total {} imgs cost {:.2f} ms, pre img cost {:.2f}'.format(self.dataset_size, cost, pre_step_cost))
@@ -173,15 +204,13 @@ class GanImagePool():
 
     This buffer enables us to update discriminators using a history of generated images
     rather than the ones produced by the latest generators.
+
+    Args:
+        pool_size (int): The size of image buffer, if pool_size=0, no buffer will be created.
     """
 
     def __init__(self, pool_size):
-        """
-        Initialize the ImagePool class
-
-        Args:
-            pool_size (int): the size of image buffer, if pool_size=0, no buffer will be created.
-        """
+        """Initialize the ImagePool class."""
         self.pool_size = pool_size
         if self.pool_size > 0:  # create an empty pool
             self.num_imgs = 0
@@ -189,16 +218,17 @@ class GanImagePool():
 
     def query(self, images):
         """
-        Return an image from the pool.
-
-        Args:
-            images: the latest generated images from the generator
-
-        Returns images Tensor from the buffer.
+        Query an image from the pool.
 
         By 50/100, the buffer will return input images.
         By 50/100, the buffer will return images previously stored in the buffer,
         and insert the current images to the buffer.
+
+        Args:
+            images (Tensor): The latest generated images from the generator
+
+        Returns:
+            Images tensor from the buffer.
         """
         if isinstance(images, Tensor):
             images = images.asnumpy()
@@ -230,7 +260,19 @@ class GanImagePool():
 
 def gan_load_ckpt(G_A_ckpt=None, G_B_ckpt=None, D_A_ckpt=None, D_B_ckpt=None,
                   G_A=None, G_B=None, D_A=None, D_B=None):
-    """Load parameter from checkpoint."""
+    """
+    Load parameter from checkpoint files.
+
+    Args:
+        G_A_ckpt (Checkpoint): Load G_A checkpoint file.
+        G_B_ckpt (Checkpoint): Load G_B checkpoint file.
+        D_A_ckpt (Checkpoint): Load D_A checkpoint file.
+        D_B_ckpt (Checkpoint): Load D_B checkpoint file.
+        G_A (Generator): G_A Generator.
+        G_B (Generator): G_B Generator.
+        D_A (Discriminator): D_A Discriminator.
+        D_B (Discriminator): D_B Discriminator.
+    """
     if G_A_ckpt is not None:
         param_GA = load_checkpoint(G_A_ckpt)
         load_param_into_net(G_A, param_GA)
