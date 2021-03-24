@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+"""Servable functions at the server part"""
 import os
 import json
 
@@ -30,6 +31,24 @@ model_checker = {
 
 
 def servable_search(name=None):
+    """
+    Check whether the servable json exists and whether the content is valid.
+
+    If the servable exits and the content is valid, the servable values will be returned, otherwise returns the servable list
+
+    Args:
+        name (str): servable name
+
+    Returns:
+        A string of servable values will be returned if servable json exists, otherwise error message.
+
+    Examples:
+        >>> # In the server part, before running the predict function, servable_serch is called to check and get the result. 
+        >>> res = servable_search(servable_name)
+        >>> servable = res['servables'][0]
+        >>> res = predict(instance, servable_name, servable['model'], strategy)
+    """
+
     # Check if servable_path existed
     if not os.path.exists(servable_path):
         err_msg = "Servable NOT found in " + servable_path
@@ -56,6 +75,26 @@ def servable_search(name=None):
 
 
 def predict(instance, servable_name, servable_model, strategy):
+    """
+    Predict the result based on the input data.
+
+    A network will be constructed based on the input and servable data, then load the checkpoint and do the predict.
+
+    Args:
+        instance (dict): the dict of input image after transformation, with keys of `shape`, `dtype` and `data`(Image object). 
+        servable_name (str): servable name
+        servable_model (str): name of the model
+        strategy (str): output strategy, usually select between `TOP1_CLASS` and `TOP5_CLASS`, for cyclegan, select between `gray2color` and `color2gray`
+
+    Returns:
+        The dict object of predicted result after post process.
+
+    Examples:
+        >>> # In the server part, after servavle_search 
+        >>> res = predict(instance, servable_name, servable['model'], strategy)
+        >>> return jsonify(res)
+    """
+
     # check if servable model name is valid
     model_name = servable_model['name']
     net_func = model_checker.get(model_name)
