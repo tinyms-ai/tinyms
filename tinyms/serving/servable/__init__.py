@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+"""Servable functions"""
 from .servable import servable_search, predict
 
 __all__ = ["servable_search", "predict"]
