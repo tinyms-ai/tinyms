@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../../..'))
 # -- Project information -----------------------------------------------------
 
 project = u'TinyMS'
-copyright = u'2021, TinyMS'
+copyright = u'2021, TinyMS Community'
 author = u'TinyMS'
 
 # The short X.Y version
