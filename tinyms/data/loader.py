@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+"""
+Introduction to data/loader:
 
+data/loader supports various formats of datasets, including ImageNet, TFData,
+MNIST, Cifar10/100, Manifest, MindRecord, etc. This module could load data in
+high performance and parse data precisely. It also provides the following
+operations for users to preprocess data: shuffle, batch, repeat, map, and zip.
+"""
 import os
 import random
 import numpy as np
@@ -34,9 +41,10 @@ class UnalignedDataset:
     This dataset class can load unaligned/unpaired datasets.
 
     Args:
-        dataset_path (str): path of images (should have subfolders trainA, trainB, testA, testB, etc).
-        phase (str): Train or test. It requires two directories in dataroot, like trainA and trainB to
-            host training images from domain A '{dataroot}/trainA' and from domain B '{dataroot}/trainB' respectively.
+        dataset_path (str): The path of images (should have subfolders trainA, trainB, testA, testB, etc).
+        phase (str): Train or test. It requires two directories in dataset_path, like trainA and trainB to.
+            host training images from domain A '{dataset_path}/trainA' and from domain B '{dataset_path}/trainB'
+            respectively.
         max_dataset_size (int): Maximum number of return image paths.
 
     Returns:
@@ -76,7 +84,7 @@ class GanImageFolderDataset:
     This dataset class can load images from image folder.
 
     Args:
-        dataset_path (str): */testA, */testB, etc.
+        dataset_path (str): '{dataset_path}/testA', '{dataset_path}/testB', etc.
         max_dataset_size (int): Maximum number of return image paths.
 
     Returns:
@@ -100,7 +108,18 @@ class GanImageFolderDataset:
 
 # Dataset distributed sampler
 class DistributedSampler:
-    """Distributed sampler."""
+    """
+    Distributed sampler.
+
+    Args:
+        dataset_size (int): Dataset list length
+        num_replicas (int): Replicas num.
+        rank (int): Device rank.
+        shuffle (bool): Whether the dataset needs to be shuffled. Default: True.
+
+    Returns:
+        DistributedSampler instance.
+    """
     def __init__(self, dataset_size, num_replicas=None, rank=None, shuffle=True):
         if num_replicas is None:
             print("***********Setting world_size to 1 since it is not passed in ******************")

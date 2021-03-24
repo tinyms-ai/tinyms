@@ -13,9 +13,9 @@
 # limitations under the License.
 # ============================================================================
 """
-Layer.
+Layer module contains pre-defined building blocks or computing units to construct neural networks.
 
-The high-level components(Cells) used to construct the neural network.
+The high-level components (Layers) used to construct the neural network.
 """
 from mindspore.nn import Cell
 from mindspore.nn.layer.container import SequentialCell, CellList
@@ -44,12 +44,91 @@ __all__.extend(combined.__all__)
 
 
 class Layer(Cell):
+    """
+    Base class for all neural networks.
+
+    A 'Layer' could be a single neural network layer, such as conv2d, relu, batch_norm, etc. or a composition of cells to constructing a network.
+
+    Note:
+        In general, the autograd algorithm will automatically generate the implementation of the gradient function, but if back-propagation(bprop) method is implemented, the gradient function will be replaced by the bprop.
+        The bprop implementation will receive a Tensor `dout` containing the gradient of the loss w.r.t. the output, and a Tensor `out` containing the forward result.
+        The bprop needs to compute the gradient of the loss w.r.t. the inputs, gradient of the loss w.r.t. Parameter variables are not supported currently.
+        The bprop method must contain the self parameter.
+
+    Args:
+        auto_prefix (bool): Recursively generate namespaces. Default: True.
+
+    Examples:
+        >>> from tinyms import layers, primitives as P
+        >>>
+        >>> class MyNet(layers.Layer):
+        ...    def __init__(self):
+        ...        super(MyNet, self).__init__()
+        ...        self.relu = P.ReLU()
+        ...
+        ...    def construct(self, x):
+        ...        return self.relu(x)
+    """
     pass
 
 
 class SequentialLayer(SequentialCell):
+    """
+    Sequential layer container.
+
+    A list of Layers will be added to it in the order they are passed in the constructor.
+    Alternatively, an ordered dict of cells can also be passed in.
+
+    Args:
+        args (Union[list, OrderedDict]): List of subclass of Layer.
+
+    Raises:
+        TypeError: If the type of the argument is not list or OrderedDict.
+
+    Inputs:
+        - **input** (Tensor) - Tensor with shape according to the first Cell in the sequence.
+
+    Outputs:
+        Tensor, the output Tensor with shape depending on the input and defined sequence of Layers.
+
+    Examples:
+        >>> import tinyms as ts
+        >>> from tinyms.layers import SequentialLayer, Conv2d, ReLU
+        >>>
+        >>> seq_layer = SequentialLayer([Conv2d(3, 2, 3, pad_mode='valid', weight_init="ones"), ReLU()])
+        >>> x = ts.ones([1, 3, 4, 4])
+        >>> print(seq_layer(x))
+        [[[[27. 27.]
+           [27. 27.]]
+          [[27. 27.]
+           [27. 27.]]]]
+    """
     pass
 
 
 class LayerList(CellList):
+    """
+    Holds Layers in a list.
+
+    LayerList can be used like a regular Python list, support
+    '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__iadd__',
+    but layers it contains are properly registered, and will be visible by all Layer methods.
+
+    Args:
+        args (list, optional): List of subclass of Layer.
+
+    Examples:
+        >>> from tinyms.layers import LayerList, Conv2d, BatchNorm2d, ReLU
+        >>>
+        >>> conv = nn.Conv2d(100, 20, 3)
+        >>> layers = LayerList([BatchNorm2d(20)])
+        >>> layers.insert(0, Conv2d(100, 20, 3))
+        >>> layers.append(ReLU())
+        >>> layers
+        LayerList<
+          (0): Conv2d<input_channels=100, ..., bias_init=None>
+          (1): BatchNorm2d<num_features=20, ..., moving_variance=Parameter (name=variance)>
+          (2): ReLU<>
+          >
+    """
     pass

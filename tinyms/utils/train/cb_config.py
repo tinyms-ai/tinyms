@@ -17,6 +17,19 @@ from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossTimeMonitor
 
 
 def mobilenetv2_cb(device_target, lr, is_saving_checkpoint, save_checkpoint_epochs, step_size):
+    """
+    Get mobilenetv2 callback.
+
+    Args:
+       device_target (str): 'CPU', 'GPU or 'Ascend'.
+       lr (Tensor): learning rate.
+       is_saving_checkpoint (bool): Whether to save the checkpoint file.
+       save_checkpoint_epochs (int): Save checkpoint epochs.
+       step_size (int): dataset.get_dataset_size().
+
+    Returns:
+       Callback list.
+    """
     cb = None
     if device_target in ("CPU", "GPU"):
         cb = [LossTimeMonitor(lr_init=lr.asnumpy())]

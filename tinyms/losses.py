@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
+"""
+Losses module. Loss function in machine learning is the target of the model.
+It shows how well the model works on a dataset and the optimization target
+which the optimizer is searching.
+"""
 from mindspore.nn import loss
 from mindspore.nn.loss import *
 from mindspore.nn.loss.loss import _Loss
@@ -21,7 +25,13 @@ from . import layers, primitives as P, Tensor
 from .model import SSD300
 
 
-__all__ = ['net_with_loss', 'SSD300WithLoss']
+__all__ = [
+    'net_with_loss',
+    'SSD300WithLoss',
+    'CrossEntropyWithLabelSmooth',
+    'CycleGANGeneratorLoss',
+    'CycleGANDiscriminatorLoss',
+]
 __all__.extend(loss.__all__)
 
 
@@ -61,17 +71,20 @@ class SigmoidFocalClassificationLoss(layers.Layer):
 
 
 class SSD300WithLoss(layers.Layer):
-    """"
+    r"""
     Provide SSD300 training loss through network.
 
     Args:
-        network (Layer): The training network.
+        network (layers.Layer): The training network.
 
     Returns:
         Tensor, the loss of the network.
 
     Examples:
-        net = SSD300WithLoss(ssd300())
+        >>> from tinyms.model import ssd300
+        >>> from tinyms.losses import SSD300WithLoss
+        >>>
+        >>> net = SSD300WithLoss(ssd300())
     """
 
     def __init__(self, network):
@@ -103,6 +116,29 @@ class SSD300WithLoss(layers.Layer):
 
 
 def net_with_loss(net):
+    r'''
+    This function is provided for AI beginners who are not familiar with which loss
+    should be chosen for the network to be trained. Instead of choosing different loss
+    function, users could directly get the best suitable loss function by specifying
+    network.
+
+    Args:
+        net (layers.Layer): The instance of network to be trained.
+
+    Raises:
+        TypeError: When network type is not supported.
+
+    Note:
+        Currently this function only supports few networks, if the network type is
+        not supported, the system would raise TypeError exception.
+
+    Examples:
+        >>> from tinyms.model import ssd300
+        >>> from tinyms.losses import net_with_loss
+        >>>
+        >>> net = ssd300()
+        >>> net_loss = net_with_loss(net)
+    '''
     if not isinstance(net, layers.Layer):
         raise TypeError("Input should be inheritted from layers.Layer!")
 
@@ -117,8 +153,8 @@ class CrossEntropyWithLabelSmooth(_Loss):
     CrossEntropyWith LabelSmooth.
 
     Args:
-        smooth_factor (float): smooth factor. Default is 0.
-        num_classes (int): number of classes. Default is 1000.
+        smooth_factor (float): Smooth factor. Default is 0.
+        num_classes (int): Number of classes. Default is 1000.
 
     Returns:
         None.
@@ -152,12 +188,16 @@ class GANLoss(_Loss):
     Args:
         mode (str): The type of GAN objective. It currently supports 'vanilla', 'lsgan'. Default: 'lsgan'.
         reduction (str): Specifies the reduction to be applied to the output.
-            Its value must be one of 'none', 'mean', 'sum'. Default: 'none'.
+            Its value must be one of 'none', 'mean', 'sum'. Default: 'mean'.
 
     Outputs:
         Tensor or Scalar, if `reduction` is 'none', then output is a tensor and has the same shape as `inputs`.
         Otherwise, the output is a scalar.
+
+    Raises:
+        NotImplementedError: Raised when GANLoss mode not recognized.
     """
+
     def __init__(self, mode="lsgan", reduction='mean'):
         super(GANLoss, self).__init__()
         self.loss = None
@@ -176,21 +216,21 @@ class GANLoss(_Loss):
         return loss
 
 
-class GeneratorLoss(_Loss):
+class CycleGANGeneratorLoss(_Loss):
     """
     Cycle GAN generator loss.
 
     Args:
-        args (class): Option class.
-        generator (Cell): Generator of CycleGAN.
-        D_A (Cell): The discriminator network of domain A to domain B.
-        D_B (Cell): The discriminator network of domain B to domain A.
+        generator (layers.Layer): Generator of CycleGAN.
+        D_A (layers.Layer): The discriminator network of domain A to domain B.
+        D_B (layers.Layer): The discriminator network of domain B to domain A.
 
     Outputs:
         Tuple Tensor, the losses of generator.
     """
+
     def __init__(self, generator, D_A, D_B):
-        super(GeneratorLoss, self).__init__()
+        super(CycleGANGeneratorLoss, self).__init__()
         self.lambda_A = 10.0
         self.lambda_B = 10.0
         self.lambda_idt = 0.5
@@ -219,20 +259,21 @@ class GeneratorLoss(_Loss):
         return (fake_A, fake_B, loss_G, loss_G_A, loss_G_B, loss_C_A, loss_C_B, loss_idt_A, loss_idt_B)
 
 
-class DiscriminatorLoss(_Loss):
+class CycleGANDiscriminatorLoss(_Loss):
     """
     Cycle GAN discriminator loss.
 
     Args:
-        args (class): option class.
-        D_A (Cell): The discriminator network of domain A to domain B.
-        D_B (Cell): The discriminator network of domain B to domain A.
+        D_A (layers.Layer): The discriminator network of domain A to domain B.
+        D_B (layers.Layer): The discriminator network of domain B to domain A.
+        reduction (str): The discriminator network of reduction. Default: none.
 
     Outputs:
-        Tuple Tensor, the loss of discriminator.
+        the loss of discriminator.
     """
+
     def __init__(self, D_A, D_B, reduction='none'):
-        super(DiscriminatorLoss, self).__init__()
+        super(CycleGANDiscriminatorLoss, self).__init__()
         self.D_A = D_A
         self.D_B = D_B
         self.false = Tensor(False, ts.bool_)
@@ -250,4 +291,3 @@ class DiscriminatorLoss(_Loss):
         loss_D_B = self.dis_loss(D_fake_B, self.false) + self.dis_loss(D_img_B, self.true)
         loss_D = (loss_D_A + loss_D_B) * 0.5
         return loss_D
-

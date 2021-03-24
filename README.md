@@ -3,11 +3,11 @@
 [![Build Status](https://travis-ci.org/tinyms-ai/tinyms.svg?branch=main)](https://travis-ci.org/tinyms-ai/tinyms)
 [![Documentation Status](https://readthedocs.org/projects/tinyms/badge/?versoin=latest)](https://readthedocs.org/projects/tinyms)
 [![Releases](https://img.shields.io/github/release/tinyms-ai/tinyms/all.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/releases)
-[![LICENSE](https://img.shields.io/github/license/tinyms-ai/tinyms.svg?style=flat-square)](https://github.com/stinyms-ai/tinyms/blob/main/LICENSE)
+[![LICENSE](https://img.shields.io/github/license/tinyms-ai/tinyms.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE)
 
 TinyMS is an Easy-to-Use deep learning development toolkit.
 
-> **注意：** TinyMS当前是基于`v1.1.1`版本的[MindSpore](https://github.com/mindspore-ai/mindspore/tree/r1.1.1)开发完成的。
+> **注意：** TinyMS当前是基于`v1.1.1`版本的[MindSpore](https://github.com/mindspore-ai/mindspore/tree/v1.1.1)开发完成的。
 
 ## Codebase
 
@@ -116,4 +116,5 @@ print("The label is:", mnist_transform.postprocess(res))
 
 ## License
 
-[Apache License 2.0](./LICENSE)
+- [Apache License 2.0](LICENSE)
+- [Creative Commons License version 4.0](docs/LICENSE-CC-BY-4.0.txt)

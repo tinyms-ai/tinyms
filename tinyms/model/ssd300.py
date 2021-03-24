@@ -147,7 +147,7 @@ class MultiBox(layers.Layer):
     and localization predictions.
 
     Args:
-        class_num (int): number of classes. Default is 21.
+        class_num (int): number of classes. Default: 21.
 
     Returns:
         Tensor, localization predictions.
@@ -185,10 +185,10 @@ class SSDWithMobileNetV2(layers.Layer):
     MobileNetV2 backbone.
 
     Args:
-        width_mult (float): Channels multiplier for round to 8/16 and others. Default is 1.0.
-        round_nearest (int): Channel round to. Default is 8.
-        input_channel (int): Input channel. Default is 32.
-        last_channel (int): The channel of last layer. Default is 1280.
+        width_mult (float): Channels multiplier for round to 8/16 and others. Default: 1.0.
+        round_nearest (int): Channel round to. Default: 8.
+        input_channel (int): Input channel. Default: 32.
+        last_channel (int): The channel of last layer. Default: 1280.
 
     Returns:
         Tensor, output feature maps.
@@ -243,9 +243,9 @@ class SSD300(layers.Layer):
     SSD300 Network. Default backbone is MobileNetV2.
 
     Args:
-        backbone (Layer): backbone of ssd300 model.
-        class_num (int): number of classes. Default is 21.
-        is_training (Bool): Specify if in training step. Default is True.
+        backbone (layers.Layer): backbone of ssd300 model.
+        class_num (int): number of classes. Default: 21.
+        is_training (bool): Specify if in training step. Default: True.
 
     Returns:
         Tensor, localization predictions.
@@ -294,8 +294,7 @@ class SSDInferWithDecoder(layers.Layer):
     SSD300 infer wrapper to decode the bbox locations.
 
     Args:
-        network (Layer): the origin ssd300 infer network without bbox decoder.
-        default_boxes (Tensor): the default_boxes from anchor generator
+        network (layers.Layer): the origin ssd300 infer network without bbox decoder.
 
     Returns:
         Tensor, the locations for bbox after decoder representing (y0, x0, y1, x1)

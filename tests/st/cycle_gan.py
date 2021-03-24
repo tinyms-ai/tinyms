@@ -23,7 +23,7 @@ from tinyms import context, Tensor
 from tinyms.data import GeneratorDataset, UnalignedDataset, GanImageFolderDataset, DistributedSampler
 from tinyms.vision import cyclegan_transform
 from tinyms.model.cycle_gan.cycle_gan import get_generator_discriminator, cycle_gan, TrainOneStepG, TrainOneStepD
-from tinyms.losses import DiscriminatorLoss, GeneratorLoss
+from tinyms.losses import CycleGANDiscriminatorLoss, CycleGANGeneratorLoss
 from tinyms.optimizers import Adam
 from tinyms.data.utils import save_image, generate_image_list
 from tinyms.utils.common_utils import GanReporter, gan_load_ckpt, GanImagePool
@@ -63,10 +63,13 @@ def create_dataset(dataset_path, batch_size=1, repeat_size=1, max_dataset_size=N
                    shuffle=True, num_parallel_workers=1, phase='train', data_dir='testA'):
     """ create Mnist dataset for train or eval.
     Args:
-        data_path: Data path
-        batch_size: The number of data records in each group
-        repeat_size: The number of replicated data records
-        num_parallel_workers: The number of parallel workers
+        dataset_path (str): Data path
+        batch_size (int): The number of data records in each group
+        repeat_size (int): The number of replicated data records
+        num_parallel_workers (int): The number of parallel workers
+        shuffle (bool): True or False
+        phase (str): train or predict phase
+        data_dir (str): in predict phase, it can be 'testA' or 'testB'.
     """
     # define dataset and apply the transform func
     if phase == 'train':
@@ -190,8 +193,8 @@ if __name__ == "__main__":
         generator_net = cycle_gan(G_A, G_B)
 
         # define loss function and optimizer
-        loss_D = DiscriminatorLoss(D_A, D_B)
-        loss_G = GeneratorLoss(generator_net, D_A, D_B)
+        loss_D = CycleGANDiscriminatorLoss(D_A, D_B)
+        loss_G = CycleGANGeneratorLoss(generator_net, D_A, D_B)
         lr = cyclegan_lr(max_epoch, n_epoch, args_opt.dataset_size)
 
         optimizer_G = Adam(generator_net.trainable_params(),
@@ -199,7 +202,7 @@ if __name__ == "__main__":
         optimizer_D = Adam(loss_D.trainable_params(),
                            cyclegan_lr(max_epoch, n_epoch, args_opt.dataset_size), beta1=0.5)
 
-        # build two net: generator net and descrinator net
+        # build two net: generator net and descriminator net
         net_G = TrainOneStepG(loss_G, generator_net, optimizer_G)
         net_D = TrainOneStepD(loss_D, optimizer_D)
 
@@ -253,4 +256,3 @@ if __name__ == "__main__":
 
         # Compare the similarity between the original image and the fake image
         eval_process(args_opt, cityscapes_dir, result_dir)
-

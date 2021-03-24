@@ -21,13 +21,32 @@ Welcome to TinyMS's documentation!
    tutorials/TinyMS_ResNet50_tutorial_zh.ipynb
    tutorials/TinyMS_MobileNetV2_tutorial_zh.ipynb
    tutorials/TinyMS_SSD300_tutorial_zh.ipynb
+   tutorials/TinyMS_CycleGAN_tutorial_zh.ipynb
 
 .. toctree::
    :maxdepth: 2
    :caption: 设计文档
 
-   design/overview
+   design/concepts
    design/api_spec
+
+.. toctree::
+   :maxdepth: 3
+   :caption: API文档
+
+   tinyms/tinyms
+   tinyms/tinyms.context
+   tinyms/tinyms.data
+   tinyms/tinyms.vision
+   tinyms/tinyms.primitives
+   tinyms/tinyms.layers
+   tinyms/tinyms.model
+   tinyms/tinyms.initializers
+   tinyms/tinyms.losses
+   tinyms/tinyms.optimizers
+   tinyms/tinyms.callbacks
+   tinyms/tinyms.metrics
+   tinyms/tinyms.serving
 
 .. toctree::
    :maxdepth: 2
