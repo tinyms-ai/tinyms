@@ -7,7 +7,7 @@
 
 TinyMS is an Easy-to-Use deep learning development toolkit.
 
-> **注意：** TinyMS当前是基于`v1.1.1`版本的[MindSpore](https://github.com/mindspore-ai/mindspore/tree/r1.1.1)开发完成的。
+> **注意：** TinyMS当前是基于`v1.1.1`版本的[MindSpore](https://github.com/mindspore-ai/mindspore/tree/v1.1.1)开发完成的。
 
 ## Codebase
 
@@ -116,4 +116,5 @@ print("The label is:", mnist_transform.postprocess(res))
 
 ## License
 
-[Apache License 2.0](./LICENSE)
+- [Apache License 2.0](LICENSE)
+- [Creative Commons License version 4.0](LICENSE-CC-BY-4.0)
