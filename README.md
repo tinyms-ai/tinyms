@@ -9,7 +9,7 @@ TinyMS is an Easy-to-Use deep learning development toolkit.
 
 > **注意：** TinyMS当前是基于`v1.1.1`版本的[MindSpore](https://github.com/mindspore-ai/mindspore/tree/v1.1.1)开发完成的。
 
-## Codebase
+## Codebases
 
 | 模块名称 | 功能介绍 | 样例代码 |
 | :------ | :------- | :------ |
