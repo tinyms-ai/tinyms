@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+"""The client part of TinyMS serving package"""
 from .client import list_servables, predict, server_started
 
 __all__ = ["list_servables", "predict", "server_started"]
