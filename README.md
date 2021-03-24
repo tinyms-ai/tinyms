@@ -117,4 +117,4 @@ print("The label is:", mnist_transform.postprocess(res))
 ## License
 
 - [Apache License 2.0](LICENSE)
-- [Creative Commons License version 4.0](docs/LICENSE-CC-BY-4.0)
+- [Creative Commons License version 4.0](docs/LICENSE-CC-BY-4.0.txt)
