@@ -1,6 +1,6 @@
 # Install TinyMS
 
-## User install TinyMS
+## User install
 
 ### Pypi
 
@@ -30,11 +30,15 @@ For users' environment do not want to change the local env which also cannot sat
 
 - docker: `v18.06.1-ce`
 
-If user want to try the tutorials that are written in `.ipynb` files，please pull `tinyms-jupyter` which jupyter component are installed by default
+If user want to try the tutorials that are written in `.ipynb` files，please pull jupyter version of TinyMS which jupyter component are installed by default
+
+* Default version
 
 ```shell
 docker pull tinyms/tinyms:0.1.0
 ```
+
+* Jupyter version
 
 If want to try jupyter, run the following command line
 
@@ -49,13 +53,11 @@ Open a browser on the local machine, type in
 <Your_external_IP_address>:8888
 ```
 
-Example: `159.138.7.105:8888`, the default password is `tinyms`，then user can log in to `jupyter`
+Example: `188.8.8.88:8888`, the default password is `tinyms`，then user can log in to `jupyter`
 
-## Developer install TinyMS
+## Install from source
 
 For developers who want to develope based on TinyMS, install from source
-
-### Install from source
 
 ```shell
 sudo apt-get install -y libssl-dev

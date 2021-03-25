@@ -1,6 +1,6 @@
-# 安装TinyMS相关环境
+# 快速安装TinyMS
 
-## 用户安装TinyMS
+## 用户安装
 
 ### Pypi
 
@@ -30,12 +30,16 @@ pip install tinyms==0.1.0
 
 - docker: `v18.06.1-ce`
 
-如果想要体验本教程中的`.ipynb`教程，建议拉取`tinyms-jupyter`镜像，镜像中除了tinyms外还内置了jupyter组件
+如果想要体验本教程中的`.ipynb`教程，建议拉取TinyMS jupyter版本的镜像，该镜像中除了tinyms外还内置了jupyter组件
+
+* 普通版本
 
 ```shell
 docker pull tinyms/tinyms:0.1.0
 docker run -it tinyms/tinyms:0.1.0
 ```
+
+* Jupyter版本
 
 如果想体验jupyter教程，运行下列命令行
 
@@ -50,13 +54,11 @@ docker run -it --net=host tinyms/tinyms:0.1.0-jupyter
 <公网IP地址>:8888
 ```
 
-例如 `159.138.7.105:8888`，之后在弹出的页面中，密码输入`tinyms`，就可以远程登录`jupyter`了
+例如 `188.8.8.88:8888`，之后在弹出的页面中，密码输入`tinyms`，就可以远程登录`jupyter`了
 
-## 开发者安装TinyMS
+## 源码安装
 
 想针对TinyMS进行开发的开发者，可以通过源码安装
-
-### 通过源码安装
 
 ```shell
 sudo apt-get install -y libssl-dev
@@ -66,7 +68,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-## 验证安装
+## 验证
 
 进入 `python` 或 `jupyter` 环境，输入以下代码验证安装
 
