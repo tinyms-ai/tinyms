@@ -7,21 +7,21 @@
 [![Releases](https://img.shields.io/github/release/tinyms-ai/tinyms/all.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/releases)
 [![LICENSE](https://img.shields.io/github/license/tinyms-ai/tinyms.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE)
 
-English | [查看中文](./README_CN.md)
+中文 | [View English](./README.md)
 
-TinyMS is an Easy-to-Use deep learning development toolkit based on [MindSpore](https://www.mindspore.cn/en/), designed to providing quick-start guidelines for machine learning beginners.
+TinyMS是基于[MindSpore AI框架](https://www.mindspore.cn/)开发，面向上层用户的一个高级API开发库，目的是让小白用户能够更加轻松地上手开发深度学习应用。
 
-## Installation
+## 安装
 
-Please checkout the [install document](https://tinyms.readthedocs.io/en/latest/quickstart/install.html) to quickly install or upgrade TinyMS project.
+欢迎查阅[安装文档](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html)实现一键安装TinyMS。
 
-## Quick start
+## 快速上手
 
-Have no idea what to do with TinyMS❓ See the [Quick Start](https://tinyms.readthedocs.io/en/latest/quickstart/quickstart_in_one_minute.html) to implement the image classification application in one minutes❗
+不知道用TinyMS做什么❓ 通过[快速上手指南](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/quickstart_in_one_minute.html)，您可以在一分钟内快速开发一个图形分类应用❗
 
-Besides, here are some use cases listed to demonstrate how TinyMS simplifies the code flow for users.
+当然，我们在这里也为您提供了一些TinyMS常用的使用场景，您可以快速体验到TinyMS开发的简易和流畅性。
 
-### Data loading and preprocess
+### 数据加载/处理
 
 <table>
 <tr>
@@ -40,7 +40,7 @@ mnist_ds = mnist_transform.apply_ds(mnist_ds)
 </tr>
 </table>
 
-### Network construction
+### 网络构建
 
 <table>
 <tr>
@@ -56,7 +56,7 @@ net = lenet5(class_num=10)
 </tr>
 </table>
 
-### Model train/evaluation
+### 模型训练/验证
 
 <table>
 <tr>
@@ -78,7 +78,7 @@ model.eval(eval_dataset)
 </tr>
 </table>
 
-### Model prediction
+### 模型推理部署
 
 <table>
 <tr>
@@ -106,18 +106,18 @@ print("The label is:", mnist_transform.postprocess(res))
 </tr>
 </table>
 
-## API documentation
+## API文档
 
-If you are interested in learning TinyMS API, please find TinyMS Python API in [API Documentation](https://tinyms.readthedocs.io/en/latest/tinyms/tinyms.html).
+如果您想了解TinyMS的Python API接口，请访问[TinyMS API文档](https://tinyms.readthedocs.io/zh_CN/latest/tinyms/tinyms.html)。
 
-## Community
+## 社区
 
-For any developers who are not familiar with how TinyMS community works, please find the [Contributing Guidelines](https://tinyms.readthedocs.io/en/latest/community/contributing.html) to get started.
+欢迎加入TinyMS社区进行贡献，如果您还不太清楚TinyMS社区的运作流程，可通过[贡献指南](https://tinyms.readthedocs.io/zh_CN/latest/community/contributing.html)的学习快速上手社区贡献。
 
-## Release Notes
+## 版本说明
 
-The release notes, see our [RELEASE](https://github.com/tinyms-ai/tinyms/blob/main/RELEASE.md).
+版本说明请参阅[RELEASE](https://github.com/tinyms-ai/tinyms/blob/main/RELEASE.md)。
 
-## License
+## 许可证
 
-This work is licensed under [Apache License 2.0](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE).
+[Apache License 2.0](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE)
