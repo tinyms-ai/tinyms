@@ -29,7 +29,6 @@ def _read_file(filename):
 
 
 readme = _read_file('README.md')
-release = _read_file('RELEASE.md')
 
 
 def _write_version(file):
@@ -57,28 +56,28 @@ if __name__ == "__main__":
         version=version_tag,
         author='The TinyMS Authors',
         author_email='wanghui71leon@gmail.com',
-        url='https://github.com/tinyms-ai/tinyms',
+        url='https://tinyms.readthedocs.io/en/latest/',
         download_url='https://github.com/tinyms-ai/tinyms/tags',
         project_urls={
             'Sources': 'https://github.com/tinyms-ai/tinyms',
             'Issue Tracker': 'https://github.com/tinyms-ai/tinyms/issues',
         },
         description='TinyMS is an Easy-to-Use deep learning development toolkit.',
-        long_description="\n\n".join([readme, release]),
+        long_description="\n\n".join([readme]),
         long_description_content_type="text/markdown",
         packages=setuptools.find_packages(),
         python_requires='>=3.7',
         install_requires=required_package,
         classifiers=[
-            'Development Status :: 4 - Beta',
+            'Development Status :: 3 - Alpha',
             'Environment :: Console',
-            'Intended Audience :: Science/Research',
             'Intended Audience :: Developers',
+            'Intended Audience :: Science/Research',
             'License :: OSI Approved :: Apache Software License',
+            'Operating System :: Microsoft :: Windows',
+            'Operating System :: POSIX :: Linux',
             'Programming Language :: Python :: 3 :: Only',
             'Programming Language :: Python :: 3.7',
-            'Programming Language :: Python :: 3.8',
-            'Programming Language :: C++',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: Artificial Intelligence',
             'Topic :: Software Development',
