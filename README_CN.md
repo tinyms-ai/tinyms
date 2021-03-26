@@ -2,6 +2,7 @@
 
 [![Pypi](https://img.shields.io/pypi/v/tinyms.svg)](https://pypi.org/project/tinyms)
 [![Python](https://img.shields.io/pypi/pyversions/tinyms.svg)](https://pypi.org/project/tinyms)
+[![Downloads](https://pepy.tech/badge/tinyms)](https://pepy.tech/project/tinyms)
 [![Build Status](https://travis-ci.org/tinyms-ai/tinyms.svg?branch=main)](https://travis-ci.org/tinyms-ai/tinyms)
 [![Documentation Status](https://readthedocs.org/projects/tinyms/badge/?versoin=latest)](https://readthedocs.org/projects/tinyms)
 [![Releases](https://img.shields.io/github/release/tinyms-ai/tinyms/all.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/releases)
