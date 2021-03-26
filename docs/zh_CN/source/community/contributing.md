@@ -88,6 +88,10 @@
 
 ### 提交更改
 
+**不知道如何提交PR**？📚建议您阅读[How to Contribute to an Open Source Project on GitHub](https://kcd.im/pull-request)的*free*章节进行学习📚
+
+提交更改时，请遵守如下规则：
+
 - 在[GitHub](https://github.com/tinyms-ai/tinyms/issues)上将您的想法作为*issue*提出。
 - 如果这是一项需要大量设计细节的新功能，则还应提交设计建议。
 - 在问题讨论和设计方案审查中达成共识后，完成分叉存储库的开发并提交PR。
