@@ -28,7 +28,6 @@ Welcome to TinyMS's documentation!
    :caption: 设计文档
 
    design/concepts
-   design/api_spec
 
 .. toctree::
    :maxdepth: 3

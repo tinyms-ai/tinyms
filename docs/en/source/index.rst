@@ -31,7 +31,6 @@ designed to providing quick-start guidelines for machine learning beginners.
    :caption: Design
 
    design/concepts
-   design/api_spec
 
 .. toctree::
    :maxdepth: 3

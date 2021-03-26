@@ -1,3 +1,0 @@
-# TinyMS API Specification
-
-TODO
