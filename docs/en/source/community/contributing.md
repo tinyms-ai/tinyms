@@ -87,7 +87,7 @@ When reporting issues, refer to this format:
 - Is this a BUG REPORT or FEATURE REQUEST?
 - What happened?
 - What you expected to happen?
-- How to reproduce it?(as minimally and precisely as possible)
+- How to reproduce it? (as minimally and precisely as possible)
 - Special notes for your reviewers?
 
 **Issues advisory:**
@@ -97,6 +97,10 @@ When reporting issues, refer to this format:
 - **If you resolve an issue which is reported by yourself,** it's also required to let others know before closing that issue.
 
 ### Propose PRs
+
+**Working on your first Pull Request?** 📚You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://kcd.im/pull-request)📚
+
+When proposing pull requests, please adhere to these rules:
 
 - Raise your idea as an *issue* on [GitHub](https://github.com/tinyms-ai/tinyms/issues).
 - If it is a new feature that needs lots of design details, a design proposal should also be submitted.
