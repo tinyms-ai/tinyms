@@ -56,7 +56,7 @@ docker run -it --net=host tinyms/tinyms:0.1.0-jupyter
 
 例如 `188.8.8.88:8888`，之后在弹出的页面中，密码输入`tinyms`，就可以远程登录`jupyter`了
 
-## 源码安装
+## 进阶用户源码安装
 
 想针对TinyMS进行开发的开发者，可以通过源码安装
 

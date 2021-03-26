@@ -55,7 +55,7 @@ Open a browser on the local machine, type in
 
 Example: `188.8.8.88:8888`, the default password is `tinyms`，then user can log in to `jupyter`
 
-## TinyMS Installation For Experienced Developers
+## Installation For Experienced Developers
 
 For developers who want to develop based on TinyMS, install from source
 
