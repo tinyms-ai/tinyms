@@ -62,7 +62,7 @@ docker run -it --net=host tinyms/tinyms:0.1.0-jupyter
 
 ```shell
 sudo apt-get install -y libssl-dev
-git clone https:github.com/tinyms-ai/tinyms.git
+git clone https://github.com/tinyms-ai/tinyms.git
 cd tinyms
 pip install -r requirements.txt
 python setup.py install
