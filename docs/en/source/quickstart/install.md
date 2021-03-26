@@ -4,14 +4,14 @@
 
 ### Pypi
 
-For users owning a clean environment, recommend using [pypi](https://pypi.org/) to install TinyMS after satisfy the following prerequisites. For setting up python environment, [Anaconda](https://www.anaconda.com/products/individual#Downloads) is a good choice.
+For users who own a clean environment, it is recommend to use [pypi](https://pypi.org/) to install TinyMS given that the following requirements are meet. For those who don't, [Anaconda](https://www.anaconda.com/products/individual#Downloads) is a good choice for setting up the python environment.
 
 Prerequisites  
 
 - Ubuntu: `18.04`
 - Python: `3.7.5`
 
-Chinese Domestic users recommend running the following code setting the mirror site of pypi to solve the downloading issue
+For China based users it is recommended to run the following command lines to help with faster download
 
 ```shell
 mkdir -pv /root/.pip \
@@ -26,7 +26,7 @@ pip install tinyms==0.1.0
 
 ### Docker
 
-For users' environment do not want to change the local env which also cannot satisfy the prerequisites, using [docker](https://www.docker.com/) to install is recommended
+For those who don't want to affect the local develop environment due to difficulty of meeting the prerequisites, using [docker](https://www.docker.com/) to install is recommended
 
 - docker: `v18.06.1-ce`
 
@@ -40,7 +40,7 @@ docker pull tinyms/tinyms:0.1.0
 
 * Jupyter version
 
-If want to try jupyter, run the following command line
+If user wants to try jupyter, run the following command line
 
 ```shell
 docker pull tinyms/tinyms:0.1.0-jupyter
@@ -55,7 +55,7 @@ Open a browser on the local machine, type in
 
 Example: `188.8.8.88:8888`, the default password is `tinyms`，then user can log in to `jupyter`
 
-## Install from source
+## TinyMS Installation For Experienced Developers
 
 For developers who want to develope based on TinyMS, install from source
 
