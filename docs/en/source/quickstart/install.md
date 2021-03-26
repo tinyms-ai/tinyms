@@ -4,7 +4,7 @@
 
 ### Pypi
 
-For users who own a clean environment, it is recommend to use [pypi](https://pypi.org/) to install TinyMS given that the following requirements are meet. For those who don't, [Anaconda](https://www.anaconda.com/products/individual#Downloads) is a good choice for setting up the python environment.
+For users who own a clean environment, it is recommended to use [pypi](https://pypi.org/) to install TinyMS given that the following requirements are meet. For those who don't, [Anaconda](https://www.anaconda.com/products/individual#Downloads) is a good choice for setting up the python environment.
 
 Prerequisites  
 
@@ -30,7 +30,7 @@ For those who don't want to affect the local develop environment due to difficul
 
 - docker: `v18.06.1-ce`
 
-If user want to try the tutorials that are written in `.ipynb` files，please pull jupyter version of TinyMS which jupyter component are installed by default
+If user wants to try the tutorials that are written in `.ipynb` files，please pull jupyter version of TinyMS in which jupyter components are installed by default
 
 * Default version
 
@@ -57,11 +57,11 @@ Example: `188.8.8.88:8888`, the default password is `tinyms`，then user can log
 
 ## TinyMS Installation For Experienced Developers
 
-For developers who want to develope based on TinyMS, install from source
+For developers who want to develop based on TinyMS, install from source
 
 ```shell
 sudo apt-get install -y libssl-dev
-git clone https:github.com/tinyms-ai/tinyms.git
+git clone https://github.com/tinyms-ai/tinyms.git
 cd tinyms
 pip install -r requirements.txt
 python setup.py install
