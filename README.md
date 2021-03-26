@@ -6,6 +6,7 @@
 [![Documentation Status](https://readthedocs.org/projects/tinyms/badge/?versoin=latest)](https://readthedocs.org/projects/tinyms)
 [![Releases](https://img.shields.io/github/release/tinyms-ai/tinyms/all.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/releases)
 [![LICENSE](https://img.shields.io/github/license/tinyms-ai/tinyms.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 English | [查看中文](./README_CN.md)
 
@@ -120,4 +121,4 @@ The release notes, see our [RELEASE](https://github.com/tinyms-ai/tinyms/blob/ma
 
 ## License
 
-This work is licensed under [Apache License 2.0](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE).
+[Apache License 2.0](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE)
