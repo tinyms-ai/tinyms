@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../../..'))
 
 project = u'TinyMS'
 copyright = u'2021, TinyMS Community'
-author = u'TinyMS'
+author = u'TinyMS Authors'
 
 # The short X.Y version
 version = u'0.1.0'
@@ -84,6 +84,17 @@ autosummary_generate = True
 #
 html_theme = 'sphinx_rtd_theme'
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+html_theme_options = {
+    'logo_only': True,
+}
+
+# The name of an image file (relative to this directory) to place at the top
+# of the sidebar.
+html_logo = '_static/tinyms-logo.png'
 
 html_static_path = ['_static']
 
