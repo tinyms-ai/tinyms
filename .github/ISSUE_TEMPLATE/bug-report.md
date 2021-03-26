@@ -5,7 +5,7 @@ labels: kind/bug
 
 ---
 
-<!--  Thanks for sending an issue!  Here are some tips for you:
+<!--  Thanks for sending an issue! Here are some tips for you:
 
 If this is your first time, please read our contributor guidelines: https://tinyms.readthedocs.io/en/latest/community/contributing.html
 -->
@@ -13,7 +13,7 @@ If this is your first time, please read our contributor guidelines: https://tiny
 ## Environment
 
 - **TinyMS version (source or binary)**:
-- **MindSpore version (source or binary)**:
+- **Framework and version (e.g., MindSpore v1.1.1)**:
 - **Python version (e.g., Python 3.7.5)**:
 - **Hardware backend (e.g., CPU)**:
 - **OS platform and distribution (e.g., Linux Ubuntu 16.04)**:
