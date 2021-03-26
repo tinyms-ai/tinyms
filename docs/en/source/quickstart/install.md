@@ -1,6 +1,6 @@
 # Install TinyMS
 
-## User install
+## Installation For Beginners
 
 ### Pypi
 
@@ -8,7 +8,7 @@ For users who own a clean environment, it is recommended to use [pypi](https://p
 
 Prerequisites  
 
-- Ubuntu: `18.04`
+- OS: `Ubuntu 18.04` or `Windows 10`
 - Python: `3.7.5`
 
 For China based users it is recommended to run the following command lines to help with faster download
