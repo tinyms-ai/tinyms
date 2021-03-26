@@ -1,4 +1,4 @@
-<p align="center"><img src="https://github.com/tinyms-ai/tinyms/raw/master/docs/pic/tinyms-logo.png" alt="TinyMS logo" width="300"/></p>
+<p align="center"><img src="https://github.com/tinyms-ai/tinyms/raw/main/docs/pic/tinyms-logo.png" alt="TinyMS logo" width="300"/></p>
 
 # TinyMS
 
@@ -13,7 +13,7 @@
 
 English | [查看中文](./README_CN.md)
 
-TinyMS is an Easy-to-Use deep learning development toolkit based on [MindSpore](https://www.mindspore.cn/en/), designed to providing quick-start guidelines for machine learning beginners.
+TinyMS is an Easy-to-Use deep learning framework development toolkit based on [MindSpore](https://www.mindspore.cn/en/), designed to provide quick-start guidelines for machine learning beginners.
 
 ## Installation
 
