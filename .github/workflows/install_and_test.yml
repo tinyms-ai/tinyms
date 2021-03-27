@@ -9,7 +9,7 @@ jobs:
   pytest:
     strategy:
       matrix:
-        os: ['windows-latest', 'ubuntu-latest']
+        os: ['windows-2019', 'ubuntu-20.04']
 
     runs-on: ${{ matrix.os }}
 
