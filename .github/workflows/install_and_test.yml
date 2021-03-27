@@ -6,10 +6,10 @@ on:
     branches: [ main ]
 
 jobs:
-  basic:
+  pytest:
     strategy:
       matrix:
-        os: ['windows-latest']
+        os: ['windows-latest', 'ubuntu-latest']
 
     runs-on: ${{ matrix.os }}
 
