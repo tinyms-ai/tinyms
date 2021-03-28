@@ -15,7 +15,7 @@ English | [查看中文](./README_CN.md)
 
 TinyMS is an Easy-to-Use deep learning framework development toolkit based on [MindSpore](https://www.mindspore.cn/en/), designed to provide quick-start guidelines for machine learning beginners.
 
-<img src="docs/pic/tinyms-architecture.png" alt="TinyMS Architecture" width="600"/>
+<p align="center"><img src="docs/pic/tinyms-architecture.png" alt="TinyMS Architecture" width="800" /></p>
 
 ## Installation
 
