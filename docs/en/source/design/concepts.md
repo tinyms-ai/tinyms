@@ -21,7 +21,7 @@ Design goals of TinyMS:
 * Small runtime footprint that could be used on mobile, edge or cloud.
 * Standardizing spec for model training script format.
 
-![TinyMS Architecture](/_static/tinyms-architecture.png)
+![TinyMS Architecture](../_static/tinyms-architecture.png) 
 
 ### Workflow analysis
 
@@ -34,7 +34,7 @@ Typical model development workflow:
 * **Accuracy Verification**: The process of model accuracy verification, including the definition of metrics
 * **Model Deployment**: Model application services via an inference server
 
-![TinyMS Workflow](/_static/tinyms-workflow.png)
+![TinyMS Workflow](../_static/tinyms-workflow.png)
 
 ### Module design
 
