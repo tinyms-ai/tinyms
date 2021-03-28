@@ -21,7 +21,7 @@ TinyMS的架构目标：
 * 可以应用在手机、边缘、云等全场景的低运行时开销支持
 * 模型训练脚本的格式进行标准化和规范化
 
-![TinyMS Architecture](/_static/tinyms-architecture.png)
+![TinyMS Architecture](../_static/tinyms-architecture.png)
 ### 流程解析
 
 对于大多数AI模型应用开发场景，基本上都可以归纳为如下几个步骤：
@@ -33,7 +33,7 @@ TinyMS的架构目标：
 * **精度验证**：负责模型精度验证的流程，其中包括metrics的定义
 * **模型部署**：通过搭建服务器来提供AI模型应用服务
 
-![TinyMS Workflow](/_static/tinyms-workflow.png)
+![TinyMS Workflow](../_static/tinyms-workflow.png)
 
 ### 模块划分
 
