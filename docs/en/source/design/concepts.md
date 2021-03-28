@@ -2,11 +2,11 @@
 
 ## Background
 
-In recent years, with the rapid development of AI technology, deep learning frameworks such as TensorFlow, PyTorch, Apache MXNet and MindSpore have emerged. These frameworks are very good at solving problems for academic research or commercial production, however for first time beginners or application developers with limited deep learning knowledge, much simpler APIs are desired. Alongside the existing efforts like Keras for Tensorflow and Fastai for PyTorch to address the issue, the TinyMS project is a new addition in this field to provide simple high level APIs, tiny runtime footprint, modular developement and agile deployment. TinyMS begins with initial focus on MindSpore integration and looks forward to more framework adaptations in the long run.
+In recent years, with the rapid development of AI technology, deep learning frameworks such as TensorFlow, PyTorch, Apache MXNet and MindSpore have emerged. These frameworks are very good at solving problems for academic research or commercial production, however for first time beginners or application developers with limited deep learning knowledge, much simpler APIs are desired. Alongside the existing efforts like Keras for TensorFlow and Fastai for PyTorch to address the issue, the TinyMS project is a new addition in this field to provide simple high level APIs, tiny runtime footprint, modular development and agile deployment. TinyMS begins with initial focus on MindSpore integration and looks forward to more framework adaptations in the long run.
 
-Interestingly enough, MindSpore's high-level and mid-level Python APIs have already implemented most of the functions of Keras, and also been on par with fastai's deisgn for PyTorch's flexibility. Therefore unlike Keras and Fastai which are developed with most of their goals to compensate the underlying frameworks, TinyMS is designed to further enhance the experience of the framework, especially for all scenario development in the case of MindSpore.
+Interestingly enough, MindSpore's high-level and mid-level Python APIs have already implemented most of the functions of Keras, and also been on par with Fastai's design for PyTorch's flexibility. Therefore unlike Keras and Fastai which are developed with most of their goals to compensate the underlying frameworks, TinyMS is designed to further enhance the experience of the framework, especially for all scenario development in the case of MindSpore.
 
-Witht the help of TinyMS, the following goals should be achieved:
+With the help of TinyMS, the following goals should be achieved:
 
 * Quicker to learn: Get started with AI application development in one minute
 * Easier to develop: Complete the task of changing AI models and dataset from one to the other in one hour
@@ -16,10 +16,12 @@ Witht the help of TinyMS, the following goals should be achieved:
 Design goals of TinyMS:
 
 * High level API that are extremely simple to learn and use.
-* Support complete AI develpement workflow from data preparation to model training/inference and finally deployment.
+* Support complete AI development workflow from data preparation to model training/inference and finally deployment.
 * Decoupled modules that are could be easily extended.
 * Small runtime footprint that could be used on mobile, edge or cloud.
 * Standardizing spec for model training script format.
+
+![TinyMS Architecture](/_static/tinyms-architecture.png)
 
 ### Workflow analysis
 
@@ -32,6 +34,8 @@ Typical model development workflow:
 * **Accuracy Verification**: The process of model accuracy verification, including the definition of metrics
 * **Model Deployment**: Model application services via an inference server
 
+![TinyMS Workflow](/_static/tinyms-workflow.png)
+
 ### Module design
 
 TinyMS has the following modules:
@@ -42,8 +46,8 @@ TinyMS has the following modules:
 | model | Model High Level API and Predefined Network | `from tinyms.model import Model, lenet5` |
 | serving | Model Serving | `from tinyms.serving import predict` |
 | vision | Computer Vision Related Data Processing | `from tinyms.vision import mnist_transform, Resize` |
-| callbacks | Callbaks During Model Training | `from tinyms.callbacks import ModelCheckpoint` |
-| common | Basic Components Including Tensor, Numpy Style Funtions | `from tinyms import Tensor, array` |
+| callbacks | Callbacks During Model Training | `from tinyms.callbacks import ModelCheckpoint` |
+| common | Basic Components Including Tensor, Numpy Style Functions | `from tinyms import Tensor, array` |
 | context | Global Context | `from tinyms import context` |
 | initializers | Ops Weight Initialization  | `from tinyms.initializers import Normal` |
 | layers | Neural Network Layer | `from tinyms.layers import Layer, Conv2d` |
@@ -92,7 +96,7 @@ mnist_ds = mnist_transform.apply_ds(mnist_ds)
 
 ### Model construction (*model*)
 
-As the core of deep learning model development, the ​​framework's main responsibility is to provide complete operator expressions to build different network structures. Therefore, the interfaces at the ​​framework level focus more on functional completeness and flexibility, whereas ModelZoo is provided for application developement. TinyMS encapsulates the relevant network call API on the ModelZoo script; take the `LeNet5` network as an example:
+As the core of deep learning model development, the ​​framework's main responsibility is to provide complete operator expressions to build different network structures. Therefore, the interfaces at the ​​framework level focus more on functional completeness and flexibility, whereas ModelZoo is provided for application development. TinyMS encapsulates the relevant network call API on the ModelZoo script; take the `LeNet5` network as an example:
 
 ```python
 from tinyms.model import lenet5
@@ -100,7 +104,7 @@ from tinyms.model import lenet5
 net = lenet5(class_num=10)
 ```
 
-In addition to encapsulating the commonly used network structures, TinyMS also provides a `Model` high-level API interface (based on [MindSpore Model](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.html#mindspore.Model) interface package), by drawing on the design idea of ​​[Keras Model](https://keras.io/api/models/model/#model-class) interface, it not only improves the original API functionalities, bubt also provides a consistent development experience for Keras users:
+In addition to encapsulating the commonly used network structures, TinyMS also provides a `Model` high-level API interface (based on [MindSpore Model](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.html#mindspore.Model) interface package), by drawing on the design idea of ​​[Keras Model](https://keras.io/api/models/model/#model-class) interface, it not only improves the original API functionalities, but also provides a consistent development experience for Keras users:
 
 ```python
 from tinyms.model import Model
