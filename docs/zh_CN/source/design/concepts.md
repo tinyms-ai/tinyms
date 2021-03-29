@@ -105,7 +105,7 @@ from tinyms.model import lenet5
 net = lenet5(class_num=10)
 ```
 
-除了封装常用的网络结构之外，TinyMS还提供了`Model`高阶API接口（基于[MindSpore Model](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.html#mindspore.Model)接口封装），通过借鉴[Keras Model](https://keras.io/api/models/model/#model-class)接口的设计思想，不仅完善了原生API接口的功能，还为Keras用户提供了一致性的开发体验：
+除了封装常用的网络结构之外，TinyMS还提供了`Model`高阶API接口（基于[MindSpore Model](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.html#mindspore.Model)接口封装），通过借鉴[Keras Model](https://keras.io/api/models/model/#model-class)接口的设计思想，不仅完善了原生API接口的功能，还为希望尝试TinyMS的Keras用户提供了一致性的开发体验：
 
 ```python
 from tinyms.model import Model
