@@ -798,6 +798,81 @@ echo "There are $(ls | wc -l) items here."
 # 优先使用 $(  ).
 echo "There are `ls | wc -l` items here."
 ```
+## 八、流程控制函数
+
+```bash
+# Bash 的 case 语句与 Java 和 C++ 中的 switch 语句类似:
+case "$a" in
+    # 列出需要匹配的字符串
+    0) echo "There is a zero.";;
+    1) echo "There is a one.";;
+    *) echo "It is not null.";;
+esac
+
+# 循环遍历给定的参数序列:
+# 变量$a 的值会被打印 3 次。
+for a in {1..3}
+do
+    echo "$a"
+done
+
+# 或传统的 “for循环” ：
+for ((a=1; a <= 3; a++))
+do
+    echo $a
+done
+
+# 也可以用于文件
+# 用 cat 输出 file1 和 file2 内容
+for a in test2.sh test3.sh
+do
+    cat "$a"
+done
+
+# 或作用于其他命令的输出
+# 对 ls 输出的文件执行 cat 指令。
+for Output in $(ls)
+do
+    cat "$Output"
+done
+
+# while 循环：
+while [ true ]
+do
+    echo "loop body here..."
+    break
+done
+```
 
 
+
+## 九、常见的文件操作命令
+
+```bash
+# 打印 file.txt 的最后 10 行
+tail -n 10 hello.txt
+# 打印 file.txt 的前 10 行
+head -n 10 hello.txt
+# 将 file.txt 按行排序
+sort hello.txt
+# 报告或忽略重复的行，用选项 -d 打印重复的行
+uniq -d hello.txt
+# 打印每行中 ',' 之前内容
+cut -d ',' -f 1 hello.txt
+# 将 file.txt 文件所有 'hello' 替换为 'Hi', （兼容正则表达式）
+sed -i 's/Hello/Hi/g' hello.txt
+# 将 file.txt 中匹配正则的行打印到标准输出
+# 这里打印以 "1" 开头, "MS" 结尾的行
+grep "^1.*MS$" hello.txt
+# 使用选项 "-c" 统计行数
+grep -c "^1.*MS$" hello.txt
+# 如果只是要按字面形式搜索字符串而不是按正则表达式，使用 fgrep (或 grep -F)
+fgrep "^1.*MS$" hello.txt 
+```
+
+
+参考资料：
+1.https://www.runoob.com/linux/linux-shell-io-redirections.html
+2.https://jmt33.github.io/mtao/Html/Linux/20141022113029_shell.html 
+3.https://learnxinyminutes.com/docs/zh-cn/bash-cn/
 
