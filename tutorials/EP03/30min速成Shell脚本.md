@@ -717,8 +717,6 @@ function foo ()
 
 ```
 
-
-
 更简单的方法：
 
 ```bash
@@ -798,6 +796,7 @@ echo "There are $(ls | wc -l) items here."
 # 优先使用 $(  ).
 echo "There are `ls | wc -l` items here."
 ```
+
 ## 八、流程控制函数
 
 ```bash
@@ -845,8 +844,9 @@ done
 ```
 
 
-
 ## 九、常见的文件操作命令
+
+下面列举了一些常见的文件操作，帮助大家在实际开发中提升效率
 
 ```bash
 # 打印 file.txt 的最后 10 行
@@ -873,6 +873,8 @@ fgrep "^1.*MS$" hello.txt
 
 参考资料：
 1.https://www.runoob.com/linux/linux-shell-io-redirections.html
+
 2.https://jmt33.github.io/mtao/Html/Linux/20141022113029_shell.html 
+
 3.https://learnxinyminutes.com/docs/zh-cn/bash-cn/
 
