@@ -872,6 +872,7 @@ fgrep "^1.*MS$" hello.txt
 
 
 参考资料：
+
 1.https://www.runoob.com/linux/linux-shell-io-redirections.html
 
 2.https://jmt33.github.io/mtao/Html/Linux/20141022113029_shell.html 
