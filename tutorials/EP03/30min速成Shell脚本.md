@@ -736,4 +736,60 @@ bar ()
 foo "My name is" $Name
 ```
 
+## 七、输入输出重定向
+
+常用场景：前一个指令的输出可以当作后一个指令的输入，在深度学习中启动训练时通常可以把运行训练的结果输出到log文件中,
+
+```bash
+# 用下面的指令列出当前目录下所有的 txt 文件：
+ls -l | grep "\.txt"
+
+# 重定向输入和输出（标准输入，标准输出，标准错误）。
+# 以 ^EOF$ 作为结束标记从标准输入读取数据并覆盖 hello.py :
+cat > hello.py << EOF
+#!/usr/bin/env python
+from __future__ import print_function
+import sys
+print("#stdout", file=sys.stdout)
+print("#stderr", file=sys.stderr)
+for line in sys.stdin:
+    print(line, file=sys.stdout)
+EOF
+
+# 重定向可以到输出，输入和错误输出。
+python hello.py < "input.in"
+python hello.py > "output.out"
+python hello.py 2> "error.err"
+python hello.py > "output-and-error.log" 2>&1
+python hello.py > /dev/null 2>&1
+# > 会覆盖已存在的文件， >> 会以累加的方式输出文件中。
+python hello.py >> "output.out" 2>> "error.err"
+
+# 覆盖 output.out , 追加 error.err 并统计行数
+info bash 'Basic Shell Features' 'Redirections' > output.out 2>> error.err
+wc -l output.out error.err
+
+# 运行指令并打印文件描述符 （比如 /dev/fd/123）
+# 具体可查看： man fd
+echo <(echo "#helloworld")
+
+# 以 "#helloworld" 覆盖 output.out:
+cat > output.out <(echo "#helloworld")
+echo "#helloworld" > output.out
+echo "#helloworld" | cat > output.out
+echo "#helloworld" | tee output.out >/dev/null
+
+# 清理临时文件并显示详情（增加 '-i' 选项启用交互模式）
+rm -v output.out error.err output-and-error.log
+
+# 一个指令可用 $( ) 嵌套在另一个指令内部：
+# 以下的指令会打印当前目录下的目录和文件总数
+echo "There are $(ls | wc -l) items here."
+
+# 反引号 `` 起相同作用，但不允许嵌套
+# 优先使用 $(  ).
+echo "There are `ls | wc -l` items here."
+```
+
+
 
