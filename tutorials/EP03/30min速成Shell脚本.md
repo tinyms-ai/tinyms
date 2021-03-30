@@ -660,7 +660,7 @@ fi
 两个数相等！
 ```
 
-[200~### 判断文件夹/文件是否存在
+### 判断文件夹/文件是否存在
 
 文件夹不存在则创建
 
@@ -700,6 +700,40 @@ if [ -f "/data/filename" ];then
   else
   echo "文件不存在"
 fi
+```
+
+## 六、使用函数
+
+定义函数
+
+```bash
+function foo ()
+{
+    echo "Arguments work just like script arguments: $@"
+    echo "And: $1 $2..."
+    echo "This is a function"
+    return 0
+}
+
+```
+
+
+
+更简单的方法：
+
+```bash
+# 更简单的方法
+bar ()
+{
+    echo "Another way to declare functions!"
+    return 0
+}
+```
+
+调用函数
+
+```bash
+foo "My name is" $Name
 ```
 
 
