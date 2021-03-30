@@ -2,7 +2,7 @@
 
 ## 技术交流
 
-- **ISSUEs and PRs** 依然是在社区进行交流的最佳方法. 具体方式请参考我们的 [指引](https://tinyms.readthedocs.io/en/latest/community/contributing.html#report-issues)
+- **提交ISSUEs或者PRs** 依然是在社区进行交流的最佳方法. 具体方式请参考我们的 [指引](https://tinyms.readthedocs.io/en/latest/community/contributing.html#report-issues)
 
 ## 社区支持
 
