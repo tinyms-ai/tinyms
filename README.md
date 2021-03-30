@@ -116,6 +116,10 @@ print("The label is:", mnist_transform.postprocess(res))
 
 If you are interested in learning TinyMS API, please find TinyMS Python API in [API Documentation](https://tinyms.readthedocs.io/en/latest/tinyms/tinyms.html).
 
+## Tutorial
+
+For a more detailed step-by-step video tutorial, please refer to the following website.
+
 ## Community
 
 For any developers who are not familiar with how TinyMS community works, please find the [Contributing Guidelines](https://tinyms.readthedocs.io/en/latest/community/contributing.html) to get started.
