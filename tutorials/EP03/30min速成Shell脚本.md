@@ -736,9 +736,17 @@ bar ()
 foo "My name is" $Name
 ```
 
+输出结果
+```bash
+root@2097f8ce4358:~# foo "My name is" $Name
+Arguments work just like script arguments: My name is Charlotte
+And: My name is Charlotte...
+This is a function
+```
+
 ## 七、输入输出重定向
 
-常用场景：前一个指令的输出可以当作后一个指令的输入，在深度学习中启动训练时通常可以把运行训练的结果输出到log文件中,
+常用场景：前一个指令的输出可以当作后一个指令的输入，**在深度学习中启动训练时通常可以把运行训练的结果输出到log文件中,或者作为下游任务的输入**，以下列举了一些常用的命令
 
 ```bash
 # 用下面的指令列出当前目录下所有的 txt 文件：
@@ -773,7 +781,7 @@ wc -l output.out error.err
 # 具体可查看： man fd
 echo <(echo "#helloworld")
 
-# 以 "#helloworld" 覆盖 output.out:
+# 以 "#helloworld" 覆盖output.out，以下三种方式均可:
 cat > output.out <(echo "#helloworld")
 echo "#helloworld" > output.out
 echo "#helloworld" | cat > output.out
