@@ -116,6 +116,9 @@ print("The label is:", mnist_transform.postprocess(res))
 
 如果您想了解TinyMS的Python API接口，请访问[TinyMS API文档](https://tinyms.readthedocs.io/zh_CN/latest/tinyms/tinyms.html)。
 
+## 教程
+TinyMS配套了完善的教程，适合纯小白入手。
+
 ## 社区
 
 欢迎加入TinyMS社区进行贡献，如果您还不太清楚TinyMS社区的运作流程，可通过[贡献指南](https://tinyms.readthedocs.io/zh_CN/latest/community/contributing.html)的学习快速上手社区贡献。
