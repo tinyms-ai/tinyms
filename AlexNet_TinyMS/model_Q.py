@@ -1,4 +1,7 @@
-"""Alexnet."""
+"""
+Qiu Kunfeng. ZJUT;CETC36.
+Alexnet. According to MindSpore.
+"""
 import numpy as np
 import tinyms as ts
 from tinyms import layers, Tensor
