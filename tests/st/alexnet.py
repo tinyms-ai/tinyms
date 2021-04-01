@@ -103,8 +103,3 @@ if __name__ == '__main__':
             keep_checkpoint_max=10))
         model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()],
                     dataset_sink_mode=dataset_sink_mode)
-        ds_eval = create_dataset(cifar10_path, batch_size=batch_size, is_training=False)
-        if args_opt.checkpoint_path:
-            model.load_checkpoint(args_opt.checkpoint_path)
-        acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
-        print("============== Accuracy:{} ==============".format(acc))

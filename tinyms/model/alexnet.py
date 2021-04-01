@@ -1,11 +1,26 @@
+# Copyright 2021 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ============================================================================
+
+
+
 import numpy as np
 from scipy.stats import truncnorm
 
 import tinyms as ts
 from tinyms import layers, Tensor
-from tinyms.primitives import tensor_add, ReduceMean
-from tinyms import primitives as P
-from tinyms.layers import AvgPool2d, ReLU, MaxPool2d, Flatten, Dropout
+from tinyms.layers import ReLU, MaxPool2d, Flatten, Dropout
 
 
 
@@ -77,7 +92,7 @@ def _fc(in_channel, out_channel):
 
 
 class AlexNet(layers.Layer):
-    def __init__(self, num_classes=1000):
+    def __init__(self, class_num=1000):
         super(AlexNet, self).__init__()
 
 
@@ -104,10 +119,25 @@ class AlexNet(layers.Layer):
                 Dropout(),
                 _fc(4096, 4096),
                 ReLU(),
-                _fc(4096, num_classes)
+                _fc(4096, class_num)
             ]
 
         )
     def construct(self, x):
         x = self.features(x)
         return x
+
+def alexnet(class_num=10):
+    """
+    Get AlexNet neural network.
+
+    Args:
+        class_num (int): Class number.
+
+    Returns:
+        layers.Layer, layer instance of AlexNet neural network.
+
+    Examples:
+        >>> net = AlexNet(class_num=10)
+    """
+    return AlexNet(class_num=class_num)

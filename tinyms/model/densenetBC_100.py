@@ -1,9 +1,23 @@
+# Copyright 2021 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ============================================================================
 
 import numpy as np
 from scipy.stats import truncnorm
 import tinyms as ts
 from tinyms import layers, Tensor
-from tinyms.primitives import tensor_add, ReduceMean
+from tinyms.primitives import ReduceMean
 from tinyms import primitives as P
 from tinyms.layers import AvgPool2d, ReLU, MaxPool2d
 
@@ -74,7 +88,7 @@ class _DenseLayer(layers.Layer):
              _conv3x3(bn_size*growth_rate,growth_rate),
              ])
         self.ops = P.Concat(axis=1)
-    # 重载forward函数
+
     def construct(self, x):
         new_features = self.layer(x)
         return self.ops((x, new_features))
@@ -109,11 +123,11 @@ class _Transition(layers.Layer):
         return out
 
 class DenseNet(layers.Layer):
-    def __init__(self, num_classes=1000, growth_rate=12, block_config=(6,12,24,16),
+    def __init__(self, class_num=1000, growth_rate=12, block_config=(6,12,24,16),
                  bn_size=4, theta=0.5, bc=False):
         super(DenseNet, self).__init__()
 
-        # 初始的卷积为filter:2倍的growth_rate
+
         num_init_feature = 2 * growth_rate
         if bc:
              self.features = layers.SequentialLayer(
@@ -148,7 +162,7 @@ class DenseNet(layers.Layer):
         # self.features.append([_bn(num_feature),ReLU()])
         self.mean = ReduceMean(keep_dims=True)
         self.flatten = layers.Flatten()
-        self.end_point = _fc(num_feature, num_classes)
+        self.end_point = _fc(num_feature, class_num)
 
     def construct(self, x):
         features = self.features(x)
@@ -156,6 +170,9 @@ class DenseNet(layers.Layer):
         features = self.end_point(self.flatten(self.mean(features, (2, 3))))
         return features
 
-def densenetBC_100(num_classes):
-    return DenseNet(num_classes=num_classes, growth_rate=12, block_config=(16, 16, 16))
+
+
+def densenetBC_100(class_num):
+
+    return DenseNet(class_num=class_num, growth_rate=12, block_config=(16, 16, 16))
 
