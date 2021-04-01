@@ -22,16 +22,20 @@ from .resnet50 import resnet50, ResNet
 from .mobilenetv2 import mobilenetv2, mobilenetv2_infer, MobileNetV2
 from .ssd300 import ssd300_mobilenetv2, ssd300_infer, SSD300
 from .cycle_gan.cycle_gan import cycle_gan, cycle_gan_infer
-from .densenetBC_100 import densenetBC_100
-from .alexnet import AlexNet
+from .densenetBC_100 import densenetBC_100, DenseNet
+from .alexnet import alexnet, AlexNet
+
+
 __all__ = [
     'Model',
     'lenet5', 'LeNet',
     'resnet50', 'ResNet',
     'mobilenetv2', 'mobilenetv2_infer', 'MobileNetV2',
     'ssd300_mobilenetv2', 'ssd300_infer', 'SSD300',
-    'cycle_gan', 'cycle_gan_infer','densenet_BC_100'
-    'AlexNet'
+    'cycle_gan', 'cycle_gan_infer',
+    'densenetBC_100', 'DenseNet',
+    'alexnet', 'AlexNet'
+
 ]
 
 
