@@ -43,6 +43,7 @@ Welcome to TinyMS's documentation!
    tinyms/tinyms.context
    tinyms/tinyms.data
    tinyms/tinyms.vision
+   tinyms/tinyms.text
    tinyms/tinyms.primitives
    tinyms/tinyms.layers
    tinyms/tinyms.model
