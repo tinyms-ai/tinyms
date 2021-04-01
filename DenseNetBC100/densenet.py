@@ -65,7 +65,7 @@ class DenseNet(layers.Layer):
                  bn_size=4, theta=0.5, use_for_cifar10=False):
         super(DenseNet, self).__init__()
 
-        # 初始的卷积为filter:2倍的growth_rate
+
         num_init_feature = 2 * growth_rate
         if use_for_cifar10:
              self.features = layers.LayerList(
@@ -116,7 +116,3 @@ def densenetBC_100(num_classes=10):
 
     return DenseNet(num_classes=num_classes, growth_rate=12, block_config=(16, 16, 16))
 
-data =  ts.ones([10, 3, 224, 224])
-print(data.shape)
-model = densenetBC_100()
-print(model(data).shape)
