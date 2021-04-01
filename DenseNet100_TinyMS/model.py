@@ -110,20 +110,28 @@ class _Transition(layers.Layer):
 
 class DenseNet(layers.Layer):
     def __init__(self, num_classes=1000, growth_rate=12, block_config=(6,12,24,16),
-                 bn_size=4, theta=0.5):
+                 bn_size=4, theta=0.5, bc=False):
         super(DenseNet, self).__init__()
 
         # 初始的卷积为filter:2倍的growth_rate
         num_init_feature = 2 * growth_rate
-
-        self.features = layers.SequentialLayer(
-            [
-                _conv7x7(3, num_init_feature, 2),
-                _bn(num_init_feature),
-                ReLU(),
-                MaxPool2d(kernel_size=2, stride=2, pad_mode='same', data_format='NCHW')
-            ]
-        )
+        if bc:
+             self.features = layers.SequentialLayer(
+                [
+                    _conv3x3(3, num_init_feature, 1),
+                    _bn(num_init_feature),
+                    ReLU()
+                ]
+                )           
+        else:
+            self.features = layers.SequentialLayer(
+                [
+                    _conv7x7(3, num_init_feature, 2),
+                    _bn(num_init_feature),
+                    ReLU(),
+                    MaxPool2d(kernel_size=2, stride=2, pad_mode='same', data_format='NCHW')
+                ]
+                )
 
         num_feature = num_init_feature
         for i, num_layers in enumerate(block_config):
