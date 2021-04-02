@@ -50,7 +50,7 @@ docker run -it --net=host tinyms/tinyms:0.1.0-jupyter
 
 在本地打开浏览器，输入
 
-```URL
+```
 <公网IP地址>:8888
 ```
 

@@ -46,6 +46,7 @@ designed to providing quick-start guidelines for machine learning beginners.
    tinyms/tinyms.context
    tinyms/tinyms.data
    tinyms/tinyms.vision
+   tinyms/tinyms.text
    tinyms/tinyms.primitives
    tinyms/tinyms.layers
    tinyms/tinyms.model
