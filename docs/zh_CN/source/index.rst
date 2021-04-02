@@ -18,10 +18,16 @@ Welcome to TinyMS's documentation!
    :maxdepth: 2
    :caption: 教程学习
 
-   tutorials/TinyMS_ResNet50_tutorial_zh.ipynb
-   tutorials/TinyMS_MobileNetV2_tutorial_zh.ipynb
-   tutorials/TinyMS_SSD300_tutorial_zh.ipynb
-   tutorials/TinyMS_CycleGAN_tutorial_zh.ipynb
+   tutorials/ipynb/TinyMS_ResNet50_tutorial_zh.ipynb
+   tutorials/ipynb/TinyMS_MobileNetV2_tutorial_zh.ipynb
+   tutorials/ipynb/TinyMS_SSD300_tutorial_zh.ipynb
+   tutorials/ipynb/TinyMS_CycleGAN_tutorial_zh.ipynb
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 视频教学
+
+   tutorials/video/index
 
 .. toctree::
    :maxdepth: 2
@@ -37,6 +43,7 @@ Welcome to TinyMS's documentation!
    tinyms/tinyms.context
    tinyms/tinyms.data
    tinyms/tinyms.vision
+   tinyms/tinyms.text
    tinyms/tinyms.primitives
    tinyms/tinyms.layers
    tinyms/tinyms.model

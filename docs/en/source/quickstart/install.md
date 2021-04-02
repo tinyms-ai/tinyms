@@ -6,7 +6,7 @@
 
 For users who own a clean environment, it is recommended to use [pypi](https://pypi.org/) to install TinyMS given that the following requirements are meet. For those who don't, [Anaconda](https://www.anaconda.com/products/individual#Downloads) is a good choice for setting up the python environment.
 
-Prerequisites  
+Prerequisites
 
 - OS: `Ubuntu 18.04` or `Windows 10`
 - Python: `3.7.5`
@@ -49,7 +49,7 @@ docker run -it --net=host tinyms/tinyms:0.1.0-jupyter
 
 Open a browser on the local machine, type in
 
-```URL
+```
 <Your_external_IP_address>:8888
 ```
 

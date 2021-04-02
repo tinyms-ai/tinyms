@@ -21,10 +21,16 @@ designed to providing quick-start guidelines for machine learning beginners.
    :maxdepth: 2
    :caption: Tutorials
 
-   tutorials/TinyMS_ResNet50_tutorial.ipynb
-   tutorials/TinyMS_MobileNetV2_tutorial.ipynb
-   tutorials/TinyMS_SSD300_tutorial.ipynb
-   tutorials/TinyMS_CycleGAN_tutorial.ipynb
+   tutorials/ipynb/TinyMS_ResNet50_tutorial.ipynb
+   tutorials/ipynb/TinyMS_MobileNetV2_tutorial.ipynb
+   tutorials/ipynb/TinyMS_SSD300_tutorial.ipynb
+   tutorials/ipynb/TinyMS_CycleGAN_tutorial.ipynb
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Online Video Tutorial
+
+   tutorials/video/index
 
 .. toctree::
    :maxdepth: 2
@@ -40,6 +46,7 @@ designed to providing quick-start guidelines for machine learning beginners.
    tinyms/tinyms.context
    tinyms/tinyms.data
    tinyms/tinyms.vision
+   tinyms/tinyms.text
    tinyms/tinyms.primitives
    tinyms/tinyms.layers
    tinyms/tinyms.model
