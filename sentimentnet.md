@@ -17,5 +17,17 @@ aclimdb_path和glove_path默认地址也可以这样子放
 ![avatar](path.jpg)
 
 
+## 下载数据集的方法
+
+根据mindspore的github中
+https://github.com/mindspore-ai/mindspore/blob/master/model_zoo/official/nlp/lstm/README_CN.md 的介绍，从两个网站中下载数据集，然后按照glova_path和acllmdb_path中所描述的方式放置数据集即可
+
+## acllmdb
+https://ai.stanford.edu/~amaas/data/sentiment/
+
+## glove
+http://nlp.stanford.edu/data/glove.6B.zip 使用glove.6B.300d.txt
+
+
 
 
