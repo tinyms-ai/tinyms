@@ -26,6 +26,7 @@ from .densenetBC_100 import densenetBC_100, DenseNet
 from .alexnet import alexnet, AlexNet
 from .sentimentnet import sentimentnet, SentimentNet
 
+
 __all__ = [
     'Model',
     'lenet5', 'LeNet',
