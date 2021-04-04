@@ -46,13 +46,18 @@ def predict_server():
         json_data = request.get_json()
         instance = json_data['instance']
         servable_name = json_data['servable_name']
+        servable_path = json_data['servable_path']
         strategy = json_data['strategy']
+        ckpt_path = json_data['ckpt_path']
 
-        res = servable_search(servable_name)
+        res = servable_search(servable_name, servable_path)
         if res['status'] != 0:
             return jsonify(res)
         servable = res['servables'][0]
-        res = predict(instance, servable_name, servable['model'], strategy)
+        if ckpt_path:
+                res = predict(instance, servable_name, servable['model'], strategy, ckpt_path)
+            else:
+                res = predict(instance, servable_name, servable['model'], strategy)
         return jsonify(res)
     else:
         return 'No server detected'
@@ -75,6 +80,9 @@ def list_servables():
     """
 
     if server_started() is True:
+        servable_name = request.values.get('servable_name')
+        servable_path = request.values.get('servable_path', '/etc/tinyms/serving/servable.json')
+
         return jsonify(servable_search())
     else:
         return 'No server detected'
@@ -120,7 +128,7 @@ class FlaskServer(object):
             return 'No server detected'
 
     def windows_run_server(self):
-        cmd = 'python -c "from run_flask import run_flask; run_flask()"'
+        cmd = 'python -c "from tinyms.serving import run_flask; run_flask()"'
         server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
         
         for sig in [signal.SIGINT, signal.SIGTERM]:

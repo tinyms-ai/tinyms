@@ -20,7 +20,6 @@ import tinyms as ts
 from tinyms import model
 from tinyms.utils.predict.predict import cyclegan_predict
 
-servable_path = '/etc/tinyms/serving/servable.json'
 model_checker = {
     "lenet5": model.lenet5,
     "resnet50": model.resnet50,
@@ -30,7 +29,7 @@ model_checker = {
 }
 
 
-def servable_search(name=None):
+def servable_search(name=None, servable_path='/etc/tinyms/serving/servable.json'):
     """
     Check whether the servable json exists and whether the content is valid.
 
@@ -38,13 +37,14 @@ def servable_search(name=None):
 
     Args:
         name (str): servable name
+        servable_path (str): manually specify servable path
 
     Returns:
         A string of servable values will be returned if servable json exists, otherwise error message.
 
     Examples:
         >>> # In the server part, before running the predict function, servable_serch is called to check and get the result. 
-        >>> res = servable_search(servable_name)
+        >>> res = servable_search(servable_name, servabel_path)
         >>> servable = res['servables'][0]
         >>> res = predict(instance, servable_name, servable['model'], strategy)
     """
@@ -74,7 +74,7 @@ def servable_search(name=None):
         return {"status": 0, "servables": servable_list}
 
 
-def predict(instance, servable_name, servable_model, strategy):
+def predict(instance, servable_name, servable_model, strategy, ckpt_path=None):
     """
     Predict the result based on the input data.
 
@@ -85,6 +85,7 @@ def predict(instance, servable_name, servable_model, strategy):
         servable_name (str): servable name
         servable_model (str): name of the model
         strategy (str): output strategy, usually select between `TOP1_CLASS` and `TOP5_CLASS`, for cyclegan, select between `gray2color` and `color2gray`
+        ckpt_path (str): manually specify CKPT_PATH
 
     Returns:
         The dict object of predicted result after post process.
@@ -124,7 +125,9 @@ def predict(instance, servable_name, servable_model, strategy):
         else:
             err_msg = "Currently cycle_gan strategy only supports `gray2color` and `color2gray`!"
             return {"status": 1, "err_msg": err_msg}
-        ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, ckpt_name + "." + model_format)
+        
+        if not ckpt_path:
+            ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, ckpt_name + "." + model_format)
 
         data = cyclegan_predict(G_generator, input_data, ckpt_path)
     else:
@@ -134,7 +137,8 @@ def predict(instance, servable_name, servable_model, strategy):
         serve_model = model.Model(net)
 
         # load checkpoint
-        ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, model_name + "." + model_format)
+        if not ckpt_path:
+            ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, model_name + "." + model_format)
         if not os.path.isfile(ckpt_path):
             err_msg = "The model path " + ckpt_path + " not exist!"
             return {"status": 1, "err_msg": err_msg}

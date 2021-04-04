@@ -59,7 +59,7 @@ def server_started(host='127.0.0.1', port=5000):
         return False
 
 
-def list_servables():
+def list_servables(servable_name=None, servable_path=None):
     """
     List the model that is currently served by the backend server.
 
@@ -74,12 +74,12 @@ def list_servables():
 
     Examples:
         >>> # Running the quickstart tutorial, after server started and servable json defined
-        >>> list_servables()
+        >>> list_servables(servable_name, servable_path)
         [{'description': 'This servable hosts a lenet5 model predicting numbers', 'model': {'class_num': 10, 'format': 'ckpt', 'name': 'lenet5'}, 'name': 'lenet5'}]
     """
 
     headers = {'Content-Type': 'application/json'}
-    url = "http://127.0.0.1:5000/servables"
+    url = f"http://127.0.0.1:5000/servables?servable_name={servable_name}&servable_path={servable_path}"
     if server_started() is True:
         res = requests.get(url=url, headers=headers)
         res_body = res.json()
@@ -93,7 +93,7 @@ def list_servables():
         return 'Server not started'
 
 
-def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"):
+def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS", servable_path=None, ckpt_path=None):
     """
     Send the predict request to the backend server, get the return value and do the post process
 
@@ -104,6 +104,8 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
         servable_name (str): the `name` in `servable_json`, now supports 6 servables: `lenet5`, `resnet50_imagenet2012`, `resnet50_cifar10`, `mobilenetv2`, `ssd300` and `cyclegan_cityscape`.
         dataset_name (str): the name of the dataset that is used to train the model, now supports 5 datasets: `mnist`, `imagenet2012`, `cifar10`, `voc`, `cityscape`
         strategy (str): the output strategy, for lenet5, resnet50 and mobilenetv2, select between 'TOP1_CLASS' and 'TOP5_CLASS', for ssd300, only `TOP1_CLASS`, for cyclegan_cityscape, select between `gray2color` and `color2gray`
+        servable_path (str): manually specify servable path
+        ckpt_path (str): manually specify CKPT_PATH
 
     Returns:
         For lenet5, resnet50, mobilenetv2, the output is a string of predict result.
@@ -112,7 +114,7 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
 
     Examples:
         >>> # Running the quickstart tutorial, after server started and servable json defined
-        >>> print(predict('/root/7.png', 'lenet5', 'mnist', 'TOP1_CLASS'))
+        >>> print(predict('/root/7.png', 'lenet5', 'mnist', 'TOP1_CLASS', './servable.json', './resnet50.ckpt'))
         TOP1: 7, score: 0.99943381547927856445
     """
     # Check if args are valid
@@ -142,7 +144,9 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
             'data': json.dumps(img_data.tolist())
         },
         'servable_name': servable_name,
-        'strategy': strategy
+        'servable_path': servable_path,
+        'strategy': strategy,
+        'ckpt_path': ckpt_path
     }
     headers = {'Content-Type': 'application/json'}
     url = "http://127.0.0.1:5000/predict"
