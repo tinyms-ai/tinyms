@@ -24,12 +24,13 @@ import os
 from tinyms import Tensor
 from tinyms import context
 from tinyms.model import Model, SentimentNet
+from tinyms.data import ImdbDataset
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor
 from tinyms.metrics import Accuracy
 from tinyms.optimizers import Momentum
 from tinyms.losses import SoftmaxCrossEntropyWithLogits
+from tinyms.data import MindDataset
 
-from dataset import convert_to_mindrecord, lstm_create_dataset
 
 
 
@@ -75,6 +76,26 @@ def parse_args():
     return args_opt
 
 
+def lstm_create_dataset(data_path, batch_size=32, repeat_size=1,
+                   num_parallel_workers=1):
+    """ create aclimdb dataset for train or eval.
+    Args:
+        data_path: Data path
+        batch_size: The number of data records in each group
+        repeat_size: The number of replicated data records
+        num_parallel_workers: The number of parallel workers
+    """
+
+    data_set = MindDataset(data_path, columns_list=["feature", "label"], num_parallel_workers=num_parallel_workers)
+
+    # apply map operations on aclimdb
+    data_set = data_set.shuffle(buffer_size=data_set.get_dataset_size())
+    data_set = data_set.batch(batch_size=batch_size, drop_remainder=True)
+    data_set = data_set.repeat(count=repeat_size)
+
+    return data_set
+
+
 
 
 
@@ -83,7 +104,10 @@ if __name__ == '__main__':
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
     if args_opt.preprocess == "true":
         print("============== Starting Data Pre-processing ==============")
-        convert_to_mindrecord(args_opt.embed_size, args_opt.aclimdb_path, args_opt.preprocess_path, args_opt.glove_path)
+        imdbdata = ImdbDataset(args_opt.aclimdb_path, args_opt.glove_path, args_opt.embed_size)
+        imdbdata.convert_to_mindrecord(
+            args_opt.preprocess_path
+        )
 
     embedding_table = np.loadtxt(os.path.join(args_opt.preprocess_path, "weight.txt")).astype(np.float32)
 
@@ -113,14 +137,14 @@ if __name__ == '__main__':
     dataset_sink_mode = not args_opt.device_target == "CPU"
     if args_opt.do_eval:
         # as for evaluation, users could use model.eval
-        ds_eval = lstm_create_dataset(args_opt.preprocess_path, args_opt.batch_size, training=False)
+        ds_eval = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord0"), args_opt.batch_size)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
         print("============== Accuracy:{} ==============".format(acc))
     else:
         # as for train, users could use model.train
-        ds_train = lstm_create_dataset(args_opt.preprocess_path, args_opt.batch_size, training=True)
+        ds_train = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord0"), args_opt.batch_size)
         ckpoint_cb = ModelCheckpoint(prefix="SentimentNet_imdb", config=CheckpointConfig(
             save_checkpoint_steps=save_checkpoint_epochs * ds_train.get_dataset_size(),
             keep_checkpoint_max=10))

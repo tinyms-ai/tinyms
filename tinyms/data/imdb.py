@@ -17,12 +17,13 @@ imdb dataset parser.
 """
 import os
 from itertools import chain
-
+from mindspore.mindrecord import FileWriter
 import numpy as np
 import gensim
 
+__all__ = ['ImdbDataset']
 
-class ImdbParser():
+class ImdbDataset(object):
     """
     parse aclImdb data to features and labels.
     sentence->tokenized->encoded->padding->features
@@ -43,6 +44,7 @@ class ImdbParser():
         self.__word2idx = {}
         self.__weight_np = {}
         self.__wvmodel = None
+        self.parse()
 
     def parse(self):
         """
@@ -153,3 +155,54 @@ class ImdbParser():
         labels = np.array(self.__labels[seg]).astype(np.int32)
         weight = np.array(self.__weight_np[seg])
         return features, labels, weight
+
+
+    def convert_to_mindrecord(self, preprocess_path):
+        """
+        convert imdb dataset to mindrecoed dataset
+        """
+
+        if not os.path.exists(preprocess_path):
+            print(f"preprocess path {preprocess_path} is not exist")
+            os.makedirs(preprocess_path)
+
+        train_features, train_labels, train_weight_np = self.get_datas('train')
+        _convert_to_mindrecord(preprocess_path, train_features, train_labels, train_weight_np)
+
+        test_features, test_labels, _ = self.get_datas('test')
+        _convert_to_mindrecord(preprocess_path, test_features, test_labels, training=False)
+
+
+
+def _convert_to_mindrecord(data_home, features, labels, weight_np=None, training=True):
+    """
+    convert imdb dataset to mindrecoed dataset
+    """
+    if weight_np is not None:
+        np.savetxt(os.path.join(data_home, 'weight.txt'), weight_np)
+
+    # write mindrecord
+    schema_json = {"id": {"type": "int32"},
+                   "label": {"type": "int32"},
+                   "feature": {"type": "int32", "shape": [-1]}}
+
+    data_dir = os.path.join(data_home, "aclImdb_train.mindrecord")
+    if not training:
+        data_dir = os.path.join(data_home, "aclImdb_test.mindrecord")
+
+    def get_imdb_data(features, labels):
+        data_list = []
+        for i, (label, feature) in enumerate(zip(labels, features)):
+            data_json = {"id": i,
+                         "label": int(label),
+                         "feature": feature.reshape(-1)}
+            data_list.append(data_json)
+        return data_list
+
+    writer = FileWriter(data_dir, shard_num=4)
+    data = get_imdb_data(features, labels)
+    writer.add_schema(schema_json, "nlp_schema")
+    writer.add_index(["id", "label"])
+    writer.write_raw_data(data)
+    writer.commit()
+
