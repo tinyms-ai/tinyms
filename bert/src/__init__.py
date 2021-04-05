@@ -19,7 +19,7 @@ from .bert_for_pre_training import BertNetworkWithLoss, BertPreTraining, \
     BertTrainAccumulationAllReduceEachWithLossScaleCell, \
     BertTrainAccumulationAllReducePostWithLossScaleCell, \
     BertTrainOneStepWithLossScaleCellForAdam
-from .bert_model import BertAttention, BertConfig, BertEncoderCell, BertModel, \
+from .bert import BertAttention, BertConfig, BertEncoderCell, BertModel, \
     BertOutput, BertSelfAttention, BertTransformer, EmbeddingLookup, \
     EmbeddingPostprocessor, RelaPosEmbeddingsGenerator, RelaPosMatrixGenerator, \
     SaturateCast, CreateAttentionMaskFromInputMask
