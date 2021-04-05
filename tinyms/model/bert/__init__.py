@@ -25,7 +25,6 @@ from .bert import BertAttention, BertConfig, BertEncoderCell, BertModel, \
     EmbeddingPostprocessor, RelaPosEmbeddingsGenerator, RelaPosMatrixGenerator, \
     SaturateCast, CreateAttentionMaskFromInputMask
 
-
 __all__ = [
     "BertNetworkWithLoss", "BertPreTraining", "BertPretrainingLoss",
     "GetMaskedLMOutput", "GetNextSentenceOutput", "BertTrainOneStepCell",

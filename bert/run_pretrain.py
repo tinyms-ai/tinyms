@@ -36,18 +36,15 @@ from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor
 from tinyms.optimizers import AdamWeightDecay, Lamb, Momentum, THOR
 from tinyms import set_seed
 
-from src import BertNetworkWithLoss, BertTrainOneStepCell, BertTrainOneStepWithLossScaleCell, \
+from tinyms.model.bert import BertNetworkWithLoss, BertTrainOneStepCell, BertTrainOneStepWithLossScaleCell, \
                 BertTrainAccumulationAllReduceEachWithLossScaleCell, \
                 BertTrainAccumulationAllReducePostWithLossScaleCell, \
-                BertTrainOneStepWithLossScaleCellForAdam, \
-                AdamWeightDecayForBert, AdamWeightDecayOp
-
+                BertTrainOneStepWithLossScaleCellForAdam
 
 from tinyms.optimizers import AdamWeightDecayForBert, AdamWeightDecayOp
+from bert.src.config import cfg, bert_net_cfg
+from bert.src.utils import LossCallBack, BertLearningRate
 
-
-from src.config import cfg, bert_net_cfg
-from src.utils import LossCallBack, BertLearningRate
 
 _current_dir = os.path.dirname(os.path.realpath(__file__))
 logging.basicConfig(
