@@ -13,6 +13,7 @@
 # limitations under the License.
 # ============================================================================
 """Bert Init."""
+
 from .bert_for_pre_training import BertNetworkWithLoss, BertPreTraining, \
     BertPretrainingLoss, GetMaskedLMOutput, GetNextSentenceOutput, \
     BertTrainOneStepCell, BertTrainOneStepWithLossScaleCell, \
