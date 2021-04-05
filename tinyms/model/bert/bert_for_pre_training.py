@@ -20,7 +20,7 @@ from mindspore.nn.wrap.grad_reducer import DistributedGradReducer
 from mindspore.communication.management import get_group_size
 
 from tinyms import context
-from .bert_model import BertModel
+from .bert import BertModel
 import mindspore.common.dtype as mstype
 
 import tinyms as ts
