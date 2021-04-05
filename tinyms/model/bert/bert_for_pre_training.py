@@ -20,7 +20,7 @@ from mindspore.nn.wrap.grad_reducer import DistributedGradReducer
 from mindspore.communication.management import get_group_size
 
 from tinyms import context
-from .bert import BertModel
+from .bert import Bert
 import mindspore.common.dtype as mstype
 
 import tinyms as ts
@@ -163,7 +163,7 @@ class BertPreTraining(layers.Layer):
 
     def __init__(self, config, is_training, use_one_hot_embeddings):
         super(BertPreTraining, self).__init__()
-        self.bert = BertModel(config, is_training, use_one_hot_embeddings)
+        self.bert = Bert(config, is_training, use_one_hot_embeddings)
         self.cls1 = GetMaskedLMOutput(config)
         self.cls2 = GetNextSentenceOutput(config)
 

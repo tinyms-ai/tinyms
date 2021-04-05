@@ -20,7 +20,7 @@ from .bert_for_pre_training import BertNetworkWithLoss, BertPreTraining, \
     BertTrainAccumulationAllReduceEachWithLossScaleCell, \
     BertTrainAccumulationAllReducePostWithLossScaleCell, \
     BertTrainOneStepWithLossScaleCellForAdam
-from .bert import BertAttention, BertEncoderCell, BertModel, \
+from .bert import BertAttention, BertEncoderCell, Bert, bert, \
     BertOutput, BertSelfAttention, BertTransformer, EmbeddingLookup, \
     EmbeddingPostprocessor, RelaPosEmbeddingsGenerator, RelaPosMatrixGenerator, \
     SaturateCast, CreateAttentionMaskFromInputMask
@@ -30,7 +30,7 @@ __all__ = [
     "GetMaskedLMOutput", "GetNextSentenceOutput", "BertTrainOneStepCell",
     "BertTrainOneStepWithLossScaleCell", "BertTrainAccumulationAllReduceEachWithLossScaleCell",
     "BertTrainAccumulationAllReducePostWithLossScaleCell",
-    "BertAttention", "BertConfig", "BertEncoderCell", "BertModel", "BertOutput",
+    "BertAttention", "BertEncoderCell", "Bert", "bert", "BertOutput",
     "BertSelfAttention", "BertTransformer", "EmbeddingLookup",
     "EmbeddingPostprocessor", "RelaPosEmbeddingsGenerator",
     "RelaPosMatrixGenerator", "SaturateCast", "CreateAttentionMaskFromInputMask",

@@ -24,7 +24,7 @@ from .ssd300 import ssd300_mobilenetv2, ssd300_infer, SSD300
 from .cycle_gan.cycle_gan import cycle_gan, cycle_gan_infer
 from .densenetBC_100 import densenetBC_100, DenseNet
 from .alexnet import alexnet, AlexNet
-
+from .bert import bert, Bert
 
 __all__ = [
     'Model',
@@ -34,8 +34,8 @@ __all__ = [
     'ssd300_mobilenetv2', 'ssd300_infer', 'SSD300',
     'cycle_gan', 'cycle_gan_infer',
     'densenetBC_100', 'DenseNet',
-    'alexnet', 'AlexNet'
-
+    'alexnet', 'AlexNet',
+    'bert', 'Bert',
 ]
 
 

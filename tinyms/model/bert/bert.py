@@ -714,7 +714,7 @@ class CreateAttentionMaskFromInputMask(layers.Layer):
         return attention_mask
 
 
-class BertModel(layers.Layer):
+class Bert(layers.Layer):
     """
     Bidirectional Encoder Representations from Transformers.
 
@@ -727,7 +727,7 @@ class BertModel(layers.Layer):
                  config,
                  is_training,
                  use_one_hot_embeddings=False):
-        super(BertModel, self).__init__()
+        super(Bert, self).__init__()
         config = copy.deepcopy(config)
         if not is_training:
             config.hidden_dropout_prob = 0.0
@@ -814,5 +814,11 @@ class BertModel(layers.Layer):
 
         return sequence_output, pooled_output, embedding_tables
 
+def bert(config,is_training,use_one_hot_embeddings=False):
 
-# model = BertModel(BertConfig(), is_training=False)
+    """
+    Get bert neural network.
+    """
+    return Bert(config=config, is_training=is_training, use_one_hot_embeddings=use_one_hot_embeddings)
+
+
