@@ -13,11 +13,13 @@
 # limitations under the License.
 # ============================================================================
 """
-network config setting, will be used in dataset.py, run_pretrain.py
+network config setting, will be used in  run_pretrain.py
 """
 from easydict import EasyDict as edict
 import mindspore.common.dtype as mstype
 from .bert_model import BertConfig
+
+
 cfg = edict({
     'batch_size': 32,
     'bert_network': 'base',

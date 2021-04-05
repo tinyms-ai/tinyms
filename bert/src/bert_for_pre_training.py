@@ -16,7 +16,6 @@
 import numpy as np
 
 import mindspore.nn as nn
-from mindspore.ops import functional as F
 from mindspore.nn.wrap.grad_reducer import DistributedGradReducer
 from mindspore.communication.management import get_group_size
 

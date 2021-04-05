@@ -26,6 +26,9 @@ import mindspore.common.dtype as mstype
 from mindspore.nn.wrap.loss_scale import DynamicLossScaleUpdateCell
 
 
+from tinyms import data as ds
+from tinyms import vision
+
 from tinyms import context
 from tinyms.model import Model
 from tinyms.context import ParallelMode
@@ -39,7 +42,10 @@ from src import BertNetworkWithLoss, BertTrainOneStepCell, BertTrainOneStepWithL
                 BertTrainOneStepWithLossScaleCellForAdam, \
                 AdamWeightDecayForBert, AdamWeightDecayOp
 
-from src.dataset import create_bert_dataset
+
+from tinyms.optimizers import AdamWeightDecayForBert, AdamWeightDecayOp
+
+
 from src.config import cfg, bert_net_cfg
 from src.utils import LossCallBack, BertLearningRate
 
@@ -49,6 +55,39 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+
+
+def create_bert_dataset(device_num=1, rank=0, do_shuffle="true", data_dir=None, schema_dir=None):
+    """create train dataset"""
+    # apply repeat operations
+    files = os.listdir(data_dir)
+    data_files = []
+    for file_name in files:
+        if "tfrecord" in file_name:
+            data_files.append(os.path.join(data_dir, file_name))
+    data_set = ds.TFRecordDataset(data_files, schema_dir if schema_dir != "" else None,
+                                  columns_list=["input_ids", "input_mask", "segment_ids", "next_sentence_labels",
+                                                "masked_lm_positions", "masked_lm_ids", "masked_lm_weights"],
+                                  shuffle=True if do_shuffle == "true" else False,
+                                  num_shards=device_num, shard_id=rank, shard_equal_rows=True)
+    ori_dataset_size = data_set.get_dataset_size()
+    print('origin dataset size: ', ori_dataset_size)
+    type_cast_op = vision.TypeCast(mstype.int32)
+    data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_ids")
+    data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_positions")
+    data_set = data_set.map(operations=type_cast_op, input_columns="next_sentence_labels")
+    data_set = data_set.map(operations=type_cast_op, input_columns="segment_ids")
+    data_set = data_set.map(operations=type_cast_op, input_columns="input_mask")
+    data_set = data_set.map(operations=type_cast_op, input_columns="input_ids")
+    # apply batch operations
+    data_set = data_set.batch(cfg.batch_size, drop_remainder=True)
+    logger.info("data size: {}".format(data_set.get_dataset_size()))
+    logger.info("repeat count: {}".format(data_set.get_repeat_count()))
+    return data_set
+
+
 
 def _set_bert_all_reduce_split():
     """set bert all_reduce fusion split, support num_hidden_layers is 12 and 24."""
@@ -297,7 +336,6 @@ def run_pretrain():
 
     if args_opt.load_checkpoint_path:
         model.load_checkpoint(args_opt.load_checkpoint_path)
-    print(args_opt.data_sink_steps)
     model.train(new_repeat_count, ds, callbacks=callback,
                 dataset_sink_mode=(args_opt.enable_data_sink == "true"), sink_size=args_opt.data_sink_steps)
 
