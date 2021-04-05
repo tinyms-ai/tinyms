@@ -28,7 +28,7 @@ from tinyms.optimizers import Optimizer
 
 
 
-__all___ = ['AdamWeightDecayForBert', 'AdamWeightDecayOp']
+__all__ = ['AdamWeightDecayForBert', 'AdamWeightDecayOp']
 
 
 
