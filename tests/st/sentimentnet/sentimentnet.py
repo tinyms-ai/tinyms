@@ -77,7 +77,7 @@ def parse_args():
 
 
 def lstm_create_dataset(data_path, batch_size=32, repeat_size=1,
-                   num_parallel_workers=1):
+                   num_parallel_workers=10):
     """ create aclimdb dataset for train or eval.
     Args:
         data_path: Data path
@@ -103,6 +103,7 @@ if __name__ == '__main__':
     args_opt = parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
     if args_opt.preprocess == "true":
+        if not os.path.exists()
         print("============== Starting Data Pre-processing ==============")
         imdbdata = ImdbDataset(args_opt.aclimdb_path, args_opt.glove_path, args_opt.embed_size)
         imdbdata.convert_to_mindrecord(
@@ -137,14 +138,14 @@ if __name__ == '__main__':
     dataset_sink_mode = not args_opt.device_target == "CPU"
     if args_opt.do_eval:
         # as for evaluation, users could use model.eval
-        ds_eval = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord0"), args_opt.batch_size)
+        ds_eval = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord"), args_opt.batch_size)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
         print("============== Accuracy:{} ==============".format(acc))
     else:
         # as for train, users could use model.train
-        ds_train = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord0"), args_opt.batch_size)
+        ds_train = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord"), args_opt.batch_size)
         ckpoint_cb = ModelCheckpoint(prefix="SentimentNet_imdb", config=CheckpointConfig(
             save_checkpoint_steps=save_checkpoint_epochs * ds_train.get_dataset_size(),
             keep_checkpoint_max=10))

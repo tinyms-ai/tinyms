@@ -157,7 +157,7 @@ class ImdbDataset(object):
         return features, labels, weight
 
 
-    def convert_to_mindrecord(self, preprocess_path):
+    def convert_to_mindrecord(self, preprocess_path,shard_num=1):
         """
         convert imdb dataset to mindrecoed dataset
         """
@@ -167,14 +167,14 @@ class ImdbDataset(object):
             os.makedirs(preprocess_path)
 
         train_features, train_labels, train_weight_np = self.get_datas('train')
-        _convert_to_mindrecord(preprocess_path, train_features, train_labels, train_weight_np)
+        _convert_to_mindrecord(preprocess_path, train_features, train_labels, train_weight_np, shard_num=shard_num)
 
         test_features, test_labels, _ = self.get_datas('test')
-        _convert_to_mindrecord(preprocess_path, test_features, test_labels, training=False)
+        _convert_to_mindrecord(preprocess_path, test_features, test_labels, training=False, shard_num=shard_num)
 
 
 
-def _convert_to_mindrecord(data_home, features, labels, weight_np=None, training=True):
+def _convert_to_mindrecord(data_home, features, labels, weight_np=None, training=True, shard_num=1):
     """
     convert imdb dataset to mindrecoed dataset
     """
@@ -199,7 +199,7 @@ def _convert_to_mindrecord(data_home, features, labels, weight_np=None, training
             data_list.append(data_json)
         return data_list
 
-    writer = FileWriter(data_dir, shard_num=4)
+    writer = FileWriter(data_dir, shard_num=shard_num)
     data = get_imdb_data(features, labels)
     writer.add_schema(schema_json, "nlp_schema")
     writer.add_index(["id", "label"])
