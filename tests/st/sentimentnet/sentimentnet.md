@@ -15,7 +15,7 @@ python sentimentnet.py \
 --aclimdb_path {your aclimdb_path} \
 --glove_path {your golve_path} \
 --do_eval True \
---checkpoint {your ckpt path}
+--checkpoint_path {your ckpt path}
 ```
 **if preprocess is false,the aclimdb_path and glove_path do not be needed**
 
