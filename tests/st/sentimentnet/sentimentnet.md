@@ -11,12 +11,13 @@ python sentimentnet.py \
 ```
 python sentimentnet.py \
 --device_target {your device} \
---preprocess true \
+--preprocess {true or false} \
 --aclimdb_path {your aclimdb_path} \
---glove_path {your golve_path}
---do_eval True
+--glove_path {your golve_path} \
+--do_eval True \
+--checkpoint {your ckpt path}
 ```
-
+**if preprocess is false,the aclimdb_path and glove_path do not be needed**
 
 
 如果遇到加载glove报错的问题
