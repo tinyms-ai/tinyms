@@ -19,7 +19,7 @@ import random
 import argparse
 import numpy as np
 import os
-
+import shutil
 
 from tinyms import Tensor
 from tinyms import context
@@ -106,11 +106,10 @@ if __name__ == '__main__':
         train_data_path = os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord")
         val_data_path = os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord")
         weight_path = os.path.join(args_opt.preprocess_path, "weight.txt")
-
         if os.path.exists(train_data_path) and os.path.exists(val_data_path) and os.path.exists(weight_path):
             print("==============Data have been preprocessed ==============")
         else:
-            os.removedirs(args_opt.preprocess_path)
+            shutil.rmtree(args_opt.preprocess_path)
             print("============== Starting Data Pre-processing ==============")
             imdbdata = ImdbDataset(args_opt.aclimdb_path, args_opt.glove_path, args_opt.embed_size)
             imdbdata.convert_to_mindrecord(
