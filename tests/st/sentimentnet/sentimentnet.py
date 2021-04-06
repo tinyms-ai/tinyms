@@ -105,8 +105,10 @@ if __name__ == '__main__':
     if args_opt.preprocess == "true":
         train_data_path = os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord")
         val_data_path = os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord")
-        if os.path.exists(train_data_path) and os.path.exists(val_data_path):
-            pass
+        weight_path = os.path.join(args_opt.preprocess_path, "weight.txt")
+
+        if os.path.exists(train_data_path) and os.path.exists(val_data_path) and os.path.exists(weight_path):
+            print("==============Data have been preprocessed ==============")
         else:
             os.removedirs(args_opt.preprocess_path)
             print("============== Starting Data Pre-processing ==============")
