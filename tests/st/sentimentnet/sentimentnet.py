@@ -103,12 +103,17 @@ if __name__ == '__main__':
     args_opt = parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
     if args_opt.preprocess == "true":
-        if not os.path.exists()
-        print("============== Starting Data Pre-processing ==============")
-        imdbdata = ImdbDataset(args_opt.aclimdb_path, args_opt.glove_path, args_opt.embed_size)
-        imdbdata.convert_to_mindrecord(
-            args_opt.preprocess_path
-        )
+        train_data_path = os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord")
+        val_data_path = os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord")
+        if os.path.exists(train_data_path) and os.path.exists(val_data_path):
+            pass
+        else:
+            os.removedirs(args_opt.preprocess_path)
+            print("============== Starting Data Pre-processing ==============")
+            imdbdata = ImdbDataset(args_opt.aclimdb_path, args_opt.glove_path, args_opt.embed_size)
+            imdbdata.convert_to_mindrecord(
+                args_opt.preprocess_path
+            )
 
     embedding_table = np.loadtxt(os.path.join(args_opt.preprocess_path, "weight.txt")).astype(np.float32)
 
