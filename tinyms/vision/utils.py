@@ -172,7 +172,7 @@ def ssd_bboxes_filter(boxes, box_scores, image_shape):
 
     Args:
         boxes (numpy.ndarray): Ground truth with shape [N, 4], for each row, it stores
-        [ymin, xmin, ymax, xmax].
+            [ymin, xmin, ymax, xmax].
         box_scores (numpy.ndarray): Class scores with shape [N, 21].
         image_shape (tuple): Shape of original image with the format [h, w].
 

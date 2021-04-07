@@ -32,14 +32,12 @@ from tinyms.losses import SoftmaxCrossEntropyWithLogits
 from tinyms.data import MindDataset
 
 
-
-
 random.seed(1)
 
 
 def parse_args():
 
-    parser = argparse.ArgumentParser(description='TinyMs LSTM Example')
+    parser = argparse.ArgumentParser(description='TinyMS LSTM Example')
     parser.add_argument('--preprocess', type=str, default='false', choices=['true', 'false'],
                         help='whether to preprocess data.')
     parser.add_argument('--aclimdb_path', type=str, default="./aclImdb",
@@ -79,7 +77,7 @@ def parse_args():
 
 
 def lstm_create_dataset(data_path, batch_size=32, repeat_size=1,
-                   num_parallel_workers=4):
+                        num_parallel_workers=4):
     """ create aclimdb dataset for train or eval.
     Args:
         data_path: Data path
@@ -98,12 +96,10 @@ def lstm_create_dataset(data_path, batch_size=32, repeat_size=1,
     return data_set
 
 
-
-
-
 if __name__ == '__main__':
     args_opt = parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args_opt.device_target)
+
     if args_opt.preprocess == "true":
         train_data_path = os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord")
         val_data_path = os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord")
@@ -150,14 +146,16 @@ if __name__ == '__main__':
     dataset_sink_mode = not args_opt.device_target == "CPU"
     if args_opt.do_eval:
         # as for evaluation, users could use model.eval
-        ds_eval = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord"), args_opt.batch_size, num_parallel_workers=args_opt.num_parallel_workers)
+        ds_eval = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord"),
+                                      args_opt.batch_size, num_parallel_workers=args_opt.num_parallel_workers)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
         print("============== Accuracy:{} ==============".format(acc))
     else:
         # as for train, users could use model.train
-        ds_train = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord"), args_opt.batch_size, num_parallel_workers=args_opt.num_parallel_workers)
+        ds_train = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord"),
+                                       args_opt.batch_size, num_parallel_workers=args_opt.num_parallel_workers)
         ckpoint_cb = ModelCheckpoint(prefix="SentimentNet_imdb", config=CheckpointConfig(
             save_checkpoint_steps=save_checkpoint_epochs * ds_train.get_dataset_size(),
             keep_checkpoint_max=10))
