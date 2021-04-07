@@ -79,7 +79,7 @@ def parse_args():
 
 
 def lstm_create_dataset(data_path, batch_size=32, repeat_size=1,
-                   num_parallel_workers=10):
+                   num_parallel_workers=4):
     """ create aclimdb dataset for train or eval.
     Args:
         data_path: Data path
