@@ -45,6 +45,7 @@ required_package = [
     'flask >= 1.1.1',
     'wheel >= 0.32.0',
     'setuptools >= 40.8.0',
+    'gensim',
 ]
 
 if __name__ == "__main__":
