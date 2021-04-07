@@ -64,6 +64,8 @@ def parse_args():
                         help='Num_hidden.')
     parser.add_argument('--num_layers', type=int, default=2,
                         help='Num_layers.')
+    parser.add_argument('--num_parallel_workers', type=int, default=4,
+                        help='Num_parallel_workers.')
     parser.add_argument('--bidirectional', type=bool, default=True,
                         help='bidirectional or not.')
     parser.add_argument('--save_checkpoint_epochs', type=int, default=5,
@@ -110,6 +112,9 @@ if __name__ == '__main__':
         if os.path.exists(train_data_path) and os.path.exists(val_data_path) and os.path.exists(weight_path):
             print("==============Data have been preprocessed ==============")
         else:
+            # to make sure rmtree will not cause error
+            if not os.path.exists(args_opt.preprocess_path):
+                os.makedirs(args_opt.preprocess_path)
             shutil.rmtree(args_opt.preprocess_path)
             print("============== Starting Data Pre-processing ==============")
             imdbdata = ImdbDataset(args_opt.aclimdb_path, args_opt.glove_path, args_opt.embed_size)
@@ -145,14 +150,14 @@ if __name__ == '__main__':
     dataset_sink_mode = not args_opt.device_target == "CPU"
     if args_opt.do_eval:
         # as for evaluation, users could use model.eval
-        ds_eval = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord"), args_opt.batch_size)
+        ds_eval = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_test.mindrecord"), args_opt.batch_size, num_parallel_workers=args_opt.num_parallel_workers)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
         print("============== Accuracy:{} ==============".format(acc))
     else:
         # as for train, users could use model.train
-        ds_train = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord"), args_opt.batch_size)
+        ds_train = lstm_create_dataset(os.path.join(args_opt.preprocess_path, "aclImdb_train.mindrecord"), args_opt.batch_size, num_parallel_workers=args_opt.num_parallel_workers)
         ckpoint_cb = ModelCheckpoint(prefix="SentimentNet_imdb", config=CheckpointConfig(
             save_checkpoint_steps=save_checkpoint_epochs * ds_train.get_dataset_size(),
             keep_checkpoint_max=10))
