@@ -78,6 +78,7 @@ class Discriminator(layers.Layer):
     Examples:
         >>> Discriminator(3, 64, 3)
     """
+
     def __init__(self, in_planes=3, ndf=64, n_layers=3, alpha=0.2, norm_mode='batch'):
         super(Discriminator, self).__init__()
         kernel_size = 4
@@ -149,6 +150,7 @@ class WithLossCell(layers.Layer):
     Returns:
        Generator Loss lg
     """
+
     def __init__(self, network):
         super(WithLossCell, self).__init__(auto_prefix=False)
         self.network = network
@@ -171,6 +173,7 @@ class TrainOneStepG(layers.Layer):
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
+
     def __init__(self, G, generator, optimizer, sens=1.0):
         super(TrainOneStepG, self).__init__(auto_prefix=False)
         self.optimizer = optimizer
@@ -206,6 +209,7 @@ class TrainOneStepD(layers.Layer):
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
+
     def __init__(self, D, optimizer, sens=1.0):
         super(TrainOneStepD, self).__init__(auto_prefix=False)
         self.optimizer = optimizer
@@ -272,8 +276,7 @@ def cycle_gan_infer(g_model='resnet'):
     Get Cycle GAN network for predict.
 
     Args:
-        G_A (layers.Layer): The generator net, currently it should be in [resnet, unet].
-        G_B (layers.Layer): The generator net, currently it should be in [resnet, unet].
+        g_model (str): The generator network type, currently it should be in ['resnet', 'unet']. Default: resnet.
 
     Returns:
         Cycle GAN instance.
