@@ -2,13 +2,15 @@
 
 # TinyMS
 
-[![Pypi](https://img.shields.io/pypi/v/tinyms.svg)](https://pypi.org/project/tinyms)
-[![Python](https://img.shields.io/pypi/pyversions/tinyms.svg)](https://pypi.org/project/tinyms)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tinyms.svg)](https://pypi.org/project/tinyms)
+[![PyPI](https://badge.fury.io/py/tinyms.svg)](https://badge.fury.io/py/tinyms)
 [![Downloads](https://pepy.tech/badge/tinyms)](https://pepy.tech/project/tinyms)
+[![DockerHub](https://img.shields.io/docker/pulls/tinyms/tinyms.svg)](https://hub.docker.com/r/tinyms/tinyms)
 [![Build Status](https://github.com/tinyms-ai/tinyms/actions/workflows/install_and_test.yml/badge.svg?branch=main)](https://github.com/tinyms-ai/tinyms/actions/workflows/install_and_test.yml)
 [![Documentation Status](https://readthedocs.org/projects/tinyms/badge/?versoin=latest)](https://readthedocs.org/projects/tinyms)
 [![Releases](https://img.shields.io/github/release/tinyms-ai/tinyms/all.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/releases)
 [![LICENSE](https://img.shields.io/github/license/tinyms-ai/tinyms.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/mindspore/shared_invite/zt-dgk65rli-3ex4xvS4wHX7UDmsQmfu8w)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 English | [查看中文](./README_CN.md)
@@ -120,13 +122,11 @@ If you are interested in learning TinyMS API, please find TinyMS Python API in [
 
 For a more detailed step-by-step video tutorial, please refer to the following website.
 
-
-
-| Episode | Title                                                        | Content                                                      | Docs                                                         | Status    | Update Time |
-| ------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | --------- | ----------- |
-| EP01    | [How to learn Deep Learning-- The Most Efficient Way For Beginners!](https://www.bilibili.com/video/BV1MB4y1P79S) | Teacher's profile+DeepLearning Course Introduction           | -                                                            | Published | 2021.3.30   |
-| EP02    | [How we teach computers to understand pictures?+ Three Ways to Install TinyMS](https://www.bilibili.com/video/BV18v41187fX) | It uncovers the magic of computer vision + three ways to install TinyMS （Ubuntu、Win10、Docker） | [TinyMS Installation For Beginners](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html) | Published | 2020.3.31   |
-| EP03    | [Learn Shell Script in 30 Minutes](https://www.bilibili.com/video/BV1vy4y1b7jh) | It covers the essential concepts such as using variables, basic operators, loops & functions and so on.It also gives you an insight by scaling down some real-time scenarios and demonstrating them using the docker container. | [Learn Shell Script in 30 Minutes(doc)](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP03/30min速成Shell脚本.md) | Publised  | 2020.4.1    |
+| Episode | Title | Content | Docs | Status | Update Time |
+| ------- | ----- | ------- | ---- | ------ | ----------- |
+| EP01    | [How to learn Deep Learning? The Most Efficient Way For Beginners!](https://www.bilibili.com/video/BV1MB4y1P79S) | Teacher's profile+DeepLearning Course Introduction | - | Published | 2021.3.30 |
+| EP02    | [How we teach computers to understand pictures? Three Ways to Install TinyMS](https://www.bilibili.com/video/BV18v41187fX) | It uncovers the magic of computer vision + three ways to install TinyMS (Ubuntu, Win10, Docker) | [TinyMS Installation For Beginners](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html) | Published | 2020.3.31 |
+| EP03    | [Learn Shell Script in 30 Minutes](https://www.bilibili.com/video/BV1vy4y1b7jh) | It covers the essential concepts such as using variables, basic operators, loops & functions and so on. It also gives you an insight by scaling down some real-time scenarios and demonstrating them using the docker container. | [Learn Shell Script in 30 Minutes (doc)](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP03/30min速成Shell脚本.md) | Published | 2020.4.1 |
 
 
 ## Community
