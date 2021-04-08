@@ -16,9 +16,7 @@
 from . import loader, utils
 from .loader import *
 from .utils import *
-from .imdb import *
 
 __all__ = []
 __all__.extend(loader.__all__)
 __all__.extend(utils.__all__)
-__all__.extend(imdb.__all__)
