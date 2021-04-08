@@ -245,7 +245,7 @@ class ImageFolderTransform(DatasetTransform):
     ImageFolder dataset transform class.
 
     Inputs:
-        img(Union[numpy.ndarray, PIL.Image]): Image to be transformed in ImageFolder-style.
+        img (Union[numpy.ndarray, PIL.Image]): Image to be transformed in ImageFolder-style.
 
     Outputs:
         numpy.ndarray, transformed image.
@@ -340,7 +340,7 @@ class VOCTransform(DatasetTransform):
     VOC dataset transform class.
 
     Inputs:
-        img(Union[numpy.ndarray, PIL.Image]): Image to be transformed in VOC-style.
+        img (Union[numpy.ndarray, PIL.Image]): Image to be transformed in VOC-style.
 
     Outputs:
         numpy.ndarray, transformed image.
@@ -530,7 +530,7 @@ class CycleGanDatasetTransform():
     CycleGan dataset transform class.
 
     Inputs:
-        img(Union[numpy.ndarray, PIL.Image]): Image to be transformed in city_scape.
+        img (Union[numpy.ndarray, PIL.Image]): Image to be transformed in city_scape.
 
     Outputs:
         numpy.ndarray, transformed image.

@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-import subprocess
-import signal
+import os
 import sys
+import signal
 import logging
+import platform
+import subprocess
 
 from flask import request, Flask, jsonify
 from ..servable import predict, servable_search
@@ -78,6 +80,68 @@ def list_servables():
         return 'No server detected'
 
 
+class FlaskServer(object):
+    """
+    Create a flask service, only be used to trigger starting the flask server in subprocess.
+    Example:
+        >>> server = FlaskServer()
+        >>> server.run()
+    """
+
+    def __init__(self):
+        self.system_name = platform.system().lower()
+
+    def signal_handler(self, signal, frame):
+        self.shutdown()
+        sys.exit(0)
+
+    def shutdown(self):
+        """
+        Shutdown the flask server.
+        """
+
+        if server_started() is True:
+            if self.system_name == "windows":
+                server_res = subprocess.getoutput("netstat -ano | findstr 5000")
+                server_pid = None
+                for line in server_res.split("\n"):
+                    temp = [i for i in line.split(' ') if i != '']
+                    if len(temp) > 4:
+                        if temp[1] == '127.0.0.1:5000' and temp[3] == 'LISTENING':
+                            server_pid = temp[4]
+                            continue
+                if server_pid:
+                    os.system("taskkill /t /f /pid %s" % server_pid)
+            else:
+                server_pid = subprocess.getoutput("netstat -anp | grep 5000 | awk '{printf $7}' | cut -d/ -f1")
+                subprocess.run("kill -9 " + str(server_pid), shell=True)
+            return 'Server shutting down...'
+        else:
+            return 'No server detected'
+
+    def windows_run_server(self):
+        cmd = 'python -c "from run_flask import run_flask; run_flask()"'
+        server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        
+        for sig in [signal.SIGINT, signal.SIGTERM]:
+            signal.signal(sig, self.signal_handler)
+
+    def linux_run_server(self):
+        cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
+        server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        
+        # 我发现此处并未设置一个循环等候信号的逻辑，这会导致服务使用ctrl+c无法正常关闭整个服务，我不明白当初的设计思路，此处可选
+        while True:
+            for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
+                signal.signal(sig, self.signal_handler)
+
+    def run(self):
+        if self.system_name == "windows":
+            self.windows_run_server()
+        else:
+            self.linux_run_server()
+
+
 def run_flask(host='127.0.0.1', port=5000):
     """
     Start the flask server, only be used to trigger starting the flask server in subprocess.
@@ -124,17 +188,17 @@ def start_server(host='127.0.0.1', port=5000):
     if server_started() is True:
         print('Server already started at host %s, port %d'%(host, port))
     else:
-        cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
-        server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        server = FlaskServer()
+        server.run()
         print('Server starts at host %s, port %d' %(host, port))
 
     def signal_handler(signal, frame):
         shutdown()    
         sys.exit(0)
     
-    for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
-        signal.signal(sig, signal_handler)
-   
+    # for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
+    #     signal.signal(sig, signal_handler)
+
 
 def shutdown():
     """
@@ -150,10 +214,6 @@ def shutdown():
         >>> shutdown()
         'Server shutting down...'
     """
-
-    if server_started() is True:
-        server_pid = subprocess.getoutput("netstat -anp | grep 5000 | awk '{printf $7}' | cut -d/ -f1")
-        subprocess.run("kill -9 " + str(server_pid), shell=True)
-        return 'Server shutting down...'
-    else:
-        return 'No server detected'
+    server = FlaskServer()
+    res = server.shutdown()
+    return res

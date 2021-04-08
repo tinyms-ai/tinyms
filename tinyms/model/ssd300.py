@@ -286,6 +286,16 @@ class SSD300(layers.Layer):
 
 
 def ssd300_mobilenetv2(class_num=21, is_training=True):
+    """
+    Get SSD300 model instance for training, evaluation and prediction.
+
+    Args:
+        class_num (int): The number of classes. Default: 21.
+        is_training (bool): Whether to do training job, default: True.
+
+    Returns:
+        model.SSD300, SSD300 instance.
+    """
     return SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=is_training)
 
 
@@ -326,5 +336,14 @@ class SSDInferWithDecoder(layers.Layer):
 
 
 def ssd300_infer(class_num=21):
+    """
+    Get SSD300 model instance for prediction.
+
+    Args:
+        class_num (int): The number of classes. Default: 21.
+
+    Returns:
+        model.SSD300, SSD300 instance.
+    """
     net = SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=False)
     return SSDInferWithDecoder(net)

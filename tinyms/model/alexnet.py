@@ -13,16 +13,12 @@
 # limitations under the License.
 # ============================================================================
 
-
-
 import numpy as np
 from scipy.stats import truncnorm
 
 import tinyms as ts
 from tinyms import layers, Tensor
 from tinyms.layers import ReLU, MaxPool2d, Flatten, Dropout
-
-
 
 
 def _conv_variance_scaling_initializer(in_channel, out_channel, kernel_size):
@@ -59,11 +55,14 @@ def _conv7x7(in_channel, out_channel, stride=1):
     weight = _weight_variable(weight_shape)
     return layers.Conv2d(in_channel, out_channel,
                          kernel_size=7, stride=stride, padding=0, pad_mode='same', weight_init=weight)
+
+
 def _conv11x11(in_channel, out_channel, stride=1):
     weight_shape = (out_channel, in_channel, 11, 11)
     weight = _weight_variable(weight_shape)
     return layers.Conv2d(in_channel, out_channel,
                          kernel_size=11, stride=stride, padding=2, pad_mode='pad', weight_init=weight)
+
 
 def _conv5x5(in_channel, out_channel, stride=1):
     weight_shape = (out_channel, in_channel, 5, 5)
@@ -88,14 +87,24 @@ def _fc(in_channel, out_channel):
     return layers.Dense(in_channel, out_channel, has_bias=True, weight_init=weight, bias_init=0)
 
 
-
-
-
 class AlexNet(layers.Layer):
+    """
+    Get AlexNet neural network.
+
+    Args:
+        class_num (int): Class number. Default: 1000.
+
+    Returns:
+        layers.Layer, layer instance of AlexNet neural network.
+
+    Examples:
+        >>> from tinyms.model import AlexNet
+        >>>
+        >>> net = AlexNet(class_num=1000)
+    """
+
     def __init__(self, class_num=1000):
         super(AlexNet, self).__init__()
-
-
 
         self.features = layers.SequentialLayer(
             [
@@ -123,21 +132,25 @@ class AlexNet(layers.Layer):
             ]
 
         )
+
     def construct(self, x):
         x = self.features(x)
         return x
+
 
 def alexnet(class_num=10):
     """
     Get AlexNet neural network.
 
     Args:
-        class_num (int): Class number.
+        class_num (int): Class number. Default: 10.
 
     Returns:
         layers.Layer, layer instance of AlexNet neural network.
 
     Examples:
-        >>> net = AlexNet(class_num=10)
+        >>> from tinyms.model import alexnet
+        >>>
+        >>> net = alexnet(class_num=10)
     """
     return AlexNet(class_num=class_num)
