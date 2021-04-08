@@ -17,9 +17,9 @@ The sample can be run on CPU, GPU and Ascend 910 AI processor.
 """
 import random
 import argparse
-import numpy as np
 import os
 import shutil
+import numpy as np
 
 from tinyms import Tensor
 from tinyms import context
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         weight_path = os.path.join(args_opt.preprocess_path, "weight.txt")
 
         if os.path.exists(train_data_path) and os.path.exists(val_data_path) and os.path.exists(weight_path):
-            print("==============Data have been preprocessed ==============")
+            print("==============Data has been preprocessed ==============")
         else:
             # to make sure rmtree will not cause error
             if not os.path.exists(args_opt.preprocess_path):
@@ -114,9 +114,7 @@ if __name__ == '__main__':
             shutil.rmtree(args_opt.preprocess_path)
             print("============== Starting Data Pre-processing ==============")
             imdbdata = ImdbDataset(args_opt.aclimdb_path, args_opt.glove_path, args_opt.embed_size)
-            imdbdata.convert_to_mindrecord(
-                args_opt.preprocess_path
-            )
+            imdbdata.convert_to_mindrecord(args_opt.preprocess_path)
 
     embedding_table = np.loadtxt(os.path.join(args_opt.preprocess_path, "weight.txt")).astype(np.float32)
 
