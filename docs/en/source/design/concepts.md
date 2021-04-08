@@ -21,7 +21,7 @@ Design goals of TinyMS:
 * Small runtime footprint that could be used on mobile, edge or cloud.
 * Standardizing spec for model training script format.
 
-![TinyMS Architecture](../_static/tinyms-architecture.png) 
+![TinyMS Architecture](../_static/tinyms-architecture.png)
 
 ### Workflow analysis
 
@@ -46,6 +46,7 @@ TinyMS has the following modules:
 | model | Model High Level API and Predefined Network | `from tinyms.model import Model, lenet5` |
 | serving | Model Serving | `from tinyms.serving import predict` |
 | vision | Computer Vision Related Data Processing | `from tinyms.vision import mnist_transform, Resize` |
+| text | Natural Language Processing Related Data Processing | `from tinyms.text import Lookup` |
 | callbacks | Callbacks During Model Training | `from tinyms.callbacks import ModelCheckpoint` |
 | common | Basic Components Including Tensor, Numpy Style Functions | `from tinyms import Tensor, array` |
 | context | Global Context | `from tinyms import context` |
@@ -78,7 +79,7 @@ from tinyms.data import MnistDataset
 mnist_ds = MnistDataset(mnist_path, shuffle=True)
 ```
 
-### Data preprocessing (*vision*)
+### Data preprocessing (*vision*, *text*)
 
 Usually in the model development workflow, data processing presents a big challenge: insufficient data, heavy manual labeling task, irregular data format and many other issues. Any of them could affect the network accuracy after training. Most frameworks provide data processing modules. Take MindSpore as an example, it currently provides data processing functions for common scenarios such as CV and NLP (for relevant interface definitions, please refer to [`mindspore.dataset.vision`](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.dataset.vision.html) and [`mindspore.dataset.text`](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.dataset.text.html)), the user can directly call the preset data processing operator to process pictures or text, and then construct a data processing pipeline to efficiently parallelize massive data (see [here](https://www.mindspore.cn/news/newschildren?id=399)).
 
