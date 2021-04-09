@@ -37,7 +37,7 @@ def predict_server():
         A json object of predicted result will be sent back to the client.
 
     Examples:
-        >>> # In the client part, the request will be routed and processed here 
+        >>> # In the client part, the request will be routed and processed here
         >>> url = "http://127.0.0.1:5000/predict"
         >>> res = requests.post(url=url, headers=headers, data=json.dumps(payload))
     """
@@ -69,7 +69,7 @@ def list_servables():
         A json object of servable information in the backend will be sent back to the client.
 
     Examples:
-        >>> # In the client part, the servable search request will be routed and processed here 
+        >>> # In the client part, the servable search request will be routed and processed here
         >>> res = requests.get(url=url, headers=headers)
         >>> res_body = res.json()
     """
@@ -120,20 +120,18 @@ class FlaskServer(object):
             return 'No server detected'
 
     def windows_run_server(self):
-        cmd = 'python -c "from run_flask import run_flask; run_flask()"'
+        cmd = 'python -c "from tinyms.serving import run_flask; run_flask()"'
         server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-        
+
         for sig in [signal.SIGINT, signal.SIGTERM]:
             signal.signal(sig, self.signal_handler)
 
     def linux_run_server(self):
         cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
         server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-        
-        # 我发现此处并未设置一个循环等候信号的逻辑，这会导致服务使用ctrl+c无法正常关闭整个服务，我不明白当初的设计思路，此处可选
-        while True:
-            for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
-                signal.signal(sig, self.signal_handler)
+
+        for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
+            signal.signal(sig, self.signal_handler)
 
     def run(self):
         if self.system_name == "windows":
@@ -156,7 +154,7 @@ def run_flask(host='127.0.0.1', port=5000):
         Server Started
 
     Examples:
-        >>> # In the start_server function 
+        >>> # In the start_server function
         >>> cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
         >>> server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     """
@@ -180,37 +178,34 @@ def start_server(host='127.0.0.1', port=5000):
         Start the server in a sub process.
 
     Examples:
-        >>> # In the client part 
+        >>> # In the client part
+        >>> from tinyms.serving import start_server
+        >>>
         >>> start_server()
         Server starts at host 127.0.0.1, port 5000
     """
 
     if server_started() is True:
-        print('Server already started at host %s, port %d'%(host, port))
+        print('Server already started at host %s, port %d' % (host, port))
     else:
         server = FlaskServer()
         server.run()
-        print('Server starts at host %s, port %d' %(host, port))
-
-    def signal_handler(signal, frame):
-        shutdown()    
-        sys.exit(0)
-    
-    # for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
-    #     signal.signal(sig, signal_handler)
+        print('Server starts at host %s, port %d' % (host, port))
 
 
 def shutdown():
     """
     Shutdown the flask server.
 
-    Search fot the pid of the process running on port 5000, and kill it. This function will be automatically called when SIGINT, SIGHUP and SIGTERM signals catched.
+    Search fot the pid of the process running on port 5000, and kill it. This function will be automatically called when SIGINT, SIGHUP and SIGTERM signals caught.
 
     Returns:
         A string message of server shutting down or not.
 
     Examples:
-        >>> # In the client part, after predict()
+        >>> # In the client part, after calling predict()
+        >>> from tinyms.serving import shutdown
+        >>>
         >>> shutdown()
         'Server shutting down...'
     """
