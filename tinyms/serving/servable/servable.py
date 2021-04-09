@@ -43,7 +43,7 @@ def servable_search(name=None):
         A string of servable values will be returned if servable json exists, otherwise error message.
 
     Examples:
-        >>> # In the server part, before running the predict function, servable_serch is called to check and get the result. 
+        >>> # In the server part, before running the predict function, servable_search is called to check and get the result.
         >>> res = servable_search(servable_name)
         >>> servable = res['servables'][0]
         >>> res = predict(instance, servable_name, servable['model'], strategy)
@@ -81,7 +81,7 @@ def predict(instance, servable_name, servable_model, strategy):
     A network will be constructed based on the input and servable data, then load the checkpoint and do the predict.
 
     Args:
-        instance (dict): the dict of input image after transformation, with keys of `shape`, `dtype` and `data`(Image object). 
+        instance (dict): the dict of input image after transformation, with keys of `shape`, `dtype` and `data`(Image object).
         servable_name (str): servable name
         servable_model (str): name of the model
         strategy (str): output strategy, usually select between `TOP1_CLASS` and `TOP5_CLASS`, for cyclegan, select between `gray2color` and `color2gray`
@@ -90,7 +90,7 @@ def predict(instance, servable_name, servable_model, strategy):
         The dict object of predicted result after post process.
 
     Examples:
-        >>> # In the server part, after servavle_search 
+        >>> # In the server part, after servable_search
         >>> res = predict(instance, servable_name, servable['model'], strategy)
         >>> return jsonify(res)
     """
