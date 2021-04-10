@@ -47,8 +47,10 @@ def server_started(host='127.0.0.1', port=5000):
 
     Examples:
         >>> # Running the quickstart tutorial, after starting the server
+        >>> from tinyms.serving import server_started, predict
+        >>>
         >>> if server_started() is True:
-        >>>     print(predict(image_path, 'lenet5', 'mnist', strategy))
+        ...     print(predict(image_path, 'lenet5', 'mnist', strategy))
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -63,8 +65,8 @@ def list_servables():
     """
     List the model that is currently served by the backend server.
 
-    A `GET` request will be sent to the server(127.0.0.1:5000) which will then 
-    be routed to 127.0.0.1:5000/servables, and the backend servalbe information 
+    A `GET` request will be sent to the server(127.0.0.1:5000) which will then
+    be routed to 127.0.0.1:5000/servables, and the backend servable information
     will be returned to the client.
 
     Returns:
@@ -74,8 +76,18 @@ def list_servables():
 
     Examples:
         >>> # Running the quickstart tutorial, after server started and servable json defined
+        >>> from tinyms.serving import list_servables
+        >>>
         >>> list_servables()
-        [{'description': 'This servable hosts a lenet5 model predicting numbers', 'model': {'class_num': 10, 'format': 'ckpt', 'name': 'lenet5'}, 'name': 'lenet5'}]
+        [{
+            'description': 'This servable hosts a lenet5 model predicting numbers',
+            'model': {
+                'class_num': 10,
+                'format': 'ckpt',
+                'name': 'lenet5'
+            },
+            'name': 'lenet5'
+        }]
     """
 
     headers = {'Content-Type': 'application/json'}
@@ -112,6 +124,8 @@ def predict(img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"
 
     Examples:
         >>> # Running the quickstart tutorial, after server started and servable json defined
+        >>> from tinyms.serving import predict
+        >>>
         >>> print(predict('/root/7.png', 'lenet5', 'mnist', 'TOP1_CLASS'))
         TOP1: 7, score: 0.99943381547927856445
     """

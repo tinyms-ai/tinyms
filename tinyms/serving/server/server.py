@@ -38,7 +38,7 @@ def predict_server():
         A json object of predicted result will be sent back to the client.
 
     Examples:
-        >>> # In the client part, the request will be routed and processed here 
+        >>> # In the client part, the request will be routed and processed here
         >>> url = "http://127.0.0.1:5000/predict"
         >>> res = requests.post(url=url, headers=headers, data=json.dumps(payload))
     """
@@ -70,7 +70,7 @@ def list_servables():
         A json object of servable information in the backend will be sent back to the client.
 
     Examples:
-        >>> # In the client part, the servable search request will be routed and processed here 
+        >>> # In the client part, the servable search request will be routed and processed here
         >>> res = requests.get(url=url, headers=headers)
         >>> res_body = res.json()
     """
@@ -167,7 +167,7 @@ def run_flask(host='127.0.0.1', port=5000):
         Server Started
 
     Examples:
-        >>> # In the start_server function 
+        >>> # In the start_server function
         >>> cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
         >>> server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     """
@@ -193,7 +193,9 @@ def start_server(host='127.0.0.1', port=5000, servable_path=None, ckpt_path=None
         Start the server in a sub process.
 
     Examples:
-        >>> # In the client part 
+        >>> # In the client part
+        >>> from tinyms.serving import start_server
+        >>>
         >>> start_server()
         Server starts at host 127.0.0.1, port 5000
     """
@@ -217,13 +219,15 @@ def shutdown(host='127.0.0.1', port=5000):
     """
     Shutdown the flask server.
 
-    Search fot the pid of the process running on port 5000, and kill it. This function will be automatically called when SIGINT, SIGHUP and SIGTERM signals catched.
+    Search fot the pid of the process running on port 5000, and kill it. This function will be automatically called when SIGINT, SIGHUP and SIGTERM signals caught.
 
     Returns:
         A string message of server shutting down or not.
 
     Examples:
-        >>> # In the client part, after predict()
+        >>> # In the client part, after calling predict()
+        >>> from tinyms.serving import shutdown
+        >>>
         >>> shutdown()
         'Server shutting down...'
     """
