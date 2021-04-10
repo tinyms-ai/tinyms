@@ -21,6 +21,14 @@ from tinyms import model
 from tinyms.utils.predict.predict import cyclegan_predict
 
 servable_path = '/etc/tinyms/serving/servable.json'
+CKPT_PATH = ''
+
+if os.path.exists('temp.json'):
+    with open('temp.json', 'r') as f:
+        data = json.load(f)
+        servable_path = data.get('servable_path', servable_path)
+        CKPT_PATH = data.get('ckpt_path', CKPT_PATH)
+
 model_checker = {
     "lenet5": model.lenet5,
     "resnet50": model.resnet50,
@@ -43,7 +51,7 @@ def servable_search(name=None):
         A string of servable values will be returned if servable json exists, otherwise error message.
 
     Examples:
-        >>> # In the server part, before running the predict function, servable_serch is called to check and get the result. 
+        >>> # In the server part, before running the predict function, servable_serch is called to check and get the result.
         >>> res = servable_search(servable_name)
         >>> servable = res['servables'][0]
         >>> res = predict(instance, servable_name, servable['model'], strategy)
@@ -81,7 +89,7 @@ def predict(instance, servable_name, servable_model, strategy):
     A network will be constructed based on the input and servable data, then load the checkpoint and do the predict.
 
     Args:
-        instance (dict): the dict of input image after transformation, with keys of `shape`, `dtype` and `data`(Image object). 
+        instance (dict): the dict of input image after transformation, with keys of `shape`, `dtype` and `data`(Image object).
         servable_name (str): servable name
         servable_model (str): name of the model
         strategy (str): output strategy, usually select between `TOP1_CLASS` and `TOP5_CLASS`, for cyclegan, select between `gray2color` and `color2gray`
@@ -90,7 +98,7 @@ def predict(instance, servable_name, servable_model, strategy):
         The dict object of predicted result after post process.
 
     Examples:
-        >>> # In the server part, after servavle_search 
+        >>> # In the server part, after servavle_search
         >>> res = predict(instance, servable_name, servable['model'], strategy)
         >>> return jsonify(res)
     """
@@ -125,7 +133,8 @@ def predict(instance, servable_name, servable_model, strategy):
             err_msg = "Currently cycle_gan strategy only supports `gray2color` and `color2gray`!"
             return {"status": 1, "err_msg": err_msg}
         ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, ckpt_name + "." + model_format)
-
+        if CKPT_PATH:
+            ckpt_path = CKPT_PATH
         data = cyclegan_predict(G_generator, input_data, ckpt_path)
     else:
         # build the network
@@ -135,6 +144,8 @@ def predict(instance, servable_name, servable_model, strategy):
 
         # load checkpoint
         ckpt_path = os.path.join("/etc/tinyms/serving", servable_name, model_name + "." + model_format)
+        if CKPT_PATH:
+            ckpt_path = CKPT_PATH
         if not os.path.isfile(ckpt_path):
             err_msg = "The model path " + ckpt_path + " not exist!"
             return {"status": 1, "err_msg": err_msg}

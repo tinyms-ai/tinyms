@@ -14,6 +14,7 @@
 # ============================================================================
 import os
 import sys
+import json
 import signal
 import logging
 import platform
@@ -88,8 +89,18 @@ class FlaskServer(object):
         >>> server.run()
     """
 
-    def __init__(self):
+    def __init__(self, host='127.0.0.1', port=5000, servable_path=None, ckpt_path=None):
+        json_data = {}
+        if servable_path is not None:
+            json_data.update({'servable_path': servable_path})
+        if ckpt_path is not None:
+            json_data.update({'ckpt_path': ckpt_path})
+        if json_data:
+            with open('temp.json', 'w') as f:
+                json.dump(json_data, f)
         self.system_name = platform.system().lower()
+        self.host = host
+        self.port = port
 
     def signal_handler(self, signal, frame):
         self.shutdown()
@@ -101,39 +112,39 @@ class FlaskServer(object):
         """
 
         if server_started() is True:
+            if os.path.exists('temp.json'):
+                os.remove('temp.json')
             if self.system_name == "windows":
                 server_res = subprocess.getoutput("netstat -ano | findstr 5000")
                 server_pid = None
                 for line in server_res.split("\n"):
                     temp = [i for i in line.split(' ') if i != '']
                     if len(temp) > 4:
-                        if temp[1] == '127.0.0.1:5000' and temp[3] == 'LISTENING':
+                        if temp[1] == f'{self.host}:{self.port}' and temp[3] == 'LISTENING':
                             server_pid = temp[4]
                             continue
                 if server_pid:
                     os.system("taskkill /t /f /pid %s" % server_pid)
             else:
-                server_pid = subprocess.getoutput("netstat -anp | grep 5000 | awk '{printf $7}' | cut -d/ -f1")
+                server_pid = subprocess.getoutput("netstat -anp | grep %s | awk '{printf $7}' | cut -d/ -f1" % self.port)
                 subprocess.run("kill -9 " + str(server_pid), shell=True)
             return 'Server shutting down...'
         else:
             return 'No server detected'
 
     def windows_run_server(self):
-        cmd = 'python -c "from run_flask import run_flask; run_flask()"'
+        cmd = f"""python -c "from tinyms.serving import run_flask; run_flask('{self.host}', {self.port})"""""
         server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-        
+
         for sig in [signal.SIGINT, signal.SIGTERM]:
             signal.signal(sig, self.signal_handler)
 
     def linux_run_server(self):
-        cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
+        cmd = [f"""python -c "from tinyms.serving import run_flask; run_flask('{self.host}', {self.port})"""""]
         server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-        
-        # 我发现此处并未设置一个循环等候信号的逻辑，这会导致服务使用ctrl+c无法正常关闭整个服务，我不明白当初的设计思路，此处可选
-        while True:
-            for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
-                signal.signal(sig, self.signal_handler)
+
+        for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
+            signal.signal(sig, self.signal_handler)
 
     def run(self):
         if self.system_name == "windows":
@@ -166,7 +177,7 @@ def run_flask(host='127.0.0.1', port=5000):
     app.run(host=host, port=port)
 
 
-def start_server(host='127.0.0.1', port=5000):
+def start_server(host='127.0.0.1', port=5000, servable_path=None, ckpt_path=None):
     """
     Start the flask server in a subprocess.
 
@@ -175,6 +186,8 @@ def start_server(host='127.0.0.1', port=5000):
     Args:
         host (str): the ip address of the flask server
         port (int): the port of the server
+        servable_path (str)
+        ckpt_path (str)
 
     Returns:
         Start the server in a sub process.
@@ -186,21 +199,21 @@ def start_server(host='127.0.0.1', port=5000):
     """
 
     if server_started() is True:
-        print('Server already started at host %s, port %d'%(host, port))
+        print('Server already started at host %s, port %d' % (host, port))
     else:
-        server = FlaskServer()
+        server = FlaskServer(host='127.0.0.1', port=5000, servable_path=servable_path, ckpt_path=ckpt_path)
         server.run()
-        print('Server starts at host %s, port %d' %(host, port))
+        print('Server starts at host %s, port %d' % (host, port))
 
-    def signal_handler(signal, frame):
-        shutdown()    
-        sys.exit(0)
-    
+    # def signal_handler(signal, frame):
+    #     shutdown()
+    #     sys.exit(0)
+
     # for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
     #     signal.signal(sig, signal_handler)
 
 
-def shutdown():
+def shutdown(host='127.0.0.1', port=5000):
     """
     Shutdown the flask server.
 
@@ -214,6 +227,6 @@ def shutdown():
         >>> shutdown()
         'Server shutting down...'
     """
-    server = FlaskServer()
+    server = FlaskServer(host, port)
     res = server.shutdown()
     return res
