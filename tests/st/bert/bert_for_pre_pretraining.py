@@ -14,7 +14,7 @@
 # ============================================================================
 """
 #################pre_train bert example on zh-wiki########################
-                    python run_pretrain.py
+                    python bert_for_pre_pretraining.py
 """
 
 import os
