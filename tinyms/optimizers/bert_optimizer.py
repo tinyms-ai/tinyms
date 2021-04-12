@@ -15,7 +15,6 @@
 """AdamWeightDecayForBert, a customized Adam for bert. Input: gradient, overflow flag."""
 import numpy as np
 
-from mindspore.common import dtype as mstype
 
 from mindspore._checkparam import Validator as validator
 from mindspore._checkparam import Rel
@@ -133,10 +132,10 @@ class AdamWeightDecayForBert(Optimizer):
     def construct(self, gradients, overflow):
         """AdamWeightDecayForBert"""
         lr = self.get_lr()
-        cond = self.op_cast(P.Fill()(mstype.int32, self.op_shape(self.beta1), 1) *\
-                            self.op_reshape(overflow, (())), mstype.bool_)
-        beta1 = self.op_select(cond, self.op_cast(ts.array((1.0,)), mstype.float32), self.beta1)
-        beta2 = self.op_select(cond, self.op_cast(ts.array((1.0,)), mstype.float32), self.beta2)
+        cond = self.op_cast(P.Fill()(ts.int32, self.op_shape(self.beta1), 1) *\
+                            self.op_reshape(overflow, (())), ts.bool_)
+        beta1 = self.op_select(cond, self.op_cast(ts.array((1.0,)), ts.float32), self.beta1)
+        beta2 = self.op_select(cond, self.op_cast(ts.array((1.0,)), ts.float32), self.beta2)
         if self.is_group:
             if self.is_group_lr:
                 optim_result = self.hyper_map(P.Partial()(_adam_opt, self.beta1, self.beta2, self.eps),
