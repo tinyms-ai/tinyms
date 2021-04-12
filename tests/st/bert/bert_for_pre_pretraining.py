@@ -35,7 +35,9 @@ from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor
 from tinyms import set_seed
 from tinyms.optimizers.bert_optimizer import get_optimizer
 
-from tinyms.model.bert import BertNetworkWithLoss, BertTrainOneStepCell, BertTrainOneStepWithLossScaleCell, \
+from tinyms.model.bert import BertNetworkWithLoss, \
+                BertTrainOneStepCell, \
+                BertTrainOneStepWithLossScaleCell, \
                 BertTrainAccumulationAllReduceEachWithLossScaleCell, \
                 BertTrainAccumulationAllReducePostWithLossScaleCell, \
                 BertTrainOneStepWithLossScaleCellForAdam
