@@ -32,7 +32,6 @@ from tinyms import context
 from tinyms.model import Model
 from tinyms.context import ParallelMode
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor
-from tinyms.optimizers import AdamWeightDecay, Lamb, Momentum, THOR
 from tinyms import set_seed
 
 
@@ -41,7 +40,7 @@ from tinyms.model.bert import BertNetworkWithLoss, BertTrainOneStepCell, BertTra
                 BertTrainAccumulationAllReducePostWithLossScaleCell, \
                 BertTrainOneStepWithLossScaleCellForAdam
 
-from tinyms.optimizers import AdamWeightDecayForBert, AdamWeightDecayOp
+
 from config import cfg, bert_net_cfg
 from utils import LossCallBack, BertLearningRate
 
@@ -105,73 +104,6 @@ def _set_bert_all_reduce_split():
             context.set_auto_parallel_context(all_reduce_fusion_config=[30, 90, 150, 210, 270, 330, 390, 421])
         else:
             context.set_auto_parallel_context(all_reduce_fusion_config=[38, 93, 148, 203, 258, 313, 368, 397])
-
-
-def _get_optimizer(args_opt, network):
-    """get bert optimizer, support Lamb, Momentum, AdamWeightDecay."""
-    if cfg.optimizer == 'Lamb':
-        lr_schedule = BertLearningRate(learning_rate=cfg.Lamb.learning_rate,
-                                       end_learning_rate=cfg.Lamb.end_learning_rate,
-                                       warmup_steps=cfg.Lamb.warmup_steps,
-                                       decay_steps=args_opt.train_steps,
-                                       power=cfg.Lamb.power)
-        params = network.trainable_params()
-        decay_params = list(filter(cfg.Lamb.decay_filter, params))
-        other_params = list(filter(lambda x: not cfg.Lamb.decay_filter(x), params))
-        group_params = [{'params': decay_params, 'weight_decay': cfg.Lamb.weight_decay},
-                        {'params': other_params},
-                        {'order_params': params}]
-        optimizer = Lamb(group_params, learning_rate=lr_schedule, eps=cfg.Lamb.eps)
-    elif cfg.optimizer == 'Momentum':
-        optimizer = Momentum(network.trainable_params(), learning_rate=cfg.Momentum.learning_rate,
-                             momentum=cfg.Momentum.momentum)
-    elif cfg.optimizer == 'AdamWeightDecay':
-        lr_schedule = BertLearningRate(learning_rate=cfg.AdamWeightDecay.learning_rate,
-                                       end_learning_rate=cfg.AdamWeightDecay.end_learning_rate,
-                                       warmup_steps=cfg.AdamWeightDecay.warmup_steps,
-                                       decay_steps=args_opt.train_steps,
-                                       power=cfg.AdamWeightDecay.power)
-        params = network.trainable_params()
-        decay_params = list(filter(cfg.AdamWeightDecay.decay_filter, params))
-        other_params = list(filter(lambda x: not cfg.AdamWeightDecay.decay_filter(x), params))
-        group_params = [{'params': decay_params, 'weight_decay': cfg.AdamWeightDecay.weight_decay},
-                        {'params': other_params, 'weight_decay': 0.0},
-                        {'order_params': params}]
-
-        if args_opt.enable_lossscale == "true" and args_opt.device_target == 'GPU':
-            optimizer = AdamWeightDecayForBert(group_params, learning_rate=lr_schedule, eps=cfg.AdamWeightDecay.eps)
-        elif context.get_context("mode") == context.PYNATIVE_MODE and args_opt.device_target == 'GPU':
-            optimizer = AdamWeightDecayOp(group_params, learning_rate=lr_schedule, eps=cfg.AdamWeightDecay.eps)
-        else:
-            optimizer = AdamWeightDecay(group_params, learning_rate=lr_schedule, eps=cfg.AdamWeightDecay.eps)
-
-    elif cfg.optimizer == "Thor":
-        from utils import get_bert_thor_lr, get_bert_thor_damping
-        lr = get_bert_thor_lr(cfg.Thor.lr_max, cfg.Thor.lr_min, cfg.Thor.lr_power, cfg.Thor.lr_total_steps)
-        damping = get_bert_thor_damping(cfg.Thor.damping_max, cfg.Thor.damping_min, cfg.Thor.damping_power,
-                                        cfg.Thor.damping_total_steps)
-        split_indices = None
-
-        if bert_net_cfg.num_hidden_layers == 12:
-            if bert_net_cfg.use_relative_positions:
-                split_indices = [29, 58, 87, 116, 145, 174, 203, 217]
-            else:
-                split_indices = [28, 55, 82, 109, 136, 163, 190, 205]
-        elif bert_net_cfg.num_hidden_layers == 24:
-            if bert_net_cfg.use_relative_positions:
-                split_indices = [30, 90, 150, 210, 270, 330, 390, 421]
-            else:
-                split_indices = [38, 93, 148, 203, 258, 313, 368, 397]
-
-        optimizer = THOR(network, lr, damping, cfg.Thor.momentum,
-                         cfg.Thor.weight_decay, cfg.Thor.loss_scale, cfg.batch_size,
-                         decay_filter=lambda x: 'layernorm' not in x.name.lower() and 'bias' not in x.name.lower(),
-                         split_indices=split_indices)
-    else:
-        raise ValueError("Don't support optimizer {}, only support [Lamb, Momentum, AdamWeightDecay, Thor]".
-                         format(cfg.optimizer))
-
-    return optimizer
 
 
 def _auto_enable_graph_kernel(device_target, graph_kernel_mode):
@@ -290,7 +222,7 @@ def run_pretrain():
         logger.info("train steps: {}".format(args_opt.train_steps))
 
     # get the optimizer followed args_opt.optimizer
-    optimizer = _get_optimizer(args_opt, net_with_loss)
+    optimizer = get_optimizer(args_opt, net_with_loss)
 
     # define the callbacks
     callback = [TimeMonitor(args_opt.data_sink_steps), LossCallBack(ds.get_dataset_size())]
