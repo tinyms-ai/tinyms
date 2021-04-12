@@ -82,3 +82,51 @@ class BertLearningRate(LearningRateSchedule):
         return lr
 
 
+def _get_poly_lr(global_step, lr_init, lr_end, lr_max, warmup_steps, total_steps, poly_power):
+    """
+    generate learning rate array
+
+    Args:
+       global_step(int): current step
+       lr_init(float): init learning rate
+       lr_end(float): end learning rate
+       lr_max(float): max learning rate
+       warmup_steps(int): number of warmup epochs
+       total_steps(int): total epoch of training
+       poly_power(int): poly learning rate power
+
+    Returns:
+       np.array, learning rate array
+    """
+    lr_each_step = []
+    if warmup_steps != 0:
+        inc_each_step = (float(lr_max) - float(lr_init)) / float(warmup_steps)
+    else:
+        inc_each_step = 0
+    for i in range(total_steps):
+        if i < warmup_steps:
+            lr = float(lr_init) + inc_each_step * float(i)
+        else:
+            base = (1.0 - (float(i) - float(warmup_steps)) / (float(total_steps) - float(warmup_steps)))
+            lr = float(lr_max - lr_end) * (base ** poly_power)
+            lr = lr + lr_end
+            if lr < 0.0:
+                lr = 0.0
+        lr_each_step.append(lr)
+
+    learning_rate = np.array(lr_each_step).astype(np.float32)
+    current_step = global_step
+    learning_rate = learning_rate[current_step:]
+    return learning_rate
+
+
+
+def get_bert_thor_damping(damping_max=5e-2, damping_min=1e-6, damping_power=1.0, damping_total_steps=30000):
+    damping = _get_poly_lr(global_step=0, lr_init=0.0, lr_end=damping_min, lr_max=damping_max, warmup_steps=0,
+                           total_steps=damping_total_steps, poly_power=damping_power)
+    return Tensor(damping)
+
+def get_bert_thor_lr(lr_max=0.0034, lr_min=3.244e-05, lr_power=1.0, lr_total_steps=30000):
+    learning_rate = _get_poly_lr(global_step=0, lr_init=0.0, lr_end=lr_min, lr_max=lr_max, warmup_steps=0,
+                                 total_steps=lr_total_steps, poly_power=lr_power)
+    return Tensor(learning_rate)
