@@ -22,7 +22,6 @@ import argparse
 import logging
 
 import mindspore.communication.management as D
-import mindspore.common.dtype as mstype
 from mindspore.nn.wrap.loss_scale import DynamicLossScaleUpdateCell
 
 
@@ -72,7 +71,7 @@ def create_bert_dataset(device_num=1, rank=0, do_shuffle="true", data_dir=None, 
                                   num_shards=device_num, shard_id=rank, shard_equal_rows=True)
     ori_dataset_size = data_set.get_dataset_size()
     print('origin dataset size: ', ori_dataset_size)
-    type_cast_op = vision.TypeCast(mstype.int32)
+    type_cast_op = vision.TypeCast(ts.int32)
     data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_ids")
     data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_positions")
     data_set = data_set.map(operations=type_cast_op, input_columns="next_sentence_labels")
@@ -190,10 +189,10 @@ def _set_graph_kernel_context(device_target, enable_graph_kernel, is_auto_enable
 
 
 def _check_compute_type(args_opt, is_auto_enable_graph_kernel):
-    if args_opt.device_target == 'GPU' and bert_net_cfg.compute_type != mstype.float32 and \
+    if args_opt.device_target == 'GPU' and bert_net_cfg.compute_type != ts.float32 and \
        not is_auto_enable_graph_kernel:
         warning_message = 'Gpu only support fp32 temporarily, run with fp32.'
-        bert_net_cfg.compute_type = mstype.float32
+        bert_net_cfg.compute_type = ts.float32
         if args_opt.enable_lossscale == "true":
             args_opt.enable_lossscale = "false"
             warning_message = 'Gpu only support fp32 temporarily, run with fp32 and disable lossscale.'
