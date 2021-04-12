@@ -15,8 +15,9 @@
 """
 network config setting, will be used in  run_pretrain.py
 """
+import tinyms as ts
+
 from easydict import EasyDict as edict
-import mindspore.common.dtype as mstype
 
 
 
@@ -44,8 +45,8 @@ class BertConfig:
         type_vocab_size (int): Size of token type vocab. Default: 16.
         initializer_range (float): Initialization value of TruncatedNormal. Default: 0.02.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
-        dtype (:class:`mindspore.dtype`): Data type of the input. Default: mstype.float32.
-        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: mstype.float32.
+        dtype (:class:`mindspore.dtype`): Data type of the input. Default: ts.float32.
+        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: ts.float32.
     """
     def __init__(self,
                  seq_length=128,
@@ -61,8 +62,8 @@ class BertConfig:
                  type_vocab_size=16,
                  initializer_range=0.02,
                  use_relative_positions=False,
-                 dtype=mstype.float32,
-                 compute_type=mstype.float32):
+                 dtype=ts.float32,
+                 compute_type=ts.float32):
         self.seq_length = seq_length
         self.vocab_size = vocab_size
         self.hidden_size = hidden_size
@@ -149,8 +150,8 @@ if cfg.bert_network == 'base':
         type_vocab_size=2,
         initializer_range=0.02,
         use_relative_positions=False,
-        dtype=mstype.float32,
-        compute_type=mstype.float16
+        dtype=ts.float32,
+        compute_type=ts.float16
     )
 if cfg.bert_network == 'nezha':
     cfg.batch_size = 96
@@ -168,8 +169,8 @@ if cfg.bert_network == 'nezha':
         type_vocab_size=2,
         initializer_range=0.02,
         use_relative_positions=True,
-        dtype=mstype.float32,
-        compute_type=mstype.float16
+        dtype=ts.float32,
+        compute_type=ts.float16
     )
 if cfg.bert_network == 'large':
     cfg.batch_size = 24
@@ -187,6 +188,6 @@ if cfg.bert_network == 'large':
         type_vocab_size=2,
         initializer_range=0.02,
         use_relative_positions=False,
-        dtype=mstype.float32,
-        compute_type=mstype.float16
+        dtype=ts.float32,
+        compute_type=ts.float16
     )

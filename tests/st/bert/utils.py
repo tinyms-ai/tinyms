@@ -18,9 +18,10 @@ Functional Cells used in Bert finetune and evaluation.
 """
 import math
 import numpy as np
+import tinyms as ts
+from tinyms import Tensor
 from mindspore.ops import operations as P
-from mindspore.common.tensor import Tensor
-from mindspore.common import dtype as mstype
+
 from mindspore.train.callback import Callback
 from mindspore.nn.learning_rate_schedule import LearningRateSchedule, PolynomialDecayLR, WarmUpLR
 
@@ -73,7 +74,7 @@ class BertLearningRate(LearningRateSchedule):
     def construct(self, global_step):
         decay_lr = self.decay_lr(global_step)
         if self.warmup_flag:
-            is_warmup = self.cast(self.greater(self.warmup_steps, global_step), mstype.float32)
+            is_warmup = self.cast(self.greater(self.warmup_steps, global_step), ts.float32)
             warmup_lr = self.warmup_lr(global_step)
             lr = (self.one - is_warmup) * decay_lr + is_warmup * warmup_lr
         else:
