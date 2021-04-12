@@ -25,8 +25,7 @@ import mindspore.communication.management as D
 from mindspore.nn.wrap.loss_scale import DynamicLossScaleUpdateCell
 
 import tinyms as ts
-from tinyms import data as ds
-from tinyms import vision
+from tinyms.data import BertDataset
 
 from tinyms import context
 from tinyms.model import Model
@@ -34,6 +33,8 @@ from tinyms.context import ParallelMode
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor
 from tinyms import set_seed
 from tinyms.optimizers.bert_optimizer import get_optimizer
+from tinyms.vision import bert_transform
+
 
 from tinyms.model.bert import BertNetworkWithLoss, \
                 BertTrainOneStepCell, \
@@ -57,33 +58,33 @@ logger = logging.getLogger(__name__)
 
 
 
-def create_bert_dataset(device_num=1, rank=0, do_shuffle="true", data_dir=None, schema_dir=None):
+def create_bert_dataset(
+        batch_size,
+        device_num=1,
+        rank=0,
+        shuffle=True,
+        data_dir=None,
+        schema_dir=None,
+        num_parallel_workers=4
+    ):
     """create train dataset"""
     # apply repeat operations
-    files = os.listdir(data_dir)
-    data_files = []
-    for file_name in files:
-        if "tfrecord" in file_name:
-            data_files.append(os.path.join(data_dir, file_name))
-    data_set = ds.TFRecordDataset(data_files, schema_dir if schema_dir != "" else None,
-                                  columns_list=["input_ids", "input_mask", "segment_ids", "next_sentence_labels",
-                                                "masked_lm_positions", "masked_lm_ids", "masked_lm_weights"],
-                                  shuffle=True if do_shuffle == "true" else False,
-                                  num_shards=device_num, shard_id=rank, shard_equal_rows=True)
-    ori_dataset_size = data_set.get_dataset_size()
-    print('origin dataset size: ', ori_dataset_size)
-    type_cast_op = vision.TypeCast(ts.int32)
-    data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_ids")
-    data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_positions")
-    data_set = data_set.map(operations=type_cast_op, input_columns="next_sentence_labels")
-    data_set = data_set.map(operations=type_cast_op, input_columns="segment_ids")
-    data_set = data_set.map(operations=type_cast_op, input_columns="input_mask")
-    data_set = data_set.map(operations=type_cast_op, input_columns="input_ids")
-    # apply batch operations
-    data_set = data_set.batch(cfg.batch_size, drop_remainder=True)
-    logger.info("data size: {}".format(data_set.get_dataset_size()))
-    logger.info("repeat count: {}".format(data_set.get_repeat_count()))
-    return data_set
+
+    bert_ds = BertDataset(
+        data_dir=data_dir,
+        num_parallel_workers=num_parallel_workers,
+        shuffle=shuffle,
+        schema_dir=schema_dir,
+        device_num=device_num,
+        rank=rank
+    )
+    bert_ds = bert_transform.apply_ds(
+                bert_ds.data_set,
+                batch_size=batch_size,
+    )
+
+    return bert_ds
+
 
 
 
@@ -147,7 +148,7 @@ def argparse_init():
                         help="Enable save checkpoint, default is true.")
     parser.add_argument("--enable_lossscale", type=str, default="true", choices=["true", "false"],
                         help="Use lossscale or not, default is not.")
-    parser.add_argument("--do_shuffle", type=str, default="true", choices=["true", "false"],
+    parser.add_argument("--do_shuffle", type=bool, default=True, choices=[True, False],
                         help="Enable shuffle for dataset, default is true.")
     parser.add_argument("--enable_data_sink", type=str, default="true", choices=["true", "false"],
                         help="Enable data sink, default is true.")
@@ -162,6 +163,8 @@ def argparse_init():
                                                                                 "default is 1000.")
     parser.add_argument("--train_steps", type=int, default=-1, help="Training Steps, default is -1, "
                                                                     "meaning run all steps according to epoch number.")
+    parser.add_argument("--num_parallel_workers", type=int, default=4, help="Num Parallel Workers")
+
     parser.add_argument("--save_checkpoint_num", type=int, default=1, help="Save checkpoint numbers, default is 1.")
     parser.add_argument("--data_dir", type=str, default="", help="Data path, it is better to use absolute path")
     parser.add_argument("--schema_dir", type=str, default="", help="Schema path, it is better to use absolute path")
@@ -212,7 +215,16 @@ def run_pretrain():
             args_opt.save_checkpoint_steps *= args_opt.accumulation_steps
             logger.info("save checkpoint steps: {}".format(args_opt.save_checkpoint_steps))
 
-    ds = create_bert_dataset(device_num, rank, args_opt.do_shuffle, args_opt.data_dir, args_opt.schema_dir)
+    ds = create_bert_dataset(
+        batch_size=args_opt.batch_size,
+        device_num=device_num,
+        rank=rank,
+        shuffle=args_opt.do_shuffle,
+        data_dir=args_opt.data_dir,
+        schema_dir=args_opt.schema_dir,
+        num_parallel_workers=args_opt.num_parallel_workers
+    )
+
     net_with_loss = BertNetworkWithLoss(bert_net_cfg, True)
 
     new_repeat_count = args_opt.epoch_size * ds.get_dataset_size() // args_opt.data_sink_steps

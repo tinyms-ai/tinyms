@@ -343,9 +343,6 @@ def get_bert_thor_lr(lr_max=0.0034, lr_min=3.244e-05, lr_power=1.0, lr_total_ste
 
 
 
-
-
-
 def get_optimizer(args_opt, network, cfg, bert_net_cfg):
     """get bert optimizer, support Lamb, Momentum, AdamWeightDecay."""
     if cfg.optimizer == 'Lamb':
