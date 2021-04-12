@@ -44,7 +44,7 @@ python create_pretraining_data.py \
 
 # 开始训练
 ```pythonr
-python run_pretrain.py \
+python bert_for_pre_pretraining.py \
 --device_target {your device} \
 --device_id {your device id} \
 --enable_graph_kernel true \
@@ -54,7 +54,7 @@ python run_pretrain.py \
 # 加载模型
 
 ``` python
-python run_pretrain.py \
+python bert_for_pre_pretraining.py \
 --device_target {your device} \
 --device_id {your device id} \
 --enable_graph_kernel true \

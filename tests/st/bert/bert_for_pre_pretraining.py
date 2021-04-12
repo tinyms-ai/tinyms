@@ -24,7 +24,7 @@ import logging
 import mindspore.communication.management as D
 from mindspore.nn.wrap.loss_scale import DynamicLossScaleUpdateCell
 
-
+import tinyms as ts
 from tinyms import data as ds
 from tinyms import vision
 
@@ -33,7 +33,7 @@ from tinyms.model import Model
 from tinyms.context import ParallelMode
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor
 from tinyms import set_seed
-
+from tinyms.optimizers.bert_optimizer import get_optimizer
 
 from tinyms.model.bert import BertNetworkWithLoss, BertTrainOneStepCell, BertTrainOneStepWithLossScaleCell, \
                 BertTrainAccumulationAllReduceEachWithLossScaleCell, \
@@ -42,7 +42,7 @@ from tinyms.model.bert import BertNetworkWithLoss, BertTrainOneStepCell, BertTra
 
 
 from config import cfg, bert_net_cfg
-from utils import LossCallBack, BertLearningRate
+from utils import LossCallBack
 
 
 _current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -222,7 +222,7 @@ def run_pretrain():
         logger.info("train steps: {}".format(args_opt.train_steps))
 
     # get the optimizer followed args_opt.optimizer
-    optimizer = get_optimizer(args_opt, net_with_loss)
+    optimizer = get_optimizer(args_opt, net_with_loss, cfg, bert_net_cfg)
 
     # define the callbacks
     callback = [TimeMonitor(args_opt.data_sink_steps), LossCallBack(ds.get_dataset_size())]
