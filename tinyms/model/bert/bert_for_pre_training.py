@@ -21,7 +21,6 @@ from mindspore.communication.management import get_group_size
 
 from tinyms import context
 from .bert import Bert
-import mindspore.common.dtype as mstype
 
 import tinyms as ts
 from tinyms.initializers import TruncatedNormal, initializer
@@ -193,8 +192,8 @@ class BertPretrainingLoss(layers.Layer):
         super(BertPretrainingLoss, self).__init__()
         self.vocab_size = config.vocab_size
         self.onehot = P.OneHot()
-        self.on_value = Tensor(1.0, mstype.float32)
-        self.off_value = Tensor(0.0, mstype.float32)
+        self.on_value = Tensor(1.0, ts.float32)
+        self.off_value = Tensor(0.0, ts.float32)
         self.reduce_sum = P.ReduceSum()
         self.reduce_mean = P.ReduceMean()
         self.reshape = P.Reshape()
@@ -206,12 +205,12 @@ class BertPretrainingLoss(layers.Layer):
                   masked_lm_weights, next_sentence_labels):
         """Defines the computation performed."""
         label_ids = self.reshape(masked_lm_ids, self.last_idx)
-        label_weights = self.cast(self.reshape(masked_lm_weights, self.last_idx), mstype.float32)
+        label_weights = self.cast(self.reshape(masked_lm_weights, self.last_idx), ts.float32)
         one_hot_labels = self.onehot(label_ids, self.vocab_size, self.on_value, self.off_value)
 
         per_example_loss = self.neg(self.reduce_sum(prediction_scores * one_hot_labels, self.last_idx))
         numerator = self.reduce_sum(label_weights * per_example_loss, ())
-        denominator = self.reduce_sum(label_weights, ()) + self.cast(ts.array((1e-5,)), mstype.float32)
+        denominator = self.reduce_sum(label_weights, ()) + self.cast(ts.array((1e-5,)), ts.float32)
         masked_lm_loss = numerator / denominator
 
         # next_sentence_loss
@@ -259,7 +258,7 @@ class BertNetworkWithLoss(layers.Layer):
             self.bert(input_ids, input_mask, token_type_id, masked_lm_positions)
         total_loss = self.loss(prediction_scores, seq_relationship_score,
                                masked_lm_ids, masked_lm_weights, next_sentence_labels)
-        return self.cast(total_loss, mstype.float32)
+        return self.cast(total_loss, ts.float32)
 
 
 class BertTrainOneStepCell(nn.TrainOneStepCell):
@@ -309,7 +308,7 @@ class BertTrainOneStepCell(nn.TrainOneStepCell):
                                                  masked_lm_ids,
                                                  masked_lm_weights,
                                                  self.cast(ts.array((self.sens,)),
-                                                           mstype.float32))
+                                                           ts.float32))
         grads = self.hyper_map(P.Partial()(clip_grad, GRADIENT_CLIP_TYPE, GRADIENT_CLIP_VALUE), grads)
         grads = self.grad_reducer(grads)
         succ = self.optimizer(grads)
@@ -358,7 +357,7 @@ class BertTrainOneStepWithLossScaleCell(nn.TrainOneStepWithLossScaleCell):
         self.loss_scale = None
         self.loss_scaling_manager = scale_update_cell
         if scale_update_cell:
-            self.loss_scale = Parameter(Tensor(scale_update_cell.get_loss_scale(), dtype=mstype.float32))
+            self.loss_scale = Parameter(Tensor(scale_update_cell.get_loss_scale(), dtype=ts.float32))
 
     def construct(self,
                   input_ids,
@@ -391,7 +390,7 @@ class BertTrainOneStepWithLossScaleCell(nn.TrainOneStepWithLossScaleCell):
                                                  masked_lm_ids,
                                                  masked_lm_weights,
                                                  self.cast(scaling_sens,
-                                                           mstype.float32))
+                                                           ts.float32))
         # apply grad reducer on grads
         grads = self.grad_reducer(grads)
         grads = self.hyper_map(P.Partial()(grad_scale, scaling_sens * self.degree), grads)
@@ -433,7 +432,7 @@ class BertTrainOneStepWithLossScaleCellForAdam(nn.TrainOneStepWithLossScaleCell)
         self.loss_scale = None
         self.loss_scaling_manager = scale_update_cell
         if scale_update_cell:
-            self.loss_scale = Parameter(Tensor(scale_update_cell.get_loss_scale(), dtype=mstype.float32))
+            self.loss_scale = Parameter(Tensor(scale_update_cell.get_loss_scale(), dtype=ts.float32))
 
     def construct(self,
                   input_ids,
@@ -467,7 +466,7 @@ class BertTrainOneStepWithLossScaleCellForAdam(nn.TrainOneStepWithLossScaleCell)
                                                  masked_lm_ids,
                                                  masked_lm_weights,
                                                  self.cast(scaling_sens,
-                                                           mstype.float32))
+                                                           ts.float32))
         # apply grad reducer on grads
         grads = self.grad_reducer(grads)
         grads = self.hyper_map(P.Partial()(grad_scale, scaling_sens * self.degree), grads)
@@ -486,21 +485,21 @@ add_grads = P.MultitypeFuncGraph("add_grads")
 
 @add_grads.register("Tensor", "Tensor")
 def _add_grads(accu_grad, grad):
-    return accu_grad + cast(grad, mstype.float32)
+    return accu_grad + cast(grad, ts.float32)
 
 update_accu_grads = P.MultitypeFuncGraph("update_accu_grads")
 
 @update_accu_grads.register("Tensor", "Tensor")
 def _update_accu_grads(accu_grad, grad):
     succ = True
-    return P.Depend()(succ, P.AssignAdd()(accu_grad, cast(grad, mstype.float32)))
+    return P.Depend()(succ, P.AssignAdd()(accu_grad, cast(grad, ts.float32)))
 
 accumulate_accu_grads = P.MultitypeFuncGraph("accumulate_accu_grads")
 
 @accumulate_accu_grads.register("Tensor", "Tensor")
 def _accumulate_accu_grads(accu_grad, grad):
     succ = True
-    return P.Depend()(succ, P.AssignAdd()(accu_grad, cast(grad, mstype.float32)))
+    return P.Depend()(succ, P.AssignAdd()(accu_grad, cast(grad, ts.float32)))
 
 
 zeroslike = P.ZerosLike()
@@ -543,10 +542,10 @@ class BertTrainAccumulationAllReducePostWithLossScaleCell(layers.Layer):
         self.enable_global_norm = enable_global_norm
         self.one = Tensor(np.array([1]).astype(np.int32))
         self.zero = Tensor(np.array([0]).astype(np.int32))
-        self.local_step = Parameter(initializer(0, [1], mstype.int32))
+        self.local_step = Parameter(initializer(0, [1], ts.int32))
         self.accu_grads = self.weights.clone(prefix="accu_grads", init='zeros')
-        self.accu_overflow = Parameter(initializer(0, [1], mstype.int32))
-        self.accu_loss = Parameter(initializer(0, [1], mstype.float32))
+        self.accu_overflow = Parameter(initializer(0, [1], ts.int32))
+        self.accu_loss = Parameter(initializer(0, [1], ts.float32))
 
         self.grad = P.GradOperation(get_by_list=True, sens_param=True)
         self.reducer_flag = False
@@ -567,7 +566,7 @@ class BertTrainAccumulationAllReducePostWithLossScaleCell(layers.Layer):
         self.get_status = P.NPUGetFloatStatus()
         self.clear_status = P.NPUClearFloatStatus()
         self.reduce_sum = P.ReduceSum(keep_dims=False)
-        self.base = Tensor(1, mstype.float32)
+        self.base = Tensor(1, ts.float32)
         self.less_equal = P.LessEqual()
         self.logical_or = P.LogicalOr()
         self.not_equal = P.NotEqual()
@@ -577,7 +576,7 @@ class BertTrainAccumulationAllReducePostWithLossScaleCell(layers.Layer):
         self.loss_scale = None
         self.loss_scaling_manager = scale_update_cell
         if scale_update_cell:
-            self.loss_scale = Parameter(Tensor(scale_update_cell.get_loss_scale(), dtype=mstype.float32))
+            self.loss_scale = Parameter(Tensor(scale_update_cell.get_loss_scale(), dtype=ts.float32))
 
     def construct(self,
                   input_ids,
@@ -621,7 +620,7 @@ class BertTrainAccumulationAllReducePostWithLossScaleCell(layers.Layer):
                                                  masked_lm_ids,
                                                  masked_lm_weights,
                                                  self.cast(scaling_sens,
-                                                           mstype.float32))
+                                                           ts.float32))
 
         accu_succ = self.hyper_map(accumulate_accu_grads, self.accu_grads, grads)
         mean_loss = P.Depend()(mean_loss, accu_succ)
@@ -692,10 +691,10 @@ class BertTrainAccumulationAllReduceEachWithLossScaleCell(layers.Layer):
         self.enable_global_norm = enable_global_norm
         self.one = Tensor(np.array([1]).astype(np.int32))
         self.zero = Tensor(np.array([0]).astype(np.int32))
-        self.local_step = Parameter(initializer(0, [1], mstype.int32))
+        self.local_step = Parameter(initializer(0, [1], ts.int32))
         self.accu_grads = self.weights.clone(prefix="accu_grads", init='zeros')
-        self.accu_overflow = Parameter(initializer(0, [1], mstype.int32))
-        self.accu_loss = Parameter(initializer(0, [1], mstype.float32))
+        self.accu_overflow = Parameter(initializer(0, [1], ts.int32))
+        self.accu_loss = Parameter(initializer(0, [1], ts.float32))
 
         self.grad = P.GradOperation(get_by_list=True, sens_param=True)
         self.reducer_flag = False
@@ -716,7 +715,7 @@ class BertTrainAccumulationAllReduceEachWithLossScaleCell(layers.Layer):
         self.get_status = P.NPUGetFloatStatus()
         self.clear_before_grad = P.NPUClearFloatStatus()
         self.reduce_sum = P.ReduceSum(keep_dims=False)
-        self.base = Tensor(1, mstype.float32)
+        self.base = Tensor(1, ts.float32)
         self.less_equal = P.LessEqual()
         self.logical_or = P.LogicalOr()
         self.not_equal = P.NotEqual()
@@ -726,7 +725,7 @@ class BertTrainAccumulationAllReduceEachWithLossScaleCell(layers.Layer):
         self.loss_scale = None
         self.loss_scaling_manager = scale_update_cell
         if scale_update_cell:
-            self.loss_scale = Parameter(Tensor(scale_update_cell.get_loss_scale(), dtype=mstype.float32))
+            self.loss_scale = Parameter(Tensor(scale_update_cell.get_loss_scale(), dtype=ts.float32))
 
     @P.add_flags(has_effect=True)
     def construct(self,
@@ -770,7 +769,7 @@ class BertTrainAccumulationAllReduceEachWithLossScaleCell(layers.Layer):
                                                  masked_lm_ids,
                                                  masked_lm_weights,
                                                  self.cast(scaling_sens,
-                                                           mstype.float32))
+                                                           ts.float32))
 
 
         accu_grads = self.hyper_map(add_grads, self.accu_grads, grads)

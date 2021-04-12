@@ -17,7 +17,6 @@
 import math
 import copy
 import numpy as np
-import mindspore.common.dtype as mstype
 
 import tinyms as ts
 from tinyms.initializers import TruncatedNormal, initializer
@@ -55,8 +54,8 @@ class EmbeddingLookup(layers.Layer):
         self.shape_flat = (-1,)
         self.gather = P.Gather()
         self.one_hot = P.OneHot()
-        self.on_value = Tensor(1.0, mstype.float32)
-        self.off_value = Tensor(0.0, mstype.float32)
+        self.on_value = Tensor(1.0, ts.float32)
+        self.off_value = Tensor(0.0, ts.float32)
         self.array_mul = P.MatMul()
         self.reshape = P.Reshape()
         self.shape = tuple(embedding_shape)
@@ -112,8 +111,8 @@ class EmbeddingPostprocessor(layers.Layer):
             use_one_hot=use_one_hot_embeddings)
         self.shape_flat = (-1,)
         self.one_hot = P.OneHot()
-        self.on_value = Tensor(1.0, mstype.float32)
-        self.off_value = Tensor(0.1, mstype.float32)
+        self.on_value = Tensor(1.0, ts.float32)
+        self.off_value = Tensor(0.1, ts.float32)
         self.array_mul = P.MatMul()
         self.reshape = P.Reshape()
         self.shape = tuple(embedding_shape)
@@ -153,14 +152,14 @@ class BertOutput(layers.Layer):
         out_channels (int): Output channels.
         initializer_range (float): Initialization value of TruncatedNormal. Default: 0.02.
         dropout_prob (float): The dropout probability. Default: 0.1.
-        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: mstype.float32.
+        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: ts.float32.
     """
     def __init__(self,
                  in_channels,
                  out_channels,
                  initializer_range=0.02,
                  dropout_prob=0.1,
-                 compute_type=mstype.float32):
+                 compute_type=ts.float32):
         super(BertOutput, self).__init__()
         self.dense = layers.Dense(in_channels, out_channels,
                               weight_init=TruncatedNormal(initializer_range)).to_float(compute_type)
@@ -277,12 +276,12 @@ class SaturateCast(layers.Layer):
     the danger that the value will overflow or underflow.
 
     Args:
-        src_type (:class:`mindspore.dtype`): The type of the elements of the input tensor. Default: mstype.float32.
-        dst_type (:class:`mindspore.dtype`): The type of the elements of the output tensor. Default: mstype.float32.
+        src_type (:class:`mindspore.dtype`): The type of the elements of the input tensor. Default: ts.float32.
+        dst_type (:class:`mindspore.dtype`): The type of the elements of the output tensor. Default: ts.float32.
     """
-    def __init__(self, src_type=mstype.float32, dst_type=mstype.float32):
+    def __init__(self, src_type=ts.float32, dst_type=ts.float32):
         super(SaturateCast, self).__init__()
-        np_type = mstype.dtype_to_nptype(dst_type)
+        np_type = ts.dtype_to_nptype(dst_type)
 
         self.tensor_min_type = float(np.finfo(np_type).min)
         self.tensor_max_type = float(np.finfo(np_type).max)
@@ -320,7 +319,7 @@ class BertAttention(layers.Layer):
         do_return_2d_tensor (bool): True for return 2d tensor. False for return 3d
                              tensor. Default: False.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
-        compute_type (:class:`mindspore.dtype`): Compute type in BertAttention. Default: mstype.float32.
+        compute_type (:class:`mindspore.dtype`): Compute type in BertAttention. Default: ts.float32.
     """
     def __init__(self,
                  from_tensor_width,
@@ -338,7 +337,7 @@ class BertAttention(layers.Layer):
                  initializer_range=0.02,
                  do_return_2d_tensor=False,
                  use_relative_positions=False,
-                 compute_type=mstype.float32):
+                 compute_type=ts.float32):
 
         super(BertAttention, self).__init__()
         self.from_seq_length = from_seq_length
@@ -507,7 +506,7 @@ class BertSelfAttention(layers.Layer):
         initializer_range (float): Initialization value of TruncatedNormal. Default: 0.02.
         hidden_dropout_prob (float): The dropout probability for BertOutput. Default: 0.1.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
-        compute_type (:class:`mindspore.dtype`): Compute type in BertSelfAttention. Default: mstype.float32.
+        compute_type (:class:`mindspore.dtype`): Compute type in BertSelfAttention. Default: ts.float32.
     """
     def __init__(self,
                  seq_length,
@@ -518,7 +517,7 @@ class BertSelfAttention(layers.Layer):
                  initializer_range=0.02,
                  hidden_dropout_prob=0.1,
                  use_relative_positions=False,
-                 compute_type=mstype.float32):
+                 compute_type=ts.float32):
         super(BertSelfAttention, self).__init__()
         if hidden_size % num_attention_heads != 0:
             raise ValueError("The hidden size (%d) is not a multiple of the number "
@@ -572,7 +571,7 @@ class BertEncoderCell(layers.Layer):
         hidden_dropout_prob (float): The dropout probability for BertOutput. Default: 0.1.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
         hidden_act (str): Activation function. Default: "gelu".
-        compute_type (:class:`mindspore.dtype`): Compute type in attention. Default: mstype.float32.
+        compute_type (:class:`mindspore.dtype`): Compute type in attention. Default: ts.float32.
     """
     def __init__(self,
                  hidden_size=768,
@@ -585,7 +584,7 @@ class BertEncoderCell(layers.Layer):
                  hidden_dropout_prob=0.1,
                  use_relative_positions=False,
                  hidden_act="gelu",
-                 compute_type=mstype.float32):
+                 compute_type=ts.float32):
         super(BertEncoderCell, self).__init__()
         self.attention = BertSelfAttention(
             hidden_size=hidden_size,
@@ -634,7 +633,7 @@ class BertTransformer(layers.Layer):
         hidden_dropout_prob (float): The dropout probability for BertOutput. Default: 0.1.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
         hidden_act (str): Activation function used in the encoder cells. Default: "gelu".
-        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: mstype.float32.
+        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: ts.float32.
         return_all_encoders (bool): Specifies whether to return all encoders. Default: False.
     """
     def __init__(self,
@@ -649,7 +648,7 @@ class BertTransformer(layers.Layer):
                  hidden_dropout_prob=0.1,
                  use_relative_positions=False,
                  hidden_act="gelu",
-                 compute_type=mstype.float32,
+                 compute_type=ts.float32,
                  return_all_encoders=False):
         super(BertTransformer, self).__init__()
         self.return_all_encoders = return_all_encoders
@@ -710,7 +709,7 @@ class CreateAttentionMaskFromInputMask(layers.Layer):
         self.shape = (-1, 1, config.seq_length)
 
     def construct(self, input_mask):
-        attention_mask = self.cast(self.reshape(input_mask, self.shape), mstype.float32)
+        attention_mask = self.cast(self.reshape(input_mask, self.shape), ts.float32)
         return attention_mask
 
 
