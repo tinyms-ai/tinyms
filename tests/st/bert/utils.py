@@ -20,9 +20,9 @@ import math
 import numpy as np
 import tinyms as ts
 from tinyms import Tensor
-from mindspore.ops import operations as P
+from tinyms import primitives as P
+from tinyms.callbacks import Callback
 
-from mindspore.train.callback import Callback
 from mindspore.nn.learning_rate_schedule import LearningRateSchedule, PolynomialDecayLR, WarmUpLR
 
 class LossCallBack(Callback):
