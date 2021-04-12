@@ -216,7 +216,7 @@ def run_pretrain():
             logger.info("save checkpoint steps: {}".format(args_opt.save_checkpoint_steps))
 
     ds = create_bert_dataset(
-        batch_size=args_opt.batch_size,
+        batch_size=cfg.batch_size,
         device_num=device_num,
         rank=rank,
         shuffle=args_opt.do_shuffle,

@@ -620,7 +620,7 @@ class BertDatasetTransform():
     Apply preprocess operation on GeneratorDataset instance.
     '''
     def __init__(self):
-
+        pass
 
     def apply_ds(self, data_set, batch_size):
 
