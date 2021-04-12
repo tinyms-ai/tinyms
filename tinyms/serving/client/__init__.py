@@ -13,6 +13,6 @@
 # limitations under the License.
 # ============================================================================
 """The client part of TinyMS serving package"""
-from .client import list_servables, predict, server_started
+from .client import Client
 
-__all__ = ["list_servables", "predict", "server_started"]
+__all__ = ["Client"]
