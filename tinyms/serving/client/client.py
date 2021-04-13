@@ -97,7 +97,7 @@ class Client:
                 'name': 'lenet5'
             }]
         """
-        if not self._server_started is True:
+        if not self._server_started() is True:
             print('Server not started at host %s, port %d' % (self.host, self.port))
             sys.exit(0)
         else:
@@ -160,7 +160,7 @@ class Client:
             img = Image.open(img_path)
         img_data = trans_func(img)
 
-        if not self._server_started is True:
+        if not self._server_started() is True:
             print('Server not started at host %s, port %d' % (self.host, self.port))
             sys.exit(0)
         else:
