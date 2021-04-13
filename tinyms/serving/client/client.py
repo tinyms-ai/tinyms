@@ -33,6 +33,20 @@ transform_checker = {
 
 
 class Client:
+    '''
+    Client is the entrance to connecting to serving server, and also
+    send all requests to server side by HTTP request.
+
+    Args:
+        host (str): Serving server host ip. Default: '127.0.0.1'.
+        port (int): Serving server listen port. Default: 5000.
+
+    Examples:
+        >>> from tinyms.serving import Client
+        >>>
+        >>> client = Client()
+    '''
+
     def __init__(self, host='127.0.0.1', port=5000):
         self.host = host
         self.port = port
@@ -83,12 +97,16 @@ class Client:
                 'name': 'lenet5'
             }]
         """
-
-        headers = {'Content-Type': 'application/json'}
-        url = 'http://'+self.host+':'+str(self.port)+'/servables'
-        if self._server_started() is True:
+        if not self._server_started is True:
+            print('Server not started at host %s, port %d' % (self.host, self.port))
+            sys.exit(0)
+        else:
+            headers = {'Content-Type': 'application/json'}
+            url = 'http://'+self.host+':'+str(self.port)+'/servables'
             res = requests.get(url=url, headers=headers)
+            res.content.decode("utf-8")
             res_body = res.json()
+
             if res.status_code != requests.codes.ok:
                 print("Request error! Status code: ", res.status_code)
                 sys.exit(0)
@@ -97,8 +115,6 @@ class Client:
                 sys.exit(0)
             else:
                 return res_body['servables']
-        else:
-            return 'Server not started'
 
     def predict(self, img_path, servable_name, dataset_name="mnist", strategy="TOP1_CLASS"):
         """
@@ -144,22 +160,25 @@ class Client:
             img = Image.open(img_path)
         img_data = trans_func(img)
 
-        # Construct the request payload
-        payload = {
-            'instance': {
-                'shape': list(img_data.shape),
-                'dtype': img_data.dtype.name,
-                'data': json.dumps(img_data.tolist())
-            },
-            'servable_name': servable_name,
-            'strategy': strategy
-        }
-        headers = {'Content-Type': 'application/json'}
-        url = 'http://'+self.host+':'+str(self.port)+'/predict'
-        if self._server_started() is True:
+        if not self._server_started is True:
+            print('Server not started at host %s, port %d' % (self.host, self.port))
+            sys.exit(0)
+        else:
+            # Construct the request payload
+            payload = {
+                'instance': {
+                    'shape': list(img_data.shape),
+                    'dtype': img_data.dtype.name,
+                    'data': json.dumps(img_data.tolist())
+                },
+                'strategy': strategy
+            }
+            headers = {'Content-Type': 'application/json'}
+            url = 'http://'+self.host+':'+str(self.port)+'/servables/' + servable_name
             res = requests.post(url=url, headers=headers, data=json.dumps(payload))
             res.content.decode("utf-8")
             res_body = res.json()
+
             if res.status_code != requests.codes.ok:
                 print("Request error! Status code: ", res.status_code)
                 sys.exit(0)
@@ -177,5 +196,3 @@ class Client:
                 else:
                     data = trans_func.postprocess(res_data, strategy)
                 return data
-        else:
-            return 'Server not started'
