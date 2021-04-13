@@ -79,12 +79,10 @@ class _FlaskServer(object):
     in subprocess.
     """
 
-    def __init__(self, host='127.0.0.1', port=5000, servable_path=None, ckpt_path=None):
+    def __init__(self, host='127.0.0.1', port=5000, server_path=None):
         json_data = {}
-        if servable_path is not None:
-            json_data.update({'servable_path': servable_path})
-        if ckpt_path is not None:
-            json_data.update({'ckpt_path': ckpt_path})
+        if server_path is not None:
+            json_data.update({'server_path': server_path})
         if json_data:
             with open('temp.json', 'w') as f:
                 json.dump(json_data, f)
@@ -179,9 +177,10 @@ class Server:
         >>> server = Server()
     '''
 
-    def __init__(self, host='127.0.0.1', port=5000):
+    def __init__(self, host='127.0.0.1', port=5000, server_path=None):
         self.host = host
         self.port = port
+        self.server_path = server_path
 
     def _check_started(self):
         """
@@ -223,7 +222,7 @@ class Server:
             print('Server already started at host %s, port %d' % (self.host, self.port))
         else:
             # TODO: Add dynamic host ip and port support
-            _FlaskServer().run()
+            _FlaskServer(host=self.host, port=self.port, server_path=self.server_path).run()
             print('Server started at host %s, port %d' % (self.host, self.port))
 
     def shutdown(self):
@@ -247,4 +246,6 @@ class Server:
             print('Server already shutdown at host %s, port %d' % (self.host, self.port))
         else:
             # TODO: Add dynamic host ip and port support
-            _FlaskServer().shutdown()
+            if os.path.exists('temp.json'):
+                os.remove('temp.json')
+            _FlaskServer(self.host, self.port).shutdown()
