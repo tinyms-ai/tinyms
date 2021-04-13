@@ -16,47 +16,15 @@ import os
 import sys
 import json
 import signal
+import socket
 import logging
 import platform
 import subprocess
 
 from flask import request, Flask, jsonify
 from ..servable import predict, servable_search
-from ..client import server_started
 
 app = Flask(__name__)
-
-
-@app.route('/predict', methods=['POST'])
-def predict_server():
-    """
-    Handle the request sent by client, call the servable_search, predict function in tinyms.serving.servable and return the json result to the client.
-
-    Whether the server started or not will be detected first.
-
-    Returns:
-        A json object of predicted result will be sent back to the client.
-
-    Examples:
-        >>> # In the client part, the request will be routed and processed here
-        >>> url = "http://127.0.0.1:5000/predict"
-        >>> res = requests.post(url=url, headers=headers, data=json.dumps(payload))
-    """
-
-    if server_started() is True:
-        json_data = request.get_json()
-        instance = json_data['instance']
-        servable_name = json_data['servable_name']
-        strategy = json_data['strategy']
-
-        res = servable_search(servable_name)
-        if res['status'] != 0:
-            return jsonify(res)
-        servable = res['servables'][0]
-        res = predict(instance, servable_name, servable['model'], strategy)
-        return jsonify(res)
-    else:
-        return 'No server detected'
 
 
 @app.route('/servables', methods=['GET'])
@@ -75,18 +43,40 @@ def list_servables():
         >>> res_body = res.json()
     """
 
-    if server_started() is True:
-        return jsonify(servable_search())
-    else:
-        return 'No server detected'
+    return jsonify(servable_search())
 
 
-class FlaskServer(object):
+@app.route('/servables/<name>', methods=['POST'])
+def predict_server(name):
     """
-    Create a flask service, only be used to trigger starting the flask server in subprocess.
-    Example:
-        >>> server = FlaskServer()
-        >>> server.run()
+    Handle the request sent by client, call the servable_search, predict function
+    in tinyms.serving.servable and return the json result to the client.
+
+    Whether the server started or not will be detected first.
+
+    Args:
+        name (str): Specifies the servable name by client.
+
+    Returns:
+        A json object of predicted result will be sent back to the client.
+    """
+
+    json_data = request.get_json()
+    instance = json_data['instance']
+    strategy = json_data['strategy']
+
+    res = servable_search(name)
+    if res['status'] != 0:
+        return jsonify(res)
+    servable = res['servables'][0]
+    res = predict(instance, name, servable['model'], strategy)
+    return jsonify(res)
+
+
+class _FlaskServer(object):
+    """
+    Create a flask service, only be used to trigger starting the flask server
+    in subprocess.
     """
 
     def __init__(self, host='127.0.0.1', port=5000, servable_path=None, ckpt_path=None):
@@ -111,26 +101,23 @@ class FlaskServer(object):
         Shutdown the flask server.
         """
 
-        if server_started() is True:
-            if os.path.exists('temp.json'):
-                os.remove('temp.json')
-            if self.system_name == "windows":
-                server_res = subprocess.getoutput("netstat -ano | findstr 5000")
-                server_pid = None
-                for line in server_res.split("\n"):
-                    temp = [i for i in line.split(' ') if i != '']
-                    if len(temp) > 4:
-                        if temp[1] == f'{self.host}:{self.port}' and temp[3] == 'LISTENING':
-                            server_pid = temp[4]
-                            continue
-                if server_pid:
-                    os.system("taskkill /t /f /pid %s" % server_pid)
-            else:
-                server_pid = subprocess.getoutput("netstat -anp | grep %s | awk '{printf $7}' | cut -d/ -f1" % self.port)
-                subprocess.run("kill -9 " + str(server_pid), shell=True)
-            return 'Server shutting down...'
+        if os.path.exists('temp.json'):
+            os.remove('temp.json')
+        if self.system_name == "windows":
+            server_res = subprocess.getoutput("netstat -ano | findstr 5000")
+            server_pid = None
+            for line in server_res.split("\n"):
+                temp = [i for i in line.split(' ') if i != '']
+                if len(temp) > 4:
+                    if temp[1] == f'{self.host}:{self.port}' and temp[3] == 'LISTENING':
+                        server_pid = temp[4]
+                        continue
+            if server_pid:
+                os.system("taskkill /t /f /pid %s" % server_pid)
         else:
-            return 'No server detected'
+            server_pid = subprocess.getoutput("netstat -anp | grep %s | awk '{printf $7}' | cut -d/ -f1" % self.port)
+            subprocess.run("kill -9 " + str(server_pid), shell=True)
+        return 'Server shutting down...'
 
     def windows_run_server(self):
         cmd = f"""python -c "from tinyms.serving import run_flask; run_flask('{self.host}', {self.port})"""""
@@ -177,60 +164,87 @@ def run_flask(host='127.0.0.1', port=5000):
     app.run(host=host, port=port)
 
 
-def start_server(host='127.0.0.1', port=5000, servable_path=None, ckpt_path=None):
-    """
-    Start the flask server in a subprocess.
-
-    Catch the signal of CTRL + D to shutdown, otherwise call shutdown() function to shutdown the server, if the ip and port already in use, server won't start for a second time.
+class Server:
+    '''
+    Server is the entrance to initialize and shutdown the serving server, and
+    also accept all requests from the client side by calling Flask server.
 
     Args:
-        host (str): the ip address of the flask server
-        port (int): the port of the server
-        servable_path (str)
-        ckpt_path (str)
-
-    Returns:
-        Start the server in a sub process.
+        host (str): Serving server host ip. Default: '127.0.0.1'.
+        port (int): Serving server listen port. Default: 5000.
 
     Examples:
-        >>> # In the client part
-        >>> from tinyms.serving import start_server
+        >>> from tinyms.serving import Server
         >>>
-        >>> start_server()
-        Server starts at host 127.0.0.1, port 5000
-    """
+        >>> server = Server()
+    '''
 
-    if server_started() is True:
-        print('Server already started at host %s, port %d' % (host, port))
-    else:
-        server = FlaskServer(host='127.0.0.1', port=5000, servable_path=servable_path, ckpt_path=ckpt_path)
-        server.run()
-        print('Server starts at host %s, port %d' % (host, port))
+    def __init__(self, host='127.0.0.1', port=5000):
+        self.host = host
+        self.port = port
 
-    # def signal_handler(signal, frame):
-    #     shutdown()
-    #     sys.exit(0)
+    def _check_started(self):
+        """
+        Detect whether the serving server is started or not.
 
-    # for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
-    #     signal.signal(sig, signal_handler)
+        A bool value of True will be returned if the server is started, else False.
 
+        Returns:
+            A bool value of True (if server started) or False (if server not started).
+        """
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.connect((self.host, self.port))
+            s.shutdown(2)
+            return True
+        except:
+            return False
 
-def shutdown(host='127.0.0.1', port=5000):
-    """
-    Shutdown the flask server.
+    def start_server(self):
+        """
+        Start the flask server in a subprocess.
 
-    Search fot the pid of the process running on port 5000, and kill it. This function will be automatically called when SIGINT, SIGHUP and SIGTERM signals caught.
+        Catch the signal of CTRL + D to shutdown, otherwise call shutdown() function
+        to shutdown the server, if the ip and port already in use, server won't start
+        for a second time.
 
-    Returns:
-        A string message of server shutting down or not.
+        Returns:
+            Start the server in a sub process.
 
-    Examples:
-        >>> # In the client part, after calling predict()
-        >>> from tinyms.serving import shutdown
-        >>>
-        >>> shutdown()
-        'Server shutting down...'
-    """
-    server = FlaskServer(host, port)
-    res = server.shutdown()
-    return res
+        Examples:
+            >>> from tinyms.serving import Server
+            >>>
+            >>> server = Server()
+            >>> server.start_server()
+            Server starts at host 127.0.0.1, port 5000
+        """
+
+        if self._check_started() is True:
+            print('Server already started at host %s, port %d' % (self.host, self.port))
+        else:
+            # TODO: Add dynamic host ip and port support
+            _FlaskServer().run()
+            print('Server started at host %s, port %d' % (self.host, self.port))
+
+    def shutdown(self):
+        """
+        Shutdown the flask server.
+
+        Search fot the pid of the process running on port 5000, and kill it. This function
+        will be automatically called when SIGINT, SIGHUP and SIGTERM signals caught.
+
+        Returns:
+            A string message of server shutting down or not.
+
+        Examples:
+            >>> from tinyms.serving import Server
+            >>>
+            >>> server = Server()
+            >>> server.shutdown()
+            Server shutting down...
+        """
+        if not self._check_started() is True:
+            print('Server already shutdown at host %s, port %d' % (self.host, self.port))
+        else:
+            # TODO: Add dynamic host ip and port support
+            _FlaskServer().shutdown()
