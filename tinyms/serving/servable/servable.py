@@ -51,7 +51,7 @@ def servable_search(name=None):
         A string of servable values will be returned if servable json exists, otherwise error message.
 
     Examples:
-        >>> # In the server part, before running the predict function, servable_serch is called to check and get the result.
+        >>> # In the server part, before running the predict function, servable_search is called to check and get the result.
         >>> res = servable_search(servable_name)
         >>> servable = res['servables'][0]
         >>> res = predict(instance, servable_name, servable['model'], strategy)
