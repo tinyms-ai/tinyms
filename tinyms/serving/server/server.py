@@ -79,10 +79,10 @@ class _FlaskServer(object):
     in subprocess.
     """
 
-    def __init__(self, host='127.0.0.1', port=5000, server_path=None):
+    def __init__(self, host='127.0.0.1', port=5000, serving_path=None):
         json_data = {}
-        if server_path is not None:
-            json_data.update({'server_path': server_path})
+        if serving_path is not None:
+            json_data.update({'serving_path': serving_path})
         if json_data:
             with open('temp.json', 'w') as f:
                 json.dump(json_data, f)
@@ -170,6 +170,7 @@ class Server:
     Args:
         host (str): Serving server host ip. Default: '127.0.0.1'.
         port (int): Serving server listen port. Default: 5000.
+        serving_path (str): Set the read path of a service configuration
 
     Examples:
         >>> from tinyms.serving import Server
@@ -177,10 +178,10 @@ class Server:
         >>> server = Server()
     '''
 
-    def __init__(self, host='127.0.0.1', port=5000, server_path=None):
+    def __init__(self, host='127.0.0.1', port=5000, serving_path=None):
         self.host = host
         self.port = port
-        self.server_path = server_path
+        self.server_path = serving_path
 
     def _check_started(self):
         """
@@ -222,7 +223,7 @@ class Server:
             print('Server already started at host %s, port %d' % (self.host, self.port))
         else:
             # TODO: Add dynamic host ip and port support
-            _FlaskServer(host=self.host, port=self.port, server_path=self.server_path).run()
+            _FlaskServer(host=self.host, port=self.port, serving_path=self.serving_path).run()
             print('Server started at host %s, port %d' % (self.host, self.port))
 
     def shutdown(self):

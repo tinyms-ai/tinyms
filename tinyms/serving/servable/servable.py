@@ -20,12 +20,12 @@ import tinyms as ts
 from tinyms import model
 from tinyms.utils.predict.predict import cyclegan_predict
 
-server_path = '/etc/tinyms/serving/'
+serving_path = '/etc/tinyms/serving/'
 
 if os.path.exists('temp.json'):
     with open('temp.json', 'r') as f:
         data = json.load(f)
-        server_path = data.get('server_path', server_path)
+        server_path = data.get('serving_path', serving_path)
 
 servable_path = os.path.join(server_path, 'servable.json')
 
@@ -132,7 +132,7 @@ def predict(instance, servable_name, servable_model, strategy):
         else:
             err_msg = "Currently cycle_gan strategy only supports `gray2color` and `color2gray`!"
             return {"status": 1, "err_msg": err_msg}
-        ckpt_path = os.path.join(server_path, servable_name, ckpt_name + "." + model_format)
+        ckpt_path = os.path.join(serving_path, servable_name, ckpt_name + "." + model_format)
         data = cyclegan_predict(G_generator, input_data, ckpt_path)
     else:
         # build the network
@@ -141,7 +141,7 @@ def predict(instance, servable_name, servable_model, strategy):
         serve_model = model.Model(net)
 
         # load checkpoint
-        ckpt_path = os.path.join(server_path, servable_name, model_name + "." + model_format)
+        ckpt_path = os.path.join(serving_path, servable_name, model_name + "." + model_format)
         if not os.path.isfile(ckpt_path):
             err_msg = "The model path " + ckpt_path + " not exist!"
             return {"status": 1, "err_msg": err_msg}
