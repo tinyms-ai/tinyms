@@ -25,9 +25,9 @@ serving_path = '/etc/tinyms/serving/'
 if os.path.exists('temp.json'):
     with open('temp.json', 'r') as f:
         data = json.load(f)
-        server_path = data.get('serving_path', serving_path)
+        serving_path = data.get('serving_path', serving_path)
 
-servable_path = os.path.join(server_path, 'servable.json')
+servable_path = os.path.join(serving_path, 'servable.json')
 
 model_checker = {
     "lenet5": model.lenet5,
@@ -98,7 +98,7 @@ def predict(instance, servable_name, servable_model, strategy):
         The dict object of predicted result after post process.
 
     Examples:
-        >>> # In the server part, after servavle_search
+        >>> # In the server part, after servable_search
         >>> res = predict(instance, servable_name, servable['model'], strategy)
         >>> return jsonify(res)
     """
