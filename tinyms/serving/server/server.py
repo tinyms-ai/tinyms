@@ -176,7 +176,7 @@ class Server:
         >>> server = Server()
     '''
 
-    def __init__(self, host='127.0.0.1', port=5000, serving_path=None):
+    def __init__(self, host='127.0.0.1', port=5000, serving_path='/etc/tinyms/serving/'):
         json_data = {}
         json_data.update({
             'host': host,
