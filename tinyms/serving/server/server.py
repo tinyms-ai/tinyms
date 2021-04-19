@@ -14,6 +14,7 @@
 # ============================================================================
 import os
 import sys
+import json
 import signal
 import socket
 import logging
@@ -78,8 +79,10 @@ class _FlaskServer(object):
     in subprocess.
     """
 
-    def __init__(self):
+    def __init__(self, host='127.0.0.1', port=5000):
         self.system_name = platform.system().lower()
+        self.host = host
+        self.port = port
 
     def signal_handler(self, signal, frame):
         self.shutdown()
@@ -96,13 +99,13 @@ class _FlaskServer(object):
             for line in server_res.split("\n"):
                 temp = [i for i in line.split(' ') if i != '']
                 if len(temp) > 4:
-                    if temp[1] == '127.0.0.1:5000' and temp[3] == 'LISTENING':
+                    if temp[1] == f'{self.host}:{self.port}' and temp[3] == 'LISTENING':
                         server_pid = temp[4]
                         continue
             if server_pid:
                 os.system("taskkill /t /f /pid %s" % server_pid)
         else:
-            server_pid = subprocess.getoutput("netstat -anp | grep 5000 | awk '{printf $7}' | cut -d/ -f1")
+            server_pid = subprocess.getoutput("netstat -anp | grep %s | awk '{printf $7}' | cut -d/ -f1" % self.port)
             subprocess.run("kill -9 " + str(server_pid), shell=True)
         return 'Server shutting down...'
 
@@ -114,7 +117,7 @@ class _FlaskServer(object):
             signal.signal(sig, self.signal_handler)
 
     def linux_run_server(self):
-        cmd = ['python -c "from tinyms.serving import run_flask; run_flask()"']
+        cmd = [f'python -c "from tinyms.serving import run_flask; run_flask()"']
         server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 
         for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
@@ -146,6 +149,12 @@ def run_flask(host='127.0.0.1', port=5000):
         >>> server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     """
 
+    if os.path.exists('temp.json'):
+        with open('temp.json', 'r') as f:
+            config_data = json.load(f)
+            host = config_data.get('host')
+            port = config_data.get('port')
+
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
     app.run(host=host, port=port)
@@ -159,6 +168,7 @@ class Server:
     Args:
         host (str): Serving server host ip. Default: '127.0.0.1'.
         port (int): Serving server listen port. Default: 5000.
+        serving_path (str, optional): Set the read path of a service configuration
 
     Examples:
         >>> from tinyms.serving import Server
@@ -166,7 +176,16 @@ class Server:
         >>> server = Server()
     '''
 
-    def __init__(self, host='127.0.0.1', port=5000):
+    def __init__(self, host='127.0.0.1', port=5000, serving_path='/etc/tinyms/serving/'):
+        json_data = {}
+        json_data.update({
+            'host': host,
+            'port': port,
+            'serving_path': serving_path
+        })
+        with open('temp.json', 'w') as f:
+            json.dump(json_data, f)
+
         self.host = host
         self.port = port
 
@@ -210,7 +229,7 @@ class Server:
             print('Server already started at host %s, port %d' % (self.host, self.port))
         else:
             # TODO: Add dynamic host ip and port support
-            _FlaskServer().run()
+            _FlaskServer(self.host, self.port).run()
             print('Server started at host %s, port %d' % (self.host, self.port))
 
     def shutdown(self):
@@ -234,4 +253,6 @@ class Server:
             print('Server already shutdown at host %s, port %d' % (self.host, self.port))
         else:
             # TODO: Add dynamic host ip and port support
-            _FlaskServer().shutdown()
+            if os.path.exists('temp.json'):
+                os.remove('temp.json')
+            _FlaskServer(self.host, self.port).shutdown()
