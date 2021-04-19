@@ -19,7 +19,7 @@ import os
 import setuptools
 
 package_name = 'tinyms'
-version_tag = '0.1.0'
+version_tag = '0.2.0'
 pwd = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -38,7 +38,7 @@ def _write_version(file):
 required_package = [
     'easydict >= 1.9',
     'scipy >= 1.5.3',
-    'mindspore == 1.1.1',
+    'mindspore == 1.2.0',
     'matplotlib >= 3.1.1',
     'Pillow >= 6.2.0',
     'requests >= 2.22.0',

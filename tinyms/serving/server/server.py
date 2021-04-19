@@ -137,8 +137,8 @@ def run_flask(host='127.0.0.1', port=5000):
     Directly calling this function is not recommended, please use start_server(). Only Error message will be displayed.
 
     Args:
-        host (str): the ip address of the flask server
-        port (int): the port of the server
+        host (str): the ip address of the flask server. Default: '127.0.0.1'.
+        port (int): the port of the server. Default: 5000.
 
     Returns:
         Server Started
@@ -168,7 +168,8 @@ class Server:
     Args:
         host (str): Serving server host ip. Default: '127.0.0.1'.
         port (int): Serving server listen port. Default: 5000.
-        serving_path (str, optional): Set the read path of a service configuration
+        serving_path (str, optional): Set the read path of a service configuration.
+            Default: '/etc/tinyms/serving/'.
 
     Examples:
         >>> from tinyms.serving import Server
@@ -252,7 +253,6 @@ class Server:
         if not self._check_started() is True:
             print('Server already shutdown at host %s, port %d' % (self.host, self.port))
         else:
-            # TODO: Add dynamic host ip and port support
             if os.path.exists('temp.json'):
                 os.remove('temp.json')
             _FlaskServer(self.host, self.port).shutdown()
