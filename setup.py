@@ -36,11 +36,12 @@ def _write_version(file):
 
 
 required_package = [
+    'numpy >= 1.17.0',
     'easydict >= 1.9',
-    'scipy >= 1.5.3',
-    'mindspore == 1.2.0',
-    'matplotlib >= 3.1.1',
+    'scipy >= 1.5.2',
+    'matplotlib >= 3.1.3',
     'Pillow >= 6.2.0',
+    'mindspore == 1.2.0',
     'requests >= 2.22.0',
     'flask >= 1.1.1',
     'wheel >= 0.32.0',
