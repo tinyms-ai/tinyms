@@ -123,7 +123,15 @@ class BertDataset:
         Args:
             data_dir (str): '{data_dir}/result1.tfrecord', '{data_dir}/result2.tfrecord', etc.
             num_parallel_workers (int): The number of concurrent workers. Default: None.
-            shuffle (bool): Whether to shuffle data. Default: True
+            shuffle (Union[bool, Shuffle level], optional): Perform reshuffling of the data every epoch
+                (default=Shuffle.GLOBAL).
+                If shuffle is False, no shuffling will be performed;
+                If shuffle is True, the behavior is the same as setting shuffle to be Shuffle.GLOBAL
+                Otherwise, there are two levels of shuffling:
+
+                - Shuffle.GLOBAL: Shuffle both the files and samples.
+
+                - Shuffle.FILES: Shuffle files only.
             schema (Union[str, Schema], optional): Path to the JSON schema file or schema object (default=None).
                 If the schema is not provided, the meta data from the TFData file is considered the schema.
         Examples:
