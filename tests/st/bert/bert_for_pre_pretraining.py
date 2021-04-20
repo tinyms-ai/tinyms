@@ -25,7 +25,6 @@ from mindspore.nn.wrap.loss_scale import DynamicLossScaleUpdateCell
 
 import tinyms as ts
 from tinyms.data import BertDataset
-
 from tinyms import context
 from tinyms.model import Model
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack

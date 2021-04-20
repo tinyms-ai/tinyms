@@ -116,7 +116,7 @@ class GanImageFolderDataset:
 
 
 class BertDataset:
-    def __init__(self, data_dir, schema_dir, shuffle=True, num_parallel_workers=None):
+    def __init__(self, data_dir, schema_dir=None, shuffle=True, num_parallel_workers=None):
         """
         This dataset class can load bert from data folder.
 
@@ -124,9 +124,12 @@ class BertDataset:
             data_dir (str): '{data_dir}/result1.tfrecord', '{data_dir}/result2.tfrecord', etc.
             num_parallel_workers (int): The number of concurrent workers. Default: None.
             shuffle (bool): Whether to shuffle data. Default: True
-            schema_dir:
-        Returns:
-            Image path list.
+            schema (Union[str, Schema], optional): Path to the JSON schema file or schema object (default=None).
+                If the schema is not provided, the meta data from the TFData file is considered the schema.
+        Examples:
+            >>> from tinyms.data import BertDataset
+            >>>
+            >>> bert_ds = BertDataset('data')
         """
         files = os.listdir(data_dir)
 
