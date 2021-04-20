@@ -15,11 +15,12 @@
 """Callback related classes and functions in model training phase."""
 import time
 import numpy as np
+import math
 from mindspore.train import callback
 from mindspore.train.callback import *
 from . import Tensor
 
-__all__ = ['LossTimeMonitor']
+__all__ = ['LossTimeMonitor', 'BertLossCallBack']
 __all__.extend(callback.__all__)
 
 
@@ -78,3 +79,36 @@ class LossTimeMonitor(Callback):
             cb_params.cur_epoch_num -
             1, cb_params.epoch_num, cur_step_in_epoch, cb_params.batch_num, step_loss,
             np.mean(self.losses), step_mseconds, self.lr_init[cb_params.cur_step_num - 1]))
+
+
+class BertLossCallBack(Callback):
+    """
+    Monitor the loss in training.
+    If the loss in NAN or INF terminating training.
+    Note:
+        if per_print_times is 0 do not print loss.
+    Args:
+        per_print_times (int): Print loss every times. Default: 1.
+    """
+    def __init__(self, dataset_size=-1):
+        super(BertLossCallBack, self).__init__()
+        self._dataset_size = dataset_size
+    def step_end(self, run_context):
+        """
+        Print loss after each step
+        """
+        cb_params = run_context.original_args()
+        if self._dataset_size > 0:
+            percent, epoch_num = math.modf(cb_params.cur_step_num / self._dataset_size)
+            if percent == 0:
+                percent = 1
+                epoch_num -= 1
+            print("epoch: {}, current epoch percent: {}, step: {}, outputs are {}"
+                  .format(int(epoch_num), "%.3f" % percent, cb_params.cur_step_num, str(cb_params.net_outputs)))
+        else:
+            print("epoch: {}, step: {}, outputs are {}".format(cb_params.cur_epoch_num, cb_params.cur_step_num,
+                                                               str(cb_params.net_outputs)))
+
+
+
+

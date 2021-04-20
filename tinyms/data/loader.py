@@ -31,7 +31,6 @@ from mindspore.dataset import engine
 from mindspore.dataset.engine import *
 from mindspore.mindrecord import FileWriter
 from .utils import generate_image_list, load_img
-from tinyms import data as ds
 
 
 __all__ = ['UnalignedDataset', 'GanImageFolderDataset', 'ImdbDataset',
@@ -124,7 +123,7 @@ class BertDataset:
         for file_name in files:
             if "tfrecord" in file_name:
                 self.data_files.append(os.path.join(data_dir, file_name))
-        self.data_set = ds.TFRecordDataset(self.data_files, schema_dir if schema_dir != "" else None,
+        self.data_set = TFRecordDataset(self.data_files, schema_dir if schema_dir != "" else None,
                                       columns_list=["input_ids", "input_mask", "segment_ids", "next_sentence_labels",
                                                     "masked_lm_positions", "masked_lm_ids", "masked_lm_weights"],
                                       shuffle=shuffle,

@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
-import os
 import numpy as np
+from PIL import Image
 import tinyms as ts
 from tinyms import vision
-from PIL import Image
 from tinyms.primitives import Softmax
 
 from . import _transform_ops
@@ -36,7 +34,7 @@ __all__ = [
 __all__.extend(_transform_ops.__all__)
 
 
-class DatasetTransform():
+class DatasetTransform(object2):
     r'''
     Base class for all dataset transforms.
     '''
@@ -624,8 +622,6 @@ class BertDatasetTransform():
 
     def apply_ds(self, data_set, batch_size):
 
-        ori_dataset_size = data_set.get_dataset_size()
-        print('origin dataset size: ', ori_dataset_size)
         type_cast_op = vision.TypeCast(ts.int32)
         data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_ids")
         data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_positions")

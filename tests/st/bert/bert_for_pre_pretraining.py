@@ -21,7 +21,6 @@ import os
 import argparse
 import logging
 
-import mindspore.communication.management as D
 from mindspore.nn.wrap.loss_scale import DynamicLossScaleUpdateCell
 
 import tinyms as ts
@@ -29,8 +28,7 @@ from tinyms.data import BertDataset
 
 from tinyms import context
 from tinyms.model import Model
-from tinyms.context import ParallelMode
-from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor
+from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack
 from tinyms import set_seed
 from tinyms.optimizers.bert_optimizer import get_optimizer
 from tinyms.vision import bert_transform
@@ -45,7 +43,6 @@ from tinyms.model.bert import BertNetworkWithLoss, \
 
 
 from config import cfg, bert_net_cfg
-from utils import LossCallBack
 
 
 _current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -139,8 +136,6 @@ def argparse_init():
     parser = argparse.ArgumentParser(description='bert pre_training')
     parser.add_argument('--device_target', type=str, default='Ascend', choices=['Ascend', 'GPU'],
                         help='device where the code will be implemented. (Default: Ascend)')
-    parser.add_argument("--distribute", type=str, default="false", choices=["true", "false"],
-                        help="Run distribute, default is false.")
     parser.add_argument("--epoch_size", type=int, default="1", help="Epoch size, default is 1.")
     parser.add_argument("--device_id", type=int, default=0, help="Device id, default is 0.")
     parser.add_argument("--device_num", type=int, default=1, help="Use device nums, default is 1.")
@@ -184,24 +179,9 @@ def run_pretrain():
     _set_graph_kernel_context(args_opt.device_target, args_opt.enable_graph_kernel, is_auto_enable_graph_kernel)
     ckpt_save_dir = args_opt.save_checkpoint_path
 
-    if args_opt.distribute == "true":
-        if args_opt.device_target == 'Ascend':
-            D.init()
-            device_num = args_opt.device_num
-            rank = args_opt.device_id % device_num
-        else:
-            D.init()
-            device_num = D.get_group_size()
-            rank = D.get_rank()
-        ckpt_save_dir = args_opt.save_checkpoint_path + 'ckpt_' + str(D.get_rank()) + '/'
 
-        context.reset_auto_parallel_context()
-        context.set_auto_parallel_context(parallel_mode=ParallelMode.DATA_PARALLEL, gradients_mean=True,
-                                          device_num=device_num)
-        _set_bert_all_reduce_split()
-    else:
-        rank = 0
-        device_num = 1
+    rank = 0
+    device_num = 1
 
     _check_compute_type(args_opt, is_auto_enable_graph_kernel)
 
@@ -239,7 +219,7 @@ def run_pretrain():
     optimizer = get_optimizer(args_opt, net_with_loss, cfg, bert_net_cfg)
 
     # define the callbacks
-    callback = [TimeMonitor(args_opt.data_sink_steps), LossCallBack(ds.get_dataset_size())]
+    callback = [TimeMonitor(args_opt.data_sink_steps), BertLossCallBack(ds.get_dataset_size())]
 
     if args_opt.enable_save_ckpt == "true" and args_opt.device_id % min(8, device_num) == 0:
         config_ck = CheckpointConfig(save_checkpoint_steps=args_opt.save_checkpoint_steps,

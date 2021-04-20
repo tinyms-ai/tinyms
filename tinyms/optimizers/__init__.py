@@ -17,8 +17,8 @@ Optimizers module provides common optimizers for training, such as SGD, ADAM, Mo
 The optimizer is used to calculate and update the gradients.
 """
 from mindspore.nn import optim
-from mindspore.nn.optim import *
 from .bert_optimizer import *
+
 __all__ = []
 __all__.extend(optim.__all__)
 __all__.extend(bert_optimizer.__all__)
