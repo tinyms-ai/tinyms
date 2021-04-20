@@ -116,7 +116,18 @@ class GanImageFolderDataset:
 
 
 class BertDataset:
-    def __init__(self, data_dir, num_parallel_workers, shuffle, schema_dir, device_num, rank):
+    def __init__(self, data_dir, schema_dir, shuffle=True, num_parallel_workers=None):
+        """
+        This dataset class can load bert from data folder.
+
+        Args:
+            data_dir (str): '{data_dir}/result1.tfrecord', '{data_dir}/result2.tfrecord', etc.
+            num_parallel_workers (int): The number of concurrent workers. Default: None.
+            shuffle (bool): Whether to shuffle data. Default: True
+            schema_dir:
+        Returns:
+            Image path list.
+        """
         files = os.listdir(data_dir)
 
         self.data_files = []
@@ -127,7 +138,7 @@ class BertDataset:
                                       columns_list=["input_ids", "input_mask", "segment_ids", "next_sentence_labels",
                                                     "masked_lm_positions", "masked_lm_ids", "masked_lm_weights"],
                                       shuffle=shuffle,
-                                      num_shards=device_num, shard_id=rank, shard_equal_rows=True,
+                                      shard_equal_rows=True,
                                       num_parallel_workers=num_parallel_workers)
 
 

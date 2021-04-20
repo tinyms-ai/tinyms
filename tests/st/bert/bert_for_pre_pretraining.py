@@ -57,8 +57,6 @@ logger = logging.getLogger(__name__)
 
 def create_bert_dataset(
         batch_size,
-        device_num=1,
-        rank=0,
         shuffle=True,
         data_dir=None,
         schema_dir=None,
@@ -71,9 +69,7 @@ def create_bert_dataset(
         data_dir=data_dir,
         num_parallel_workers=num_parallel_workers,
         shuffle=shuffle,
-        schema_dir=schema_dir,
-        device_num=device_num,
-        rank=rank
+        schema_dir=schema_dir
     )
     bert_ds = bert_transform.apply_ds(
                 bert_ds.data_set,
@@ -180,7 +176,6 @@ def run_pretrain():
     ckpt_save_dir = args_opt.save_checkpoint_path
 
 
-    rank = 0
     device_num = 1
 
     _check_compute_type(args_opt, is_auto_enable_graph_kernel)
@@ -197,8 +192,6 @@ def run_pretrain():
 
     ds = create_bert_dataset(
         batch_size=cfg.batch_size,
-        device_num=device_num,
-        rank=rank,
         shuffle=args_opt.do_shuffle,
         data_dir=args_opt.data_dir,
         schema_dir=args_opt.schema_dir,
@@ -221,7 +214,7 @@ def run_pretrain():
     # define the callbacks
     callback = [TimeMonitor(args_opt.data_sink_steps), BertLossCallBack(ds.get_dataset_size())]
 
-    if args_opt.enable_save_ckpt == "true" and args_opt.device_id % min(8, device_num) == 0:
+    if args_opt.enable_save_ckpt == "true":
         config_ck = CheckpointConfig(save_checkpoint_steps=args_opt.save_checkpoint_steps,
                                      keep_checkpoint_max=args_opt.save_checkpoint_num)
         ckpoint_cb = ModelCheckpoint(prefix='checkpoint_bert',
