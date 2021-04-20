@@ -24,8 +24,7 @@ import tinyms as ts
 from tinyms import Tensor
 from tinyms import primitives as P
 from tinyms import context
-from ..optimizers import Optimizer
-from ..optimizers import AdamWeightDecay, Lamb, Momentum, THOR
+from ..optimizers import AdamWeightDecay, Lamb, Momentum, THOR, Optimizer
 
 
 __all__ = ['AdamWeightDecayForBert', 'AdamWeightDecayOp']
