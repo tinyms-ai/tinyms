@@ -34,7 +34,7 @@ __all__ = [
 __all__.extend(_transform_ops.__all__)
 
 
-class DatasetTransform(object2):
+class DatasetTransform(object):
     r'''
     Base class for all dataset transforms.
     '''
