@@ -15,9 +15,9 @@
 import numpy as np
 from PIL import Image
 import tinyms as ts
-from tinyms import vision
-from tinyms.primitives import Softmax
 
+from .. import vision
+from ..primitives import Softmax
 from . import _transform_ops
 from ._transform_ops import *
 from .utils import ssd_bboxes_encode, ssd_bboxes_filter, jaccard_numpy
