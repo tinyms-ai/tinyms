@@ -8,6 +8,7 @@
 
 ## 二、如何安装Python
 
+### 1.下载并安装Python
 打开[Python官网](https://www.python.org)，进入[下载页面](https://www.python.org/downloads/)：
 
 ![image-20210422010607373](https://tva1.sinaimg.cn/large/008i3skNgy1gprxgc8miuj31tq0u0drp.jpg)
@@ -21,6 +22,17 @@
 下载完成后，在终端输入python，输入'Hello,TinyMS'：
 
 ![image-20210422011827582](https://tva1.sinaimg.cn/large/008i3skNgy1gprxgugew4j32260h041l.jpg)
+
+### 2.选择合适的Pip源？
+
+<details class="note" open="open" style="box-sizing: inherit; box-shadow: rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px, rgba(0, 0, 0, 0.2) 0px 3px 1px -2px; position: relative; margin: 1.5625em 0px; padding: 0px 0.6rem; border-left-width: 0.2rem; border-left-style: solid; border-left-color: rgb(68, 138, 255); border-top-left-radius: 0.1rem; border-top-right-radius: 0.1rem; border-bottom-right-radius: 0.1rem; border-bottom-left-radius: 0.1rem; font-size: 0.64rem; overflow: auto; display: block; caret-color: rgba(0, 0, 0, 0.87); color: rgba(0, 0, 0, 0.87); font-family: &quot;Fira Sans&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-style: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; text-decoration: none;"><span style="display: contents;"><summary style="box-sizing: inherit; display: block; outline: none; cursor: pointer; margin: 0px -0.6rem; padding: 0.4rem 2rem; border-bottom-width: 0.05rem; border-bottom-style: solid; border-bottom-color: rgba(68, 138, 255, 0.1); background-color: rgba(68, 138, 255, 0.1); font-weight: 700;"><span style="display: contents;"><a href="https://pypi.org/project/pip/" style="box-sizing: inherit; text-decoration-skip: objects; color: rgb(63, 81, 181); text-decoration: none; word-break: break-word; transition: color 0.125s;"><strong style="box-sizing: inherit;">pip</strong></a><span class="Apple-converted-space">&nbsp;</span>是什么？</span></summary><p style="box-sizing: inherit; margin: 1em 0px 0.6rem;">Python 的默认包管理器，用来安装第三方 Python 库。它的功能很强大，能够处理版本依赖关系，还能通过 wheel 文件支持二进制安装。pip 的库现在托管在<span class="Apple-converted-space">&nbsp;</span><a href="https://pypi.org/" style="box-sizing: inherit; text-decoration-skip: objects; color: rgb(63, 81, 181); text-decoration: none; word-break: break-word; transition: color 0.125s;">PyPI</a>（即“Python 包索引”）平台上，用户也可以指定第三方的包托管平台。</p></span></details>
+
+关于 PyPI 的镜像，可以使用如下大镜像站的资源：
+
+- [华为开源镜像站](https://mirrors.huaweicloud.com/)
+- [清华大学 TUNA 镜像站](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)
+- [中国科学技术大学镜像站](http://mirrors.ustc.edu.cn/help/pypi.html)
+- [豆瓣的 PyPI 源](https://pypi.douban.com/simple)
 
 ## 三、Python基础语法
 
@@ -184,14 +196,13 @@ bool({}) # => False
      print ("False")    # 缩进不一致，会导致运行错误
    ```
 
-   3. import模块
-
-      ```python
+3. import模块
+   ```python
       1. 将整个模块导入，例如：import time，在引用时格式为：time.sleep(1)。
       2. 将整个模块中全部函数导入，例如：from time import *，在引用时格式为：sleep(1)。
       3. 将模块中特定函数导入，例如：from time import sleep，在引用时格式为：sleep(1)。
       4. 将模块换个别名，例如：import time as abc，在引用时格式为：abc.sleep(1)。
-      ```
+   ```
 
 
 
