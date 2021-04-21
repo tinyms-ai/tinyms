@@ -15,21 +15,18 @@
 """Bert for pretraining."""
 import numpy as np
 
-import mindspore.nn as nn
 from mindspore.nn.wrap.grad_reducer import DistributedGradReducer
 from mindspore.communication.management import get_group_size
 
-from tinyms import context
-from .bert import Bert
-
 import tinyms as ts
+from tinyms import context
 from tinyms.initializers import TruncatedNormal, initializer
 from tinyms.context import ParallelMode
 from tinyms import layers
 from tinyms import primitives as P
 from tinyms import Tensor
 from tinyms import Parameter
-
+from .bert import Bert
 
 GRADIENT_CLIP_TYPE = 1
 GRADIENT_CLIP_VALUE = 1.0
@@ -261,7 +258,7 @@ class BertNetworkWithLoss(layers.Layer):
         return self.cast(total_loss, ts.float32)
 
 
-class BertTrainOneStepCell(nn.TrainOneStepCell):
+class BertTrainOneStepCell(layers.TrainOneStepCell):
     """
     Encapsulation class of bert network training.
 
