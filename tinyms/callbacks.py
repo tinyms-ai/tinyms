@@ -87,7 +87,7 @@ class BertLossCallBack(Callback):
     If the loss in NAN or INF terminating training.
 
     Args:
-        dataset_size (int): Print loss every times. Default: -1.
+        dataset_size (int): Print loss every times. Default: 1.
 
     Returns:
         None
