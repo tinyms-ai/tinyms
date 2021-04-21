@@ -18,6 +18,7 @@ Layer module contains pre-defined building blocks or computing units to construc
 The high-level components (Layers) used to construct the neural network.
 """
 from mindspore.nn import Cell
+from mindspore.nn import TrainOneStepWithLossScaleCell, TrainOneStepCell
 from mindspore.nn.layer.container import SequentialCell, CellList
 from mindspore.nn.layer import activation, normalization, conv, lstm, basic, \
     embedding, pooling, math as nn_math, combined
@@ -31,7 +32,7 @@ from mindspore.nn.layer.pooling import *
 from mindspore.nn.layer.math import *
 from mindspore.nn.layer.combined import *
 
-__all__ = ['Layer', 'SequentialLayer', 'LayerList']
+__all__ = ['Layer', 'SequentialLayer', 'LayerList', 'TrainOneStepWithLossScaleCell', 'TrainOneStepCell']
 __all__.extend(activation.__all__)
 __all__.extend(normalization.__all__)
 __all__.extend(conv.__all__)
