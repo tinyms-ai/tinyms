@@ -14,11 +14,14 @@
 # ============================================================================
 import tinyms as ts
 
-from .. import vision
+from . import _transform_ops
+from ._transform_ops import *
+
 
 __all__ = [
     'bert_transform', 'BertDatasetTransform',
 ]
+__all__.extend(_transform_ops.__all__)
 
 
 class BertDatasetTransform(object):
@@ -30,7 +33,7 @@ class BertDatasetTransform(object):
 
     def apply_ds(self, data_set, batch_size):
 
-        type_cast_op = vision.TypeCast(ts.int32)
+        type_cast_op = TypeCast(ts.int32)
         data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_ids")
         data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_positions")
         data_set = data_set.map(operations=type_cast_op, input_columns="next_sentence_labels")

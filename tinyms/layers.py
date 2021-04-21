@@ -34,7 +34,7 @@ from mindspore.nn.layer.math import *
 from mindspore.nn.layer.combined import *
 
 
-__all__ = ['Layer', 'SequentialLayer', 'LayerList', 'TrainOneStepWithLossScaleCell', 'TrainOneStepCell']
+__all__ = ['Layer', 'SequentialLayer', 'LayerList']
 __all__.extend(activation.__all__)
 __all__.extend(normalization.__all__)
 __all__.extend(conv.__all__)
