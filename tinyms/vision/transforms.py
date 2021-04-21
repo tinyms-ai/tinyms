@@ -21,7 +21,10 @@ from ..primitives import Softmax
 from . import _transform_ops
 from ._transform_ops import *
 from .utils import ssd_bboxes_encode, ssd_bboxes_filter, jaccard_numpy
+from .. import Tensor
 from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset, VOCDataset, GeneratorDataset
+from ..primitives import Softmax
+
 
 __all__ = [
     'mnist_transform', 'MnistTransform',
@@ -77,7 +80,7 @@ class DatasetTransform(object):
             raise ValueError("Strategy should be one of {}, got {}.".format(self.transform_strategy, strategy))
 
         softmax = Softmax()
-        score_list = softmax(ts.array(input)).asnumpy()
+        score_list = softmax(Tensor(input, dtype=ts.float32)).asnumpy()
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
             return ('TOP1: ' + str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))

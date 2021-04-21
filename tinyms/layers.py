@@ -17,8 +17,8 @@ Layer module contains pre-defined building blocks or computing units to construc
 
 The high-level components (Layers) used to construct the neural network.
 """
-from mindspore.nn import Cell
 from mindspore.nn import wrap
+from mindspore.nn import Cell, GraphCell
 from mindspore.nn.layer.container import SequentialCell, CellList
 from mindspore.nn.layer import activation, normalization, conv, lstm, basic, \
     embedding, pooling, math as nn_math, combined
@@ -72,6 +72,22 @@ class Layer(Cell):
         ...
         ...    def construct(self, x):
         ...        return self.relu(x)
+    """
+    pass
+
+
+class GraphLayer(GraphCell):
+    """
+    Base class for running the graph loaded from MindIR.
+
+    This feature is still under development. Currently `GraphLayer` do not support modifying the structure of the
+    diagram, and can only use data that shape and type are the same as the input when exporting the MindIR.
+
+    Args:
+        graph (object): A compiled graph loaded from MindIR.
+
+    Supported Platforms:
+        ``Ascend`` ``GPU`` ``CPU``
     """
     pass
 
