@@ -28,8 +28,7 @@ __all__ = [
     'cifar10_transform', 'Cifar10Transform',
     'imagefolder_transform', 'ImageFolderTransform',
     'voc_transform', 'VOCTransform',
-    'cyclegan_transform', 'CycleGanDatasetTransform',
-    'bert_transform', 'BertDatasetTransform',
+    'cyclegan_transform', 'CycleGanDatasetTransform'
 ]
 __all__.extend(_transform_ops.__all__)
 
@@ -612,32 +611,8 @@ class CycleGanDatasetTransform():
         return gan_generator_ds
 
 
-
-class BertDatasetTransform():
-    r'''
-    Apply preprocess operation on GeneratorDataset instance.
-    '''
-    def __init__(self):
-        pass
-
-    def apply_ds(self, data_set, batch_size):
-
-        type_cast_op = vision.TypeCast(ts.int32)
-        data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_ids")
-        data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_positions")
-        data_set = data_set.map(operations=type_cast_op, input_columns="next_sentence_labels")
-        data_set = data_set.map(operations=type_cast_op, input_columns="segment_ids")
-        data_set = data_set.map(operations=type_cast_op, input_columns="input_mask")
-        data_set = data_set.map(operations=type_cast_op, input_columns="input_ids")
-        # apply batch operations
-        data_set = data_set.batch(batch_size, drop_remainder=True)
-
-        return data_set
-
-
 mnist_transform = MnistTransform()
 cifar10_transform = Cifar10Transform()
 imagefolder_transform = ImageFolderTransform()
 voc_transform = VOCTransform()
 cyclegan_transform = CycleGanDatasetTransform()
-bert_transform = BertDatasetTransform()

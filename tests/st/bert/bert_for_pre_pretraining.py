@@ -30,7 +30,7 @@ from tinyms.model import Model
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack
 from tinyms import set_seed
 from tinyms.optimizers.bert_optimizer import get_optimizer
-from tinyms.vision import bert_transform
+from tinyms.text import bert_transform
 
 
 from tinyms.model.bert import BertNetworkWithLoss, \

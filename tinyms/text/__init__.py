@@ -21,6 +21,8 @@ from mindspore.dataset.text.transforms import Lookup, JiebaTokenizer, UnicodeCha
     ToNumber, SlidingWindow, SentencePieceTokenizer, PythonTokenizer
 from mindspore.dataset.text.utils import to_str, to_bytes, Vocab, SentencePieceVocab, SentencePieceModel, \
     SPieceTokenizerOutType, SPieceTokenizerLoadType
+from . import transforms
+from .transforms import *
 
 text_transform = ["Lookup", "JiebaTokenizer", "UnicodeCharTokenizer", "Ngram",
                   "WordpieceTokenizer", "TruncateSequencePair",
@@ -31,3 +33,4 @@ text_utils = ["to_str", "to_bytes", "Vocab", "SentencePieceVocab", "SentencePiec
 __all__ = []
 __all__.extend(text_transform)
 __all__.extend(text_utils)
+__all__.extend(transforms.__all__)
