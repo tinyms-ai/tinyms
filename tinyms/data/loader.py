@@ -110,35 +110,32 @@ class GanImageFolderDataset:
         return self.size
 
 
-
-
-
-
-
 class BertDataset:
+    """
+    This dataset class can load bert from data folder.
+
+    Args:
+        data_dir (str): '{data_dir}/result1.tfrecord', '{data_dir}/result2.tfrecord', etc.
+        num_parallel_workers (int): The number of concurrent workers. Default: None.
+        shuffle (Union[bool, Shuffle level], optional): Perform reshuffling of the data every epoch
+            (default=Shuffle.GLOBAL).
+            If shuffle is False, no shuffling will be performed;
+            If shuffle is True, the behavior is the same as setting shuffle to be Shuffle.GLOBAL
+            Otherwise, there are two levels of shuffling:
+
+            - Shuffle.GLOBAL: Shuffle both the files and samples.
+
+            - Shuffle.FILES: Shuffle files only.
+        schema (Union[str, Schema], optional): Path to the JSON schema file or schema object (default=None).
+            If the schema is not provided, the meta data from the TFData file is considered the schema.
+
+    Examples:
+        >>> from tinyms.data import BertDataset
+        >>>
+        >>> bert_ds = BertDataset('data')
+    """
+
     def __init__(self, data_dir, schema_dir=None, shuffle=True, num_parallel_workers=None):
-        """
-        This dataset class can load bert from data folder.
-
-        Args:
-            data_dir (str): '{data_dir}/result1.tfrecord', '{data_dir}/result2.tfrecord', etc.
-            num_parallel_workers (int): The number of concurrent workers. Default: None.
-            shuffle (Union[bool, Shuffle level], optional): Perform reshuffling of the data every epoch
-                (default=Shuffle.GLOBAL).
-                If shuffle is False, no shuffling will be performed;
-                If shuffle is True, the behavior is the same as setting shuffle to be Shuffle.GLOBAL
-                Otherwise, there are two levels of shuffling:
-
-                - Shuffle.GLOBAL: Shuffle both the files and samples.
-
-                - Shuffle.FILES: Shuffle files only.
-            schema (Union[str, Schema], optional): Path to the JSON schema file or schema object (default=None).
-                If the schema is not provided, the meta data from the TFData file is considered the schema.
-        Examples:
-            >>> from tinyms.data import BertDataset
-            >>>
-            >>> bert_ds = BertDataset('data')
-        """
         files = os.listdir(data_dir)
 
         self.data_files = []
@@ -151,7 +148,6 @@ class BertDataset:
                                       shuffle=shuffle,
                                       shard_equal_rows=True,
                                       num_parallel_workers=num_parallel_workers)
-
 
 
 class ImdbDataset:

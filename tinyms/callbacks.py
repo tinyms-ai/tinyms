@@ -85,12 +85,21 @@ class BertLossCallBack(Callback):
     """
     Monitor the loss in training.
     If the loss in NAN or INF terminating training.
-    Note:
-        if per_print_times is 0 do not print loss.
+
     Args:
-        per_print_times (int): Print loss every times. Default: 1.
+        dataset_size (int): Print loss every times. Default: -1.
+
+    Returns:
+        None
+
+    Examples:
+        >>> from tinyms import Tensor
+        >>> from tinyms.callbacks import BertLossCallBack
+        >>>
+        >>> BertLossCallBack(dataset_size=1)
     """
-    def __init__(self, dataset_size=-1):
+
+    def __init__(self, dataset_size=1):
         super(BertLossCallBack, self).__init__()
         self._dataset_size = dataset_size
     def step_end(self, run_context):
