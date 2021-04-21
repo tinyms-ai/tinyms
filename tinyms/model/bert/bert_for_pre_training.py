@@ -333,7 +333,7 @@ def _tensor_grad_overflow(grad):
     return grad_overflow(grad)
 
 
-class BertTrainOneStepWithLossScaleCell(nn.TrainOneStepWithLossScaleCell):
+class BertTrainOneStepWithLossScaleCell(layers.TrainOneStepWithLossScaleCell):
     """
     Encapsulation class of bert network training.
 
@@ -408,7 +408,7 @@ class BertTrainOneStepWithLossScaleCell(nn.TrainOneStepWithLossScaleCell):
         return P.Depend()(ret, succ)
 
 
-class BertTrainOneStepWithLossScaleCellForAdam(nn.TrainOneStepWithLossScaleCell):
+class BertTrainOneStepWithLossScaleCellForAdam(layers.TrainOneStepWithLossScaleCell):
     """
     Encapsulation class of bert network training.
 
