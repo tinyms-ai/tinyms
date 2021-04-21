@@ -490,5 +490,294 @@ our_iterator.__next__() # 抛出StopIteration
 list(filled_dict.keys())  # => Returns ["one", "two", "three"]
 ```
  
+### 4. 迭代器与生成器
+
+这个功能非常常见，也是Python最强大的功能之一，尤其在数据读取时，经常会用到迭代器和生成器，可以节省内存空间，显著提升代码运行速度。
+
+#### 迭代器
+
+##### 1.迭代器是什么？
+
+- 迭代器是一个可以记住遍历的位置的对象，迭代器的对象从集合的第一个元素开始访问，直到所有的元素被访问完结束；迭代器只能往前不会后退；字符串，列表或元组对象都可用于创建迭代器。
+- 基本方法：**iter()** 和 **next()**
+- 创建迭代器对象：
+
+```python
+# 字符串
+for s in "Hello,TinyMS":
+    print (s)
+    
+# 列表  
+>>> list_a=[1,2,3,4]
+>>> it = iter(list_a)    # 创建迭代器对象
+>>> print (next(it))   # 输出迭代器的下一个元素
+1
+>>> print (next(it))
+2
+
+# 元祖
+>>> tuple_a=(1,2,3,4)
+>>> it = iter(tutple_a)
+>>> print (next(it))   # 输出迭代器的下一个元素
+1
+>>> print (next(it))
+2
+
+# 字典(注意字典是无序的)
+d = {
+  'apple' : 'tasty',
+  'bananas' : 'the best',
+  'brussel sprouts' : 'evil',
+  'cauliflower' : 'pretty good'
+}
+
+for sKey in d:
+  print "{0} are {1}".format(sKey,d[sKey])
+
+```
+
+- 遍历迭代器对象：
+
+```python
+list=[1,2,3,4]
+it = iter(list)    # 创建迭代器对象
+for x in it:
+    print (x, end=" ")
+```
+
+输出结果：
+
+```python
+1 2 3 4
+```
+
+- 构造一个迭代器
+
+把一个类作为一个迭代器使用需要在类中实现两个方法 __iter__() 与 __next__()
+
+​    1. _iter__() 方法返回一个特殊的迭代器对象， 这个迭代器对象实现了 __next__() 方法并通过 StopIteration 异常标识迭代的完成。
+
+​    2. __next__() 方法（Python 2 里是 next()）会返回下一个迭代器对象。
+
+创建一个返回数字的迭代器，初始值为 1，逐步递增 1：
+
+```python
+class MyNumbers:
+  def __iter__(self):
+    self.a = 1
+    return self
+ 
+  def __next__(self):
+    x = self.a
+    self.a += 1
+    return x
+ 
+myclass = MyNumbers()
+myiter = iter(myclass)
+ 
+print(next(myiter))
+print(next(myiter))
+print(next(myiter))
+print(next(myiter))
+print(next(myiter))
+```
+
+输出结果：
+
+```python
+1
+2
+3
+4
+5
+```
+
+- 结束迭代标识：StopIteration
+
+  StopIteration 异常用于标识迭代的完成，防止出现无限循环的情况，在 __next__() 方法中我们可以设置在完成指定循环次数后触发 StopIteration 异常来结束迭代。
+
+  在 10 次迭代后停止执行：
+
+  ```python
+  class MyNumbers:
+    def __iter__(self):
+      self.a = 1
+      return self
+   
+    def __next__(self):
+      if self.a <= 20:
+        x = self.a
+        self.a += 1
+        return x
+      else:
+        raise StopIteration
+   
+  myclass = MyNumbers()
+  myiter = iter(myclass)
+   
+  for x in myiter:
+    print(x)
+  ```
+
+  输出结果：
+
+  ```python
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+  10
+  ```
+
+##### 2.TinyMS中的迭代器
+
+TinyMS中的data模块，继承了MindSpore的dataset类中的engine模块的功能，可以看到在engine的代码中我们定义了数据读取的基类迭代器Iterator](https://gitee.com/mindspore/mindspore/blob/master/mindspore/dataset/engine/iterators.py)，再根据不同的数据类型，分别创建了DictIterator、TupleIterator等，举例看一下:
+
+```python
+class DictIterator(Iterator):
+    """
+    The derived class of Iterator with dict type.
+    """
+
+    def _get_next(self):
+        """
+        Returns the next record in the dataset as dictionary
+
+        Returns:
+            Dict, the next record in the dataset.
+        """
+        try:
+            return {k: self._transform_tensor(t) for k, t in self._iterator.GetNextAsMap().items()}
+        except RuntimeError as err:
+            ## maybe "Out of memory" / "MemoryError" error
+            err_info = str(err)
+            if err_info.find("Out of memory") >= 0 or err_info.find("MemoryError") >= 0:
+                logger.error("Memory error occurred, process will exit.")
+                os.kill(os.getpid(), signal.SIGKILL)
+            raise err
+```
+
+
+
+#### 生成器
+
+##### 1. 生成器是什么？
+
+在 Python 中，使用了 yield 的函数被称为生成器（generator），生成器是一个返回迭代器的函数，只能用于迭代操作，更简单点理解生成器就是一个迭代器。 
+
+在调用生成器运行的过程中，每次遇到 yield 时函数会暂停并保存当前所有的运行信息，返回 yield 的值, 并在下一次执行 next() 方法时从当前位置继续运行。
+
+调用一个生成器函数，返回的是一个迭代器对象。
+
+实例：使用 yield 实现斐波那契数列
+
+```python
+import sys
+ 
+def fibonacci(n): # 生成器函数 - 斐波那契
+    a, b, counter = 0, 1, 0
+    while True:
+        if (counter > n): 
+            return
+        yield a
+        # print a
+        a, b = b, a + b
+        counter += 1
+f = fibonacci(10) # f 是一个迭代器，由生成器返回生成
+ 
+while True:
+    try:
+        print (next(f), end=" ")
+    except StopIteration:
+        sys.exit()
+```
+
+输出结果：
+
+```python
+0 1 1 2 3 5 8 13 21 34 55
+```
+
+
+
+##### 2. 为什么要使用yield函数？
+
+一个带有 yield 的函数就是一个 generator，它和普通函数不同，生成一个 generator 看起来像函数调用，但不会执行任何函数代码，直到对其调用 next()（在 for 循环中会自动调用 next()）才开始执行。虽然执行流程仍按函数的流程执行，但每执行到一个 yield 语句就会中断，并返回一个迭代值，下次执行时从 yield 的下一个语句继续执行。看起来就好像一个函数在正常执行的过程中被 yield 中断了数次，每次中断都会通过 yield 返回当前的迭代值。
+
+yield 的好处是显而易见的，把一个函数改写为一个 generator 就获得了迭代能力，比起用类的实例保存状态来计算下一个 next() 的值，不仅代码简洁，而且执行流程异常清晰。
+
+```python
+>>> f = fibonacci(5)
+>>> next(f)
+0
+>>> next(f)
+1
+>>> next(f)
+1
+>>> next(f)
+2
+>>> next(f)
+3
+>>> next(f)
+5
+>>> next(f)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+```
+
+
+
+- 另一个 yield 的例子来源于文件读取。如果直接对文件对象调用 read() 方法，会导致不可预测的内存占用。好的方法是利用固定长度的缓冲区来不断读取文件内容。通过 yield，我们不再需要编写读文件的迭代类，就可以轻松实现文件读取：
+
+  ```python
+  def read_file(fpath): 
+      BLOCK_SIZE = 1024 
+      with open(fpath, 'rb') as f: 
+          while True: 
+              block = f.read(BLOCK_SIZE) 
+              if block: 
+                  yield block 
+              else: 
+                  return
+  ```
+
+##### 3. 在TinyMS中如何使用yield函数？
+
+我们先使用TinyMS的data模块中的[GeneratorDataset](https://tinyms.readthedocs.io/zh_CN/latest/tinyms/tinyms.data.html)函数构建了一个随机数据集，然后对其进行混洗操作，最后展示了混洗后的数据结果
+
+```python
+import numpy as np
+import tinyms as ts
+from tinyms.data import GeneratorDataset as gd
+
+gd.config.set_seed(0)
+
+def generator_func():
+    for i in range(5):
+        yield (np.array([i, i+1, i+2]),)
+
+dataset1 = gd.GeneratorDataset(generator_func, ["data"])
+
+dataset1 = dataset1.shuffle(buffer_size=2)
+for data in dataset1.create_dict_iterator():
+    print(data)
+```
+
+输出结果：
+
+```python
+{'data': Tensor(shape=[3], dtype=Int64, value= [3, 4, 5])}
+{'data': Tensor(shape=[3], dtype=Int64, value= [2, 3, 4])}
+{'data': Tensor(shape=[3], dtype=Int64, value= [4, 5, 6])}
+{'data': Tensor(shape=[3], dtype=Int64, value= [1, 2, 3])}
+{'data': Tensor(shape=[3], dtype=Int64, value= [0, 1, 2])}
+```
+
 
 
