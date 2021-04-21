@@ -778,6 +778,259 @@ for data in dataset1.create_dict_iterator():
 {'data': Tensor(shape=[3], dtype=Int64, value= [1, 2, 3])}
 {'data': Tensor(shape=[3], dtype=Int64, value= [0, 1, 2])}
 ```
+### 5. 函数
+
+语法：
+
+```python
+def 函数名（参数列表）:
+    函数体
+```
+
+```python
+# 用def定义新函数
+def add(x, y):
+    print("x is {} and y is {}".format(x, y))
+    return x + y    # 用return语句返回
+
+# 调用函数
+add(5, 6)   # => 印出"x is 5 and y is 6"并且返回11
+
+# 也可以用关键字参数来调用函数
+add(y=6, x=5)   # 关键字参数可以用任何顺序
+
+
+# 我们可以定义一个可变参数函数
+def varargs(*args):
+    return args
+
+varargs(1, 2, 3)   # => (1, 2, 3)
+
+
+# 我们也可以定义一个关键字可变参数函数
+def keyword_args(**kwargs):
+    return kwargs
+
+# 我们来看看结果是什么：
+keyword_args(big="foot", loch="ness")   # => {"big": "foot", "loch": "ness"}
+
+
+# def(**kwargs) 把N个关键字参数转化为字典:
+def func(country,province,**kwargs):
+		print(country,province,kwargs)
+
+# 调用函数
+>>>func("China","Sichuan",city = "Chengdu", section = "JingJiang")
+China Sichuan {'city': 'Chengdu', 'section': 'JingJiang'}
+
+
+# 这两种可变参数可以混着用
+def all_the_args(*args, **kwargs):
+    print(args)
+    print(kwargs)
+"""
+all_the_args(1, 2, a=3, b=4) prints:
+    (1, 2)
+    {"a": 3, "b": 4}
+"""
+
+# 调用可变参数函数时可以做跟上面相反的，用*展开序列，用**展开字典。
+args = (1, 2, 3, 4)
+kwargs = {"a": 3, "b": 4}
+all_the_args(*args)   # 相当于 all_the_args(1, 2, 3, 4)
+all_the_args(**kwargs)   # 相当于 all_the_args(a=3, b=4)
+all_the_args(*args, **kwargs)   # 相当于 all_the_args(1, 2, 3, 4, a=3, b=4)
+
+
+# 函数作用域
+x = 5
+
+def setX(num):
+    # 局部作用域的x和全局域的x是不同的
+    x = num # => 43
+    print (x) # => 43
+
+def setGlobalX(num):
+    global x
+    print (x) # => 5
+    x = num # 现在全局域的x被赋值
+    print (x) # => 6
+
+setX(43)
+setGlobalX(6)
+
+
+# 函数在Python是一等公民
+def create_adder(x):
+    def adder(y):
+        return x + y
+    return adder
+
+add_10 = create_adder(10)
+add_10(3)   # => 13
+
+# 也有匿名函数
+(lambda x: x > 2)(3)   # => True
+
+# 内置的高阶函数
+map(add_10, [1, 2, 3])   # => [11, 12, 13]
+filter(lambda x: x > 5, [3, 4, 5, 6, 7])   # => [6, 7]
+
+# 用列表推导式可以简化映射和过滤。列表推导式的返回值是另一个列表。
+[add_10(i) for i in [1, 2, 3]]  # => [11, 12, 13]
+[x for x in [3, 4, 5, 6, 7] if x > 5]   # => [6, 7]
+```
+
+### 6.类
+
+```python
+# 定义一个继承object的类
+class Human(object):
+
+    # 类属性，被所有此类的实例共用。
+    species = "H. sapiens"
+
+    # 构造方法，当实例被初始化时被调用。注意名字前后的双下划线，这是表明这个属
+    # 性或方法对Python有特殊意义，但是允许用户自行定义。你自己取名时不应该用这
+    # 种格式。
+    def __init__(self, name):
+        # Assign the argument to the instance's name attribute
+        self.name = name
+
+    # 实例方法，第一个参数总是self，就是这个实例对象
+    def say(self, msg):
+        return "{name}: {message}".format(name=self.name, message=msg)
+
+    # 类方法，被所有此类的实例共用。第一个参数是这个类对象。
+    @classmethod
+    def get_species(cls):
+        return cls.species
+
+    # 静态方法。调用时没有实例或类的绑定。
+    @staticmethod
+    def grunt():
+        return "*grunt*"
+
+
+# 构造一个实例
+i = Human(name="Ian")
+print(i.say("hi"))     # 印出 "Ian: hi"
+
+j = Human("Joel")
+print(j.say("hello"))  # 印出 "Joel: hello"
+
+# 调用一个类方法
+i.get_species()   # => "H. sapiens"
+
+# 改一个共用的类属性
+Human.species = "H. neanderthalensis"
+i.get_species()   # => "H. neanderthalensis"
+j.get_species()   # => "H. neanderthalensis"
+
+# 调用静态方法
+Human.grunt()   # => "*grunt*"
+```
+
+### 7. 模块
+
+```Python
+# 用import导入模块
+import math
+print(math.sqrt(16))  # => 4.0
+
+# 也可以从模块中导入个别值
+from math import ceil, floor
+print(ceil(3.7))  # => 4.0
+print(floor(3.7))   # => 3.0
+
+# 可以导入一个模块中所有值
+# 警告：不建议这么做
+from math import *
+
+# 如此缩写模块名字
+import math as m
+math.sqrt(16) == m.sqrt(16)   # => True
+
+# Python模块其实就是普通的Python文件。你可以自己写，然后导入，
+# 模块的名字就是文件的名字。
+
+# 你可以这样列出一个模块里所有的值
+import math
+dir(math)
+
+```
+
+### 8. 高级用法
+
+```python
+# 用生成器(generators)方便地写惰性运算
+def double_numbers(iterable):
+    for i in iterable:
+        yield i + i
+
+# 生成器只有在需要时才计算下一个值。它们每一次循环只生成一个值，而不是把所有的
+# 值全部算好。
+#
+# range的返回值也是一个生成器，不然一个1到900000000的列表会花很多时间和内存。
+#
+# 如果你想用一个Python的关键字当作变量名，可以加一个下划线来区分。
+range_ = range(1, 900000000)
+# 当找到一个 >=30 的结果就会停
+# 这意味着 `double_numbers` 不会生成大于30的数。
+for i in double_numbers(range_):
+    print(i)
+    if i >= 30:
+        break
+
+
+# 装饰器(decorators)
+# 这个例子中，beg装饰say
+# beg会先调用say。如果返回的say_please为真，beg会改变返回的字符串。
+from functools import wraps
+
+
+def beg(target_function):
+    @wraps(target_function)
+    def wrapper(*args, **kwargs):
+        msg, say_please = target_function(*args, **kwargs)
+        if say_please:
+            return "{} {}".format(msg, "Please! I am poor :(")
+        return msg
+
+    return wrapper
+
+
+@beg
+def say(say_please=False):
+    msg = "Can you buy me a beer?"
+    return msg, say_please
+
+
+print(say())  # Can you buy me a beer?
+print(say(say_please=True))  # Can you buy me a beer? Please! I am poor :(
+```
+
+### 9.常用内置库
+
+通常我们写算法可能会用一些Python的内置库，下面列举了一些常用的内置库，具体用法大家可以阅读 [官方文档](https://docs.python.org/3/library/index.html)。
+
+| 包名                                                         | 用途                             |
+| :----------------------------------------------------------- | :------------------------------- |
+| [`array`](https://docs.python.org/3/library/array.html)      | 定长数组                         |
+| [`argparse`](https://docs.python.org/3/library/argparse.html) | 命令行参数处理                   |
+| [`bisect`](https://docs.python.org/3/library/bisect.html)    | 二分查找                         |
+| [`collections`](https://docs.python.org/3/library/collections.html) | 提供有序字典、双端队列等数据结构 |
+| [`fractions`](https://docs.python.org/3/library/fractions.html) | 有理数                           |
+| [`heapq`](https://docs.python.org/3/library/heapq.html)      | 基于堆的优先级队列               |
+| [`io`](https://docs.python.org/3/library/io.html)            | 文件流、内存流                   |
+| [`itertools`](https://docs.python.org/3/library/itertools.html) | 迭代器相关                       |
+| [`math`](https://docs.python.org/3/library/math.html)        | 常用数学函数                     |
+| [`os.path`](https://docs.python.org/3/library/os.html)       | 系统路径相关                     |
+| [`random`](https://docs.python.org/3/library/random.html)    | 随机数                           |
+| [`re`](https://docs.python.org/3/library/re.html)            | 正则表达式                       |
+| [`struct`](https://docs.python.org/3/library/struct.html)    | 转换结构体和二进制数据           |
+| [`sys`](https://docs.python.org/3/library/sys.html)          | 系统信息                         |
+
 
 
 
