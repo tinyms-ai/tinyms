@@ -21,17 +21,15 @@ import os
 import argparse
 import logging
 
-from mindspore.nn.wrap.loss_scale import DynamicLossScaleUpdateCell
-
 import tinyms as ts
-from tinyms.data import BertDataset
+from tinyms import set_seed
 from tinyms import context
+from tinyms.data import BertDataset
 from tinyms.model import Model
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack
-from tinyms import set_seed
 from tinyms.optimizers.bert_optimizer import get_optimizer
 from tinyms.text import bert_transform
-
+from tinyms.layers import DynamicLossScaleUpdateCell
 
 from tinyms.model.bert import BertNetworkWithLoss, \
                 BertTrainOneStepCell, \
