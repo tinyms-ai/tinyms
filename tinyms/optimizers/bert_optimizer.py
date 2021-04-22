@@ -24,7 +24,7 @@ import tinyms as ts
 from tinyms import Tensor
 from tinyms import primitives as P
 from tinyms import context
-from ..optimizers import AdamWeightDecay, Lamb, Momentum, THOR, Optimizer
+from . import AdamWeightDecay, Lamb, Momentum, THOR, Optimizer
 
 
 __all__ = ['AdamWeightDecayForBert', 'AdamWeightDecayOp']
@@ -114,14 +114,15 @@ class AdamWeightDecayForBert(Optimizer):
         >>> # The final parameters order in which the optimizer will be followed is the value of 'order_params'.
         >>>
         >>> loss = layers.SoftmaxCrossEntropyWithLogits()
-        >>> model = Model(net, loss_fn=loss, optimizer=optim)
+        >>> model = Model(net)
+        >>> model.compile(loss_fn=loss, optimizer=optim)
    """
     def __init__(self, params, learning_rate=1e-3, beta1=0.9, beta2=0.999, eps=1e-6, weight_decay=0.0):
         super(AdamWeightDecayForBert, self).__init__(learning_rate, params, weight_decay)
         _check_param_value(beta1, beta2, eps, self.cls_name)
-        self.beta1 = Tensor(np.array([beta1]).astype(np.float32))
-        self.beta2 = Tensor(np.array([beta2]).astype(np.float32))
-        self.eps = Tensor(np.array([eps]).astype(np.float32))
+        self.beta1 = ts.array([beta1], dtype=ts.float32)
+        self.beta2 = ts.array([beta2], dtype=ts.float32)
+        self.eps = ts.array([eps], dtype=ts.float32)
         self.moments1 = self.parameters.clone(prefix="adam_m", init='zeros')
         self.moments2 = self.parameters.clone(prefix="adam_v", init='zeros')
         self.hyper_map = P.HyperMap()
@@ -224,14 +225,15 @@ class AdamWeightDecayOp(Optimizer):
         >>> # The final parameters order in which the optimizer will be followed is the value of 'order_params'.
         >>>
         >>> loss = layers.SoftmaxCrossEntropyWithLogits()
-        >>> model = Model(net, loss_fn=loss, optimizer=optim)
+        >>> model = Model(net)
+        >>> model.compile(loss_fn=loss, optimizer=optim)
    """
     def __init__(self, params, learning_rate=1e-3, beta1=0.9, beta2=0.999, eps=1e-6, weight_decay=0.0):
         super(AdamWeightDecayOp, self).__init__(learning_rate, params, weight_decay)
         _check_param_value(beta1, beta2, eps, self.cls_name)
-        self.beta1 = Tensor(np.array([beta1]).astype(np.float32))
-        self.beta2 = Tensor(np.array([beta2]).astype(np.float32))
-        self.eps = Tensor(np.array([eps]).astype(np.float32))
+        self.beta1 = ts.array([beta1], dtype=ts.float32)
+        self.beta2 = ts.array([beta2], dtype=ts.float32)
+        self.eps = ts.array([eps], dtype=ts.float32)
         self.moments1 = self.parameters.clone(prefix="adam_m", init='zeros')
         self.moments2 = self.parameters.clone(prefix="adam_v", init='zeros')
         self.hyper_map = P.HyperMap()
@@ -270,10 +272,10 @@ class BertLearningRate(LearningRateSchedule):
             self.warmup_flag = True
             self.warmup_lr = WarmUpLR(learning_rate, warmup_steps)
         self.decay_lr = PolynomialDecayLR(learning_rate, end_learning_rate, decay_steps, power)
-        self.warmup_steps = Tensor(np.array([warmup_steps]).astype(np.float32))
+        self.warmup_steps = ts.array([warmup_steps], dtype=ts.float32)
 
         self.greater = P.Greater()
-        self.one = Tensor(np.array([1.0]).astype(np.float32))
+        self.one = ts.array([1.0], dtype=ts.float32)
         self.cast = P.Cast()
 
     def construct(self, global_step):
