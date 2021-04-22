@@ -20,7 +20,6 @@ import tinyms as ts
 from easydict import EasyDict as edict
 
 
-
 class BertConfig:
     """
     Configuration for `BertModel`.
@@ -45,8 +44,8 @@ class BertConfig:
         type_vocab_size (int): Size of token type vocab. Default: 16.
         initializer_range (float): Initialization value of TruncatedNormal. Default: 0.02.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
-        dtype (:class:`mindspore.dtype`): Data type of the input. Default: ts.float32.
-        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: ts.float32.
+        dtype (:class:`tinyms.dtype`): Data type of the input. Default: ts.float32.
+        compute_type (:class:`tinyms.dtype`): Compute type in BertTransformer. Default: ts.float32.
     """
     def __init__(self,
                  seq_length=128,
