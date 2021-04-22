@@ -33,7 +33,6 @@ from mindspore.nn.layer.pooling import *
 from mindspore.nn.layer.math import *
 from mindspore.nn.layer.combined import *
 
-
 __all__ = ['Layer', 'SequentialLayer', 'LayerList']
 __all__.extend(activation.__all__)
 __all__.extend(normalization.__all__)
