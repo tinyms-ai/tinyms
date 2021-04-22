@@ -12,8 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+from mindspore.dataset.text.transforms import Lookup, JiebaTokenizer, UnicodeCharTokenizer, Ngram, \
+    WordpieceTokenizer, TruncateSequencePair, \
+    ToNumber, SlidingWindow, SentencePieceTokenizer, PythonTokenizer
+from mindspore.dataset.text.utils import to_str, to_bytes, Vocab, SentencePieceVocab, SentencePieceModel, \
+    SPieceTokenizerOutType, SPieceTokenizerLoadType
 from mindspore.dataset.transforms.c_transforms import *
 
+
+text_transform = [
+    "Lookup",
+    "JiebaTokenizer",
+    "UnicodeCharTokenizer",
+    "Ngram",
+    "WordpieceTokenizer",
+    "TruncateSequencePair",
+    "ToNumber",
+    "SlidingWindow",
+    "SentencePieceTokenizer",
+    "PythonTokenizer"
+]
+
+text_utils = [
+    "to_str",
+    "to_bytes",
+    "Vocab",
+    "SentencePieceVocab",
+    "SentencePieceModel",
+    "SPieceTokenizerOutType",
+    "SPieceTokenizerLoadType"
+]
 
 common_trans = [
     'Compose',
@@ -31,4 +59,6 @@ common_trans = [
 ]
 
 __all__ = []
+__all__.extend(text_transform)
+__all__.extend(text_utils)
 __all__.extend(common_trans)

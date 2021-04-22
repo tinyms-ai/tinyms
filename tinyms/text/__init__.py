@@ -16,21 +16,9 @@
 This module is to support text processing for NLP tasks. It is a high performance
 NLP text processing module which is developed with ICU4C and cppjieba.
 """
-from mindspore.dataset.text.transforms import Lookup, JiebaTokenizer, UnicodeCharTokenizer, Ngram, \
-    WordpieceTokenizer, TruncateSequencePair, \
-    ToNumber, SlidingWindow, SentencePieceTokenizer, PythonTokenizer
-from mindspore.dataset.text.utils import to_str, to_bytes, Vocab, SentencePieceVocab, SentencePieceModel, \
-    SPieceTokenizerOutType, SPieceTokenizerLoadType
 from . import transforms
 from .transforms import *
 
-text_transform = ["Lookup", "JiebaTokenizer", "UnicodeCharTokenizer", "Ngram",
-                  "WordpieceTokenizer", "TruncateSequencePair",
-                  "ToNumber", "SlidingWindow", "SentencePieceTokenizer", "PythonTokenizer"]
-text_utils = ["to_str", "to_bytes", "Vocab", "SentencePieceVocab", "SentencePieceModel",
-              "SPieceTokenizerOutType", "SPieceTokenizerLoadType"]
 
 __all__ = []
-__all__.extend(text_transform)
-__all__.extend(text_utils)
 __all__.extend(transforms.__all__)
