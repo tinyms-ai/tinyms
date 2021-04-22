@@ -15,18 +15,19 @@
 """Bert for pretraining."""
 import numpy as np
 
-from mindspore.nn.wrap.grad_reducer import DistributedGradReducer
 from mindspore.communication.management import get_group_size
 
 import tinyms as ts
 from tinyms import context
-from tinyms.initializers import TruncatedNormal, initializer
-from tinyms.context import ParallelMode
 from tinyms import layers
 from tinyms import primitives as P
 from tinyms import Tensor
 from tinyms import Parameter
+from tinyms.initializers import TruncatedNormal, initializer
+from tinyms.context import ParallelMode
+
 from .bert import Bert
+from ...layers import DistributedGradReducer
 
 GRADIENT_CLIP_TYPE = 1
 GRADIENT_CLIP_VALUE = 1.0
@@ -509,7 +510,7 @@ def _reset_accu_grads(accu_grad):
     return P.Depend()(succ, P.Assign()(accu_grad, zeroslike(accu_grad)))
 
 
-class BertTrainAccumulationAllReducePostWithLossScaleCell(layers.Layer):
+class BertTrainAccumulationAllReducePostWithLossScaleLayer(layers.Layer):
     """
     Encapsulation class of bert network training.
 
@@ -522,7 +523,7 @@ class BertTrainAccumulationAllReducePostWithLossScaleCell(layers.Layer):
     i.e. the sub-step after gradients accumulated N times.
 
     Args:
-        network (Cell): The training network. Note that loss function should have been added.
+        network (layers.Layer): The training network. Note that loss function should have been added.
         optimizer (Optimizer): Optimizer for updating the weights.
         scale_update_cell (Cell): Cell to do the loss scale. Default: None.
         accumulation_steps (int): Number of accumulation steps before gradient update. The global batch size =
@@ -530,7 +531,7 @@ class BertTrainAccumulationAllReducePostWithLossScaleCell(layers.Layer):
     """
 
     def __init__(self, network, optimizer, scale_update_cell=None, accumulation_steps=1, enable_global_norm=False):
-        super(BertTrainAccumulationAllReducePostWithLossScaleCell, self).__init__(auto_prefix=False)
+        super(BertTrainAccumulationAllReducePostWithLossScaleLayer, self).__init__(auto_prefix=False)
         self.network = network
         self.network.set_grad()
         self.weights = optimizer.parameters
@@ -659,7 +660,7 @@ class BertTrainAccumulationAllReducePostWithLossScaleCell(layers.Layer):
         return P.Depend()(ret, succ)
 
 
-class BertTrainAccumulationAllReduceEachWithLossScaleCell(layers.Layer):
+class BertTrainAccumulationAllReduceEachWithLossScaleLayer(layers.Layer):
     """
     Encapsulation class of bert network training.
 
@@ -672,14 +673,14 @@ class BertTrainAccumulationAllReduceEachWithLossScaleCell(layers.Layer):
     will be overided by backend optimization pass.
 
     Args:
-        network (Cell): The training network. Note that loss function should have been added.
+        network (layers.Layer): The training network. Note that loss function should have been added.
         optimizer (Optimizer): Optimizer for updating the weights.
         scale_update_cell (Cell): Cell to do the loss scale. Default: None.
         accumulation_steps (int): Number of accumulation steps before gradient update. The global batch size =
                                   batch_size * accumulation_steps. Default: 1.
     """
     def __init__(self, network, optimizer, scale_update_cell=None, accumulation_steps=1, enable_global_norm=False):
-        super(BertTrainAccumulationAllReduceEachWithLossScaleCell, self).__init__(auto_prefix=False)
+        super(BertTrainAccumulationAllReduceEachWithLossScaleLayer, self).__init__(auto_prefix=False)
         self.network = network
         self.network.set_grad()
         self.weights = optimizer.parameters

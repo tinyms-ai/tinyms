@@ -152,7 +152,7 @@ class BertOutput(layers.Layer):
         out_channels (int): Output channels.
         initializer_range (float): Initialization value of TruncatedNormal. Default: 0.02.
         dropout_prob (float): The dropout probability. Default: 0.1.
-        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: ts.float32.
+        compute_type (:class:`tinyms.dtype`): Compute type in BertTransformer. Default: ts.float32.
     """
     def __init__(self,
                  in_channels,
@@ -276,8 +276,8 @@ class SaturateCast(layers.Layer):
     the danger that the value will overflow or underflow.
 
     Args:
-        src_type (:class:`mindspore.dtype`): The type of the elements of the input tensor. Default: ts.float32.
-        dst_type (:class:`mindspore.dtype`): The type of the elements of the output tensor. Default: ts.float32.
+        src_type (:class:`tinyms.dtype`): The type of the elements of the input tensor. Default: ts.float32.
+        dst_type (:class:`tinyms.dtype`): The type of the elements of the output tensor. Default: ts.float32.
     """
     def __init__(self, src_type=ts.float32, dst_type=ts.float32):
         super(SaturateCast, self).__init__()
@@ -319,7 +319,7 @@ class BertAttention(layers.Layer):
         do_return_2d_tensor (bool): True for return 2d tensor. False for return 3d
                              tensor. Default: False.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
-        compute_type (:class:`mindspore.dtype`): Compute type in BertAttention. Default: ts.float32.
+        compute_type (:class:`tinyms.dtype`): Compute type in BertAttention. Default: ts.float32.
     """
     def __init__(self,
                  from_tensor_width,
@@ -506,7 +506,7 @@ class BertSelfAttention(layers.Layer):
         initializer_range (float): Initialization value of TruncatedNormal. Default: 0.02.
         hidden_dropout_prob (float): The dropout probability for BertOutput. Default: 0.1.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
-        compute_type (:class:`mindspore.dtype`): Compute type in BertSelfAttention. Default: ts.float32.
+        compute_type (:class:`tinyms.dtype`): Compute type in BertSelfAttention. Default: ts.float32.
     """
     def __init__(self,
                  seq_length,
@@ -555,9 +555,9 @@ class BertSelfAttention(layers.Layer):
         return output
 
 
-class BertEncoderCell(layers.Layer):
+class BertEncoderLayer(layers.Layer):
     """
-    Encoder cells used in BertTransformer.
+    Encoder Layer used in BertTransformer.
 
     Args:
         hidden_size (int): Size of the bert encoder layers. Default: 768.
@@ -571,7 +571,7 @@ class BertEncoderCell(layers.Layer):
         hidden_dropout_prob (float): The dropout probability for BertOutput. Default: 0.1.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
         hidden_act (str): Activation function. Default: "gelu".
-        compute_type (:class:`mindspore.dtype`): Compute type in attention. Default: ts.float32.
+        compute_type (:class:`tinyms.dtype`): Compute type in attention. Default: ts.float32.
     """
     def __init__(self,
                  hidden_size=768,
@@ -585,7 +585,7 @@ class BertEncoderCell(layers.Layer):
                  use_relative_positions=False,
                  hidden_act="gelu",
                  compute_type=ts.float32):
-        super(BertEncoderCell, self).__init__()
+        super(BertEncoderLayer, self).__init__()
         self.attention = BertSelfAttention(
             hidden_size=hidden_size,
             seq_length=seq_length,
@@ -623,17 +623,17 @@ class BertTransformer(layers.Layer):
     Args:
         hidden_size (int): Size of the encoder layers.
         seq_length (int): Length of input sequence.
-        num_hidden_layers (int): Number of hidden layers in encoder cells.
-        num_attention_heads (int): Number of attention heads in encoder cells. Default: 12.
-        intermediate_size (int): Size of intermediate layer in encoder cells. Default: 3072.
+        num_hidden_layers (int): Number of hidden layers in encoder layers.
+        num_attention_heads (int): Number of attention heads in encoder layers. Default: 12.
+        intermediate_size (int): Size of intermediate layer in encoder layers. Default: 3072.
         attention_probs_dropout_prob (float): The dropout probability for
                                       BertAttention. Default: 0.1.
         use_one_hot_embeddings (bool): Specifies whether to use one hot encoding form. Default: False.
         initializer_range (float): Initialization value of TruncatedNormal. Default: 0.02.
         hidden_dropout_prob (float): The dropout probability for BertOutput. Default: 0.1.
         use_relative_positions (bool): Specifies whether to use relative positions. Default: False.
-        hidden_act (str): Activation function used in the encoder cells. Default: "gelu".
-        compute_type (:class:`mindspore.dtype`): Compute type in BertTransformer. Default: ts.float32.
+        hidden_act (str): Activation function used in the encoder layers. Default: "gelu".
+        compute_type (:class:`tinyms.dtype`): Compute type in BertTransformer. Default: ts.float32.
         return_all_encoders (bool): Specifies whether to return all encoders. Default: False.
     """
     def __init__(self,
@@ -655,7 +655,7 @@ class BertTransformer(layers.Layer):
 
         slayers = []
         for _ in range(num_hidden_layers):
-            layer = BertEncoderCell(hidden_size=hidden_size,
+            layer = BertEncoderLayer(hidden_size=hidden_size,
                                     seq_length=seq_length,
                                     num_attention_heads=num_attention_heads,
                                     intermediate_size=intermediate_size,
@@ -813,11 +813,10 @@ class Bert(layers.Layer):
 
         return sequence_output, pooled_output, embedding_tables
 
-def bert(config,is_training,use_one_hot_embeddings=False):
 
+def bert(config,is_training,use_one_hot_embeddings=False):
     """
     Get bert neural network.
     """
+
     return Bert(config=config, is_training=is_training, use_one_hot_embeddings=use_one_hot_embeddings)
-
-

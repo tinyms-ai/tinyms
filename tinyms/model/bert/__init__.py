@@ -17,10 +17,10 @@
 from .bert_for_pre_training import BertNetworkWithLoss, BertPreTraining, \
     BertPretrainingLoss, GetMaskedLMOutput, GetNextSentenceOutput, \
     BertTrainOneStepCell, BertTrainOneStepWithLossScaleCell, \
-    BertTrainAccumulationAllReduceEachWithLossScaleCell, \
-    BertTrainAccumulationAllReducePostWithLossScaleCell, \
+    BertTrainAccumulationAllReduceEachWithLossScaleLayer, \
+    BertTrainAccumulationAllReducePostWithLossScaleLayer, \
     BertTrainOneStepWithLossScaleCellForAdam
-from .bert import BertAttention, BertEncoderCell, Bert, bert, \
+from .bert import BertAttention, BertEncoderLayer, Bert, bert, \
     BertOutput, BertSelfAttention, BertTransformer, EmbeddingLookup, \
     EmbeddingPostprocessor, RelaPosEmbeddingsGenerator, RelaPosMatrixGenerator, \
     SaturateCast, CreateAttentionMaskFromInputMask
@@ -28,9 +28,9 @@ from .bert import BertAttention, BertEncoderCell, Bert, bert, \
 __all__ = [
     "BertNetworkWithLoss", "BertPreTraining", "BertPretrainingLoss",
     "GetMaskedLMOutput", "GetNextSentenceOutput", "BertTrainOneStepCell",
-    "BertTrainOneStepWithLossScaleCell", "BertTrainAccumulationAllReduceEachWithLossScaleCell",
-    "BertTrainAccumulationAllReducePostWithLossScaleCell",
-    "BertAttention", "BertEncoderCell", "Bert", "bert", "BertOutput",
+    "BertTrainOneStepWithLossScaleCell", "BertTrainAccumulationAllReduceEachWithLossScaleLayer",
+    "BertTrainAccumulationAllReducePostWithLossScaleLayer",
+    "BertAttention", "BertEncoderLayer", "Bert", "bert", "BertOutput",
     "BertSelfAttention", "BertTransformer", "EmbeddingLookup",
     "EmbeddingPostprocessor", "RelaPosEmbeddingsGenerator",
     "RelaPosMatrixGenerator", "SaturateCast", "CreateAttentionMaskFromInputMask",

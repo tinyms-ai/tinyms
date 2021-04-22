@@ -34,8 +34,8 @@ from tinyms.layers import DynamicLossScaleUpdateCell
 from tinyms.model.bert import BertNetworkWithLoss, \
                 BertTrainOneStepCell, \
                 BertTrainOneStepWithLossScaleCell, \
-                BertTrainAccumulationAllReduceEachWithLossScaleCell, \
-                BertTrainAccumulationAllReducePostWithLossScaleCell, \
+                BertTrainAccumulationAllReduceEachWithLossScaleLayer, \
+                BertTrainAccumulationAllReducePostWithLossScaleLayer, \
                 BertTrainOneStepWithLossScaleCellForAdam
 
 
@@ -236,8 +236,8 @@ def run_pretrain():
                                                                    scale_update_cell=update_cell)
         else:
             allreduce_post = args_opt.distribute == "false" or args_opt.allreduce_post_accumulation == "true"
-            net_with_accumulation = (BertTrainAccumulationAllReducePostWithLossScaleCell if allreduce_post else
-                                     BertTrainAccumulationAllReduceEachWithLossScaleCell)
+            net_with_accumulation = (BertTrainAccumulationAllReducePostWithLossScaleLayer if allreduce_post else
+                                     BertTrainAccumulationAllReduceEachWithLossScaleLayer)
             net_with_grads = net_with_accumulation(net_with_loss, optimizer=optimizer,
                                                    scale_update_cell=update_cell,
                                                    accumulation_steps=accumulation_steps,
