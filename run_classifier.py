@@ -19,16 +19,17 @@ Bert finetune and evaluation script.
 import os
 import argparse
 import logging
-from src.bert_for_finetune import BertFinetuneCell, BertCLS
+from bert_for_finetune import BertFinetuneCell, BertCLS
 from finetune_eval_config import optimizer_cfg, bert_net_cfg
-from dataset import create_classification_dataset
 from src.assessment_method import Accuracy, F1, MCC, Spearman_Correlation
 from src.utils import make_directory, LoadNewestCkpt, BertLearningRate
 
 import tinyms as ts
 from tinyms import context
+from tinyms import vision
 from tinyms.model import Model
 from tinyms.layers import DynamicLossScaleUpdateCell
+from tinyms.data import TFRecordDataset
 from tinyms.optimizers import AdamWeightDecay, Lamb, Momentum
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack
 from mindspore.train.serialization import load_checkpoint, load_param_into_net
@@ -41,6 +42,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 _cur_dir = os.getcwd()
 
+def create_classification_dataset(batch_size=1, repeat_count=1, assessment_method="accuracy",
+                                  data_file_path=None, schema_file_path=None, do_shuffle=True):
+    """create finetune or evaluation dataset"""
+    type_cast_op = vision.TypeCast(ts.int32)
+    ds = TFRecordDataset([data_file_path], schema_file_path if schema_file_path != "" else None,
+                            columns_list=["input_ids", "input_mask", "segment_ids", "label_ids"], shuffle=do_shuffle)
+    if assessment_method == "Spearman_correlation":
+        type_cast_op_float = vision.TypeCast(ts.float32)
+        ds = ds.map(operations=type_cast_op_float, input_columns="label_ids")
+    else:
+        ds = ds.map(operations=type_cast_op, input_columns="label_ids")
+    ds = ds.map(operations=type_cast_op, input_columns="segment_ids")
+    ds = ds.map(operations=type_cast_op, input_columns="input_mask")
+    ds = ds.map(operations=type_cast_op, input_columns="input_ids")
+    ds = ds.repeat(repeat_count)
+    # apply batch operations
+    ds = ds.batch(batch_size, drop_remainder=True)
+    return ds
 
 def do_train(dataset=None, network=None, load_checkpoint_path="", save_checkpoint_path="", epoch_num=1):
     """ do train """
@@ -86,7 +105,6 @@ def do_train(dataset=None, network=None, load_checkpoint_path="", save_checkpoin
     model.load_checkpoint(load_checkpoint_path)
     callbacks = [TimeMonitor(dataset.get_dataset_size()), BertLossCallBack(dataset.get_dataset_size()), ckpoint_cb]
     model.train(epoch_num, dataset, callbacks=callbacks)
-
 
 def eval_result_print(assessment_method="accuracy", callback=None):
     """ print eval result """
