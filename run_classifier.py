@@ -21,7 +21,7 @@ import argparse
 import logging
 from src.bert_for_finetune import BertFinetuneCell, BertCLS
 from finetune_eval_config import optimizer_cfg, bert_net_cfg
-from src.dataset import create_classification_dataset
+from dataset import create_classification_dataset
 from src.assessment_method import Accuracy, F1, MCC, Spearman_Correlation
 from src.utils import make_directory, LoadNewestCkpt, BertLearningRate
 
