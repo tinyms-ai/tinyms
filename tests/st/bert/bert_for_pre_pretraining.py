@@ -50,8 +50,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
-
 def create_bert_dataset(
         batch_size,
         shuffle=True,
@@ -74,8 +72,6 @@ def create_bert_dataset(
     )
 
     return bert_ds
-
-
 
 
 def _set_bert_all_reduce_split():
