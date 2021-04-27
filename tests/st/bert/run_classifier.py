@@ -20,7 +20,7 @@ import os
 import argparse
 import logging
 from src.bert_for_finetune import BertFinetuneCell, BertCLS
-from src.finetune_eval_config import optimizer_cfg, bert_net_cfg
+from finetune_eval_config import optimizer_cfg, bert_net_cfg
 from src.dataset import create_classification_dataset
 from src.assessment_method import Accuracy, F1, MCC, Spearman_Correlation
 from src.utils import make_directory, LoadNewestCkpt, BertLearningRate
@@ -79,12 +79,11 @@ def do_train(dataset=None, network=None, load_checkpoint_path="", save_checkpoin
     ckpoint_cb = ModelCheckpoint(prefix="classifier",
                                  directory=None if save_checkpoint_path == "" else save_checkpoint_path,
                                  config=ckpt_config)
-    param_dict = load_checkpoint(load_checkpoint_path)
-    load_param_into_net(network, param_dict)
 
     update_cell = DynamicLossScaleUpdateCell(loss_scale_value=2**32, scale_factor=2, scale_window=1000)
     netwithgrads = BertFinetuneCell(network, optimizer=optimizer, scale_update_cell=update_cell)
     model = Model(netwithgrads)
+    model.load_checkpoint(load_checkpoint_path)
     callbacks = [TimeMonitor(dataset.get_dataset_size()), BertLossCallBack(dataset.get_dataset_size()), ckpoint_cb]
     model.train(epoch_num, dataset, callbacks=callbacks)
 
