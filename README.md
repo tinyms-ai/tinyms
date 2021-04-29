@@ -21,6 +21,15 @@ TinyMS is an Easy-to-Use deep learning framework development toolkit based on [M
 
 ## Installation
 
+| Distribution | Version | Command |
+| :----------- | :------ | :------ |
+| PyPI | x.y.z | `pip install tinyms==x.y.z` |
+|  | latest | `pip install git+https://github.com/tinyms-ai/tinyms.git` |
+| Docker | x.y.z | `docker pull tinyms==x.y.z` |
+|  | latest | - |
+
+> **NOTICE:** The `x.y.z` version shown above should be replaced with the real version number.
+
 Please checkout the [install document](https://tinyms.readthedocs.io/en/latest/quickstart/install.html) to quickly install or upgrade TinyMS project.
 
 ## Quick start

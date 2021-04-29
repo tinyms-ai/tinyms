@@ -21,6 +21,15 @@ TinyMS是基于[MindSpore AI框架](https://www.mindspore.cn/)开发，面向上
 
 ## 安装
 
+| 版本分发工具 | 版本 | 安装命令 |
+| :---------- | :--- | :------ |
+| PyPI | x.y.z | `pip install tinyms==x.y.z` |
+|  | latest | `pip install git+https://github.com/tinyms-ai/tinyms.git` |
+| Docker | x.y.z | `docker pull tinyms==x.y.z` |
+|  | latest | - |
+
+> **注意：** 表格中的`x.y.z`需替换成具体的版本号。
+
 欢迎查阅[安装文档](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html)实现一键安装TinyMS。
 
 ## 快速上手
