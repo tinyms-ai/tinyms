@@ -15,25 +15,19 @@
 """Bert for pretraining."""
 import numpy as np
 
-from mindspore.communication.management import get_group_size
-
 import tinyms as ts
-from tinyms import context
 from tinyms import layers
 from tinyms import primitives as P
 from tinyms import Tensor
 from tinyms import Parameter
 from tinyms.initializers import TruncatedNormal, initializer
-from tinyms.context import ParallelMode
 
 from .bert import Bert
-from ...layers import DistributedGradReducer
 
 GRADIENT_CLIP_TYPE = 1
 GRADIENT_CLIP_VALUE = 1.0
 
 clip_grad = P.MultitypeFuncGraph("clip_grad")
-
 
 @clip_grad.register("Number", "Number", "Tensor")
 def _clip_grad(clip_type, clip_value, grad):
@@ -48,6 +42,7 @@ def _clip_grad(clip_type, clip_value, grad):
     Outputs:
         tuple[Tensor], clipped gradients.
     """
+
     if clip_type not in (0, 1):
         return grad
     dt = P.DType()(grad)
@@ -348,10 +343,6 @@ class BertTrainOneStepWithLossScaleCell(layers.TrainOneStepWithLossScaleCell):
         super(BertTrainOneStepWithLossScaleCell, self).__init__(network, optimizer, scale_update_cell)
         self.cast = P.Cast()
         self.degree = 1
-        if self.reducer_flag:
-            self.degree = get_group_size()
-            self.grad_reducer = DistributedGradReducer(optimizer.parameters, False, self.degree)
-
         self.loss_scale = None
         self.loss_scaling_manager = scale_update_cell
         if scale_update_cell:
@@ -424,9 +415,6 @@ class BertTrainOneStepWithLossScaleCellForAdam(layers.TrainOneStepWithLossScaleC
         super(BertTrainOneStepWithLossScaleCellForAdam, self).__init__(network, optimizer, scale_update_cell)
         self.cast = P.Cast()
         self.degree = 1
-        if self.reducer_flag:
-            self.degree = get_group_size()
-            self.grad_reducer = DistributedGradReducer(optimizer.parameters, False, self.degree)
         self.loss_scale = None
         self.loss_scaling_manager = scale_update_cell
         if scale_update_cell:
@@ -519,9 +507,6 @@ class BertTrainAccumulationAllReducePostWithLossScaleLayer(layers.Layer):
 
     To mimic higher batch size, gradients are accumulated N times before weight update.
 
-    For distribution mode, allreduce will only be implemented in the weight updated step,
-    i.e. the sub-step after gradients accumulated N times.
-
     Args:
         network (layers.Layer): The training network. Note that loss function should have been added.
         optimizer (Optimizer): Optimizer for updating the weights.
@@ -546,19 +531,9 @@ class BertTrainAccumulationAllReducePostWithLossScaleLayer(layers.Layer):
         self.accu_loss = Parameter(initializer(0, [1], ts.float32))
 
         self.grad = P.GradOperation(get_by_list=True, sens_param=True)
-        self.reducer_flag = False
-        self.parallel_mode = context.get_auto_parallel_context("parallel_mode")
-        if self.parallel_mode in [ParallelMode.DATA_PARALLEL, ParallelMode.HYBRID_PARALLEL]:
-            self.reducer_flag = True
         self.grad_reducer = P.Identity()
         self.degree = 1
-        if self.reducer_flag:
-            self.degree = get_group_size()
-            self.grad_reducer = DistributedGradReducer(optimizer.parameters, False, self.degree)
-        self.is_distributed = (self.parallel_mode != ParallelMode.STAND_ALONE)
         self.overflow_reducer = P.Identity()
-        if self.is_distributed:
-            self.overflow_reducer = P.AllReduce()
         self.cast = P.Cast()
         self.alloc_status = P.NPUAllocFloatStatus()
         self.get_status = P.NPUGetFloatStatus()
@@ -669,9 +644,6 @@ class BertTrainAccumulationAllReduceEachWithLossScaleLayer(layers.Layer):
 
     To mimic higher batch size, gradients are accumulated N times before weight update.
 
-    For distribution mode, allreduce will be implemented after each sub-step and the trailing time
-    will be overided by backend optimization pass.
-
     Args:
         network (layers.Layer): The training network. Note that loss function should have been added.
         optimizer (Optimizer): Optimizer for updating the weights.
@@ -695,19 +667,9 @@ class BertTrainAccumulationAllReduceEachWithLossScaleLayer(layers.Layer):
         self.accu_loss = Parameter(initializer(0, [1], ts.float32))
 
         self.grad = P.GradOperation(get_by_list=True, sens_param=True)
-        self.reducer_flag = False
-        self.parallel_mode = context.get_auto_parallel_context("parallel_mode")
-        if self.parallel_mode in [ParallelMode.DATA_PARALLEL, ParallelMode.HYBRID_PARALLEL]:
-            self.reducer_flag = True
         self.grad_reducer = P.Identity()
         self.degree = 1
-        if self.reducer_flag:
-            self.degree = get_group_size()
-            self.grad_reducer = DistributedGradReducer(optimizer.parameters, False, self.degree)
-        self.is_distributed = (self.parallel_mode != ParallelMode.STAND_ALONE)
         self.overflow_reducer = P.Identity()
-        if self.is_distributed:
-            self.overflow_reducer = P.AllReduce()
         self.cast = P.Cast()
         self.alloc_status = P.NPUAllocFloatStatus()
         self.get_status = P.NPUGetFloatStatus()

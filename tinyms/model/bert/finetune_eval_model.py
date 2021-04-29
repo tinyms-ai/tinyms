@@ -16,7 +16,6 @@
 Bert finetune and evaluation model script.
 '''
 
-
 from tinyms import layers
 from tinyms.initializers import TruncatedNormal
 from tinyms import primitives as P
@@ -117,6 +116,7 @@ class BertNERModel(layers.Layer):
 
     def construct(self, input_ids, input_mask, token_type_id):
         """Return the final logits as the results of log_softmax."""
+
         sequence_output, _, _ = \
             self.bert(input_ids, token_type_id, input_mask)
         seq = self.dropout(sequence_output)

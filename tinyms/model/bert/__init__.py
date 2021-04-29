@@ -24,6 +24,7 @@ from .bert import BertAttention, BertEncoderLayer, Bert, bert, \
     BertOutput, BertSelfAttention, BertTransformer, EmbeddingLookup, \
     EmbeddingPostprocessor, RelaPosEmbeddingsGenerator, RelaPosMatrixGenerator, \
     SaturateCast, CreateAttentionMaskFromInputMask
+from .bert_for_finetune import BertFinetuneLayer, BertCLS
 
 __all__ = [
     "BertNetworkWithLoss", "BertPreTraining", "BertPretrainingLoss",
@@ -34,5 +35,5 @@ __all__ = [
     "BertSelfAttention", "BertTransformer", "EmbeddingLookup",
     "EmbeddingPostprocessor", "RelaPosEmbeddingsGenerator",
     "RelaPosMatrixGenerator", "SaturateCast", "CreateAttentionMaskFromInputMask",
-    "BertTrainOneStepWithLossScaleCellForAdam"
+    "BertTrainOneStepWithLossScaleCellForAdam", "BertFinetuneLayer", "BertCLS"
 ]

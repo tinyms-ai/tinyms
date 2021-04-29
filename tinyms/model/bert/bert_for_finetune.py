@@ -16,8 +16,6 @@
 Bert for finetune script.
 '''
 
-from mindspore.ops import functional as F
-from mindspore.ops import composite as C
 import tinyms as ts
 from tinyms import Tensor
 from tinyms import Parameter
@@ -30,13 +28,13 @@ from .finetune_eval_model import BertCLSModel, BertNERModel, BertSquadModel
 
 GRADIENT_CLIP_TYPE = 1
 GRADIENT_CLIP_VALUE = 1.0
-grad_scale = C.MultitypeFuncGraph("grad_scale")
+grad_scale = P.MultitypeFuncGraph("grad_scale")
 reciprocal = P.Reciprocal()
 @grad_scale.register("Tensor", "Tensor")
 def tensor_grad_scale(scale, grad):
     return grad * reciprocal(scale)
 
-_grad_overflow = C.MultitypeFuncGraph("_grad_overflow")
+_grad_overflow = P.MultitypeFuncGraph("_grad_overflow")
 grad_overflow = P.FloatStatus()
 @_grad_overflow.register("Tensor")
 def _tensor_grad_overflow(grad):
@@ -46,6 +44,7 @@ class CrossEntropyCalculation(layers.Layer):
     """
     Cross Entropy loss
     """
+
     def __init__(self, is_training=True):
         super(CrossEntropyCalculation, self).__init__()
         self.onehot = P.OneHot()
@@ -75,6 +74,7 @@ class BertFinetuneLayer(layers.Layer):
     """
     Especifically defined for finetuning where only four inputs tensor are needed.
     """
+
     def __init__(self, network, optimizer, scale_update_layer=None):
 
         super(BertFinetuneLayer, self).__init__(auto_prefix=False)
@@ -82,7 +82,7 @@ class BertFinetuneLayer(layers.Layer):
         self.network.set_grad()
         self.weights = optimizer.parameters
         self.optimizer = optimizer
-        self.grad = C.GradOperation(get_by_list=True,
+        self.grad = P.GradOperation(get_by_list=True,
                                     sens_param=True)
         self.allreduce = P.AllReduce()
         self.grad_reducer = None
@@ -101,7 +101,7 @@ class BertFinetuneLayer(layers.Layer):
         self.depend_parameter_use = P.ControlDepend(depend_mode=1)
         self.base = Tensor(1, ts.float32)
         self.less_equal = P.LessEqual()
-        self.hyper_map = C.HyperMap()
+        self.hyper_map = P.HyperMap()
         self.loss_scale = None
         self.loss_scaling_manager = scale_update_layer
         if scale_update_layer:
@@ -130,7 +130,7 @@ class BertFinetuneLayer(layers.Layer):
         if not self.gpu_target:
             init = self.alloc_status()
             clear_before_grad = self.clear_before_grad(init)
-            F.control_depend(loss, init)
+            P.control_depend(loss, init)
             self.depend_parameter_use(clear_before_grad, scaling_sens)
         grads = self.grad(self.network, weights)(input_ids,
                                                  input_mask,
@@ -138,15 +138,15 @@ class BertFinetuneLayer(layers.Layer):
                                                  label_ids,
                                                  self.cast(scaling_sens,
                                                            ts.float32))
-        grads = self.hyper_map(F.partial(grad_scale, scaling_sens), grads)
-        grads = self.hyper_map(F.partial(clip_grad, GRADIENT_CLIP_TYPE, GRADIENT_CLIP_VALUE), grads)
+        grads = self.hyper_map(P.partial(grad_scale, scaling_sens), grads)
+        grads = self.hyper_map(P.partial(clip_grad, GRADIENT_CLIP_TYPE, GRADIENT_CLIP_VALUE), grads)
         if not self.gpu_target:
             flag = self.get_status(init)
             flag_sum = self.reduce_sum(init, (0,))
-            F.control_depend(grads, flag)
-            F.control_depend(flag, flag_sum)
+            P.control_depend(grads, flag)
+            P.control_depend(flag, flag_sum)
         else:
-            flag_sum = self.hyper_map(F.partial(_grad_overflow), grads)
+            flag_sum = self.hyper_map(P.partial(_grad_overflow), grads)
             flag_sum = self.addn(flag_sum)
             flag_sum = self.reshape(flag_sum, (()))
 
@@ -161,17 +161,19 @@ class BertFinetuneLayer(layers.Layer):
         ret = (loss, cond)
         return P.Depend()(ret, succ)
 
+
 class BertSquadLayer(layers.Layer):
     """
     specifically defined for finetuning where only four inputs tensor are needed.
     """
+
     def __init__(self, network, optimizer, scale_update_layer=None):
         super(BertSquadLayer, self).__init__(auto_prefix=False)
         self.network = network
         self.network.set_grad()
         self.weights = optimizer.parameters
         self.optimizer = optimizer
-        self.grad = C.GradOperation(get_by_list=True, sens_param=True)
+        self.grad = P.GradOperation(get_by_list=True, sens_param=True)
         self.allreduce = P.AllReduce()
         self.grad_reducer = None
         self.cast = P.Cast()
@@ -182,7 +184,7 @@ class BertSquadLayer(layers.Layer):
         self.depend_parameter_use = P.ControlDepend(depend_mode=1)
         self.base = Tensor(1, ts.float32)
         self.less_equal = P.LessEqual()
-        self.hyper_map = C.HyperMap()
+        self.hyper_map = P.HyperMap()
         self.loss_scale = None
         self.loss_scaling_manager = scale_update_layer
         if scale_update_layer:
@@ -221,15 +223,15 @@ class BertSquadLayer(layers.Layer):
                                                  self.cast(scaling_sens,
                                                            ts.float32))
         clear_before_grad = self.clear_before_grad(init)
-        F.control_depend(loss, init)
+        P.control_depend(loss, init)
         self.depend_parameter_use(clear_before_grad, scaling_sens)
-        grads = self.hyper_map(F.partial(grad_scale, scaling_sens), grads)
-        grads = self.hyper_map(F.partial(clip_grad, GRADIENT_CLIP_TYPE, GRADIENT_CLIP_VALUE), grads)
+        grads = self.hyper_map(P.partial(grad_scale, scaling_sens), grads)
+        grads = self.hyper_map(P.partial(clip_grad, GRADIENT_CLIP_TYPE, GRADIENT_CLIP_VALUE), grads)
         flag = self.get_status(init)
         flag_sum = self.reduce_sum(init, (0,))
         cond = self.less_equal(self.base, flag_sum)
-        F.control_depend(grads, flag)
-        F.control_depend(flag, flag_sum)
+        P.control_depend(grads, flag)
+        P.control_depend(flag, flag_sum)
         overflow = cond
         if sens is None:
             overflow = self.loss_scaling_manager(self.loss_scale, cond)
@@ -238,12 +240,14 @@ class BertSquadLayer(layers.Layer):
         else:
             succ = self.optimizer(grads)
         ret = (loss, cond)
-        return F.depend(ret, succ)
+        return P.depend(ret, succ)
+
 
 class BertCLS(layers.Layer):
     """
     Train interface for classification finetuning task.
     """
+
     def __init__(self, config, is_training, num_labels=2, dropout_prob=0.0, use_one_hot_embeddings=False,
                  assessment_method=""):
         super(BertCLS, self).__init__()
@@ -269,6 +273,7 @@ class BertNER(layers.Layer):
     """
     Train interface for sequence labeling finetuning task.
     """
+
     def __init__(self, config, batch_size, is_training, num_labels=11, use_crf=False,
                  tag_to_index=None, dropout_prob=0.0, use_one_hot_embeddings=False):
         super(BertNER, self).__init__()
@@ -290,10 +295,12 @@ class BertNER(layers.Layer):
             loss = self.loss(logits, label_ids, self.num_labels)
         return loss
 
+
 class BertSquad(layers.Layer):
     '''
     Train interface for SQuAD finetuning task.
     '''
+
     def __init__(self, config, is_training, num_labels=2, dropout_prob=0.0, use_one_hot_embeddings=False):
         super(BertSquad, self).__init__()
         self.bert = BertSquadModel(config, is_training, num_labels, dropout_prob, use_one_hot_embeddings)

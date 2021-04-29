@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
 """
 config settings, will be used in finetune.py
 """
 
 from easydict import EasyDict as edict
-import mindspore.common.dtype as mstype
-from .bert_model import BertConfig
+
+import tinyms as ts
+
+from .config import BertConfig
 
 optimizer_cfg = edict({
     'batch_size': 16,
@@ -59,6 +60,6 @@ bert_net_cfg = BertConfig(
     type_vocab_size=2,
     initializer_range=0.02,
     use_relative_positions=False,
-    dtype=mstype.float32,
-    compute_type=mstype.float16,
+    dtype=ts.float32,
+    compute_type=ts.float16,
 )

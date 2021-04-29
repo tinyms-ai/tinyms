@@ -19,20 +19,20 @@ Bert finetune and evaluation script.
 import os
 import argparse
 import logging
-from bert_for_finetune import BertFinetuneCell, BertCLS
+
 from finetune_eval_config import optimizer_cfg, bert_net_cfg
-from src.assessment_method import Accuracy, F1, MCC, Spearman_Correlation
-from src.utils import make_directory, LoadNewestCkpt, BertLearningRate
+from assessment_method import Accuracy, F1, MCC, Spearman_Correlation
 
 import tinyms as ts
 from tinyms import context
 from tinyms import vision
 from tinyms.model import Model
+from tinyms import primitives as P
 from tinyms.layers import DynamicLossScaleUpdateCell
 from tinyms.data import TFRecordDataset
+from tinyms.model.bert import BertFinetuneLayer, BertCLS
 from tinyms.optimizers import AdamWeightDecay, Lamb, Momentum
-from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack
-from mindspore.train.serialization import load_checkpoint, load_param_into_net
+from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack, LearningRateScheduler
 
 
 logging.basicConfig(
@@ -42,9 +42,94 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 _cur_dir = os.getcwd()
 
+
+def LoadNewestCkpt(load_finetune_checkpoint_dir, steps_per_epoch, epoch_num, prefix):
+    """
+    Find the ckpt finetune generated and load it into eval network.
+    """
+
+    files = os.listdir(load_finetune_checkpoint_dir)
+    pre_len = len(prefix)
+    max_num = 0
+    for filename in files:
+        name_ext = os.path.splitext(filename)
+        if name_ext[-1] != ".ckpt":
+            continue
+        if filename.find(prefix) == 0 and not filename[pre_len].isalpha():
+            index = filename[pre_len:].find("-")
+            if index == 0 and max_num == 0:
+                load_finetune_checkpoint_path = os.path.join(load_finetune_checkpoint_dir, filename)
+            elif index not in (0, -1):
+                name_split = name_ext[-2].split('_')
+                if (steps_per_epoch != int(name_split[len(name_split)-1])) \
+                        or (epoch_num != int(filename[pre_len + index + 1:pre_len + index + 2])):
+                    continue
+                num = filename[pre_len + 1:pre_len + index]
+                if int(num) > max_num:
+                    max_num = int(num)
+                    load_finetune_checkpoint_path = os.path.join(load_finetune_checkpoint_dir, filename)
+    return load_finetune_checkpoint_path
+
+
+class BertLearningRate(LearningRateSchedule):
+    """
+    Warmup-decay learning rate for Bert network.
+    """
+
+    def __init__(self, learning_rate, end_learning_rate, warmup_steps, decay_steps, power):
+        super(BertLearningRate, self).__init__()
+        self.warmup_flag = False
+        if warmup_steps > 0:
+            self.warmup_flag = True
+            self.warmup_lr = WarmUpLR(learning_rate, warmup_steps)
+        self.decay_lr = PolynomialDecayLR(learning_rate, end_learning_rate, decay_steps, power)
+        self.warmup_steps = ts.array([warmup_steps], dtype=ts.float32)
+
+        self.greater = P.Greater()
+        self.one = ts.array([1.0], dtype=ts.float32)
+        self.cast = P.Cast()
+
+    def construct(self, global_step):
+        decay_lr = self.decay_lr(global_step)
+        if self.warmup_flag:
+            is_warmup = self.cast(self.greater(self.warmup_steps, global_step), mstype.float32)
+            warmup_lr = self.warmup_lr(global_step)
+            lr = (self.one - is_warmup) * decay_lr + is_warmup * warmup_lr
+        else:
+            lr = decay_lr
+        return lr
+
+
+def make_directory(path: str):
+    """Make directory."""
+
+    if path is None or not isinstance(path, str) or path.strip() == "":
+        logger.error("The path(%r) is invalid type.", path)
+        raise TypeError("Input path is invaild type")
+
+    # convert the relative paths
+    path = os.path.realpath(path)
+    logger.debug("The abs path is %r", path)
+
+    # check the path is exist and write permissions?
+    if os.path.exists(path):
+        real_path = path
+    else:
+        # All exceptions need to be caught because create directory maybe have some limit(permissions)
+        logger.debug("The directory(%s) doesn't exist, will create it", path)
+        try:
+            os.makedirs(path, exist_ok=True)
+            real_path = path
+        except PermissionError as e:
+            logger.error("No write permission on the directory(%r), error = %r", path, e)
+            raise TypeError("No write permission on the directory.")
+    return real_path
+
+
 def create_classification_dataset(batch_size=1, repeat_count=1, assessment_method="accuracy",
                                   data_file_path=None, schema_file_path=None, do_shuffle=True):
     """create finetune or evaluation dataset"""
+
     type_cast_op = vision.TypeCast(ts.int32)
     ds = TFRecordDataset([data_file_path], schema_file_path if schema_file_path != "" else None,
                             columns_list=["input_ids", "input_mask", "segment_ids", "label_ids"], shuffle=do_shuffle)
@@ -61,8 +146,10 @@ def create_classification_dataset(batch_size=1, repeat_count=1, assessment_metho
     ds = ds.batch(batch_size, drop_remainder=True)
     return ds
 
+
 def do_train(dataset=None, network=None, load_checkpoint_path="", save_checkpoint_path="", epoch_num=1):
     """ do train """
+
     if load_checkpoint_path == "":
         raise ValueError("Pretrain model missed, finetune task must load pretrain model!")
     steps_per_epoch = dataset.get_dataset_size()
@@ -99,15 +186,17 @@ def do_train(dataset=None, network=None, load_checkpoint_path="", save_checkpoin
                                  directory=None if save_checkpoint_path == "" else save_checkpoint_path,
                                  config=ckpt_config)
 
-    update_cell = DynamicLossScaleUpdateCell(loss_scale_value=2**32, scale_factor=2, scale_window=1000)
-    netwithgrads = BertFinetuneCell(network, optimizer=optimizer, scale_update_cell=update_cell)
+    update_layer = DynamicLossScaleUpdateCell(loss_scale_value=2**32, scale_factor=2, scale_window=1000)
+    netwithgrads = BertFinetuneLayer(network, optimizer=optimizer, scale_update_layer=update_layer)
     model = Model(netwithgrads)
     model.load_checkpoint(load_checkpoint_path)
     callbacks = [TimeMonitor(dataset.get_dataset_size()), BertLossCallBack(dataset.get_dataset_size()), ckpoint_cb]
     model.train(epoch_num, dataset, callbacks=callbacks)
 
+
 def eval_result_print(assessment_method="accuracy", callback=None):
     """ print eval result """
+
     if assessment_method == "accuracy":
         print("acc_num {} , total_num {}, accuracy {:.6f}".format(callback.acc_num, callback.total_num,
                                                                   callback.acc_num / callback.total_num))
@@ -122,15 +211,16 @@ def eval_result_print(assessment_method="accuracy", callback=None):
     else:
         raise ValueError("Assessment method not supported, support: [accuracy, f1, mcc, spearman_correlation]")
 
+
 def do_eval(dataset=None, network=None, num_class=2, assessment_method="accuracy", load_checkpoint_path=""):
     """ do eval """
+
     if load_checkpoint_path == "":
         raise ValueError("Finetune model missed, evaluation task must load finetune model!")
     net_for_pretraining = network(bert_net_cfg, False, num_class)
     net_for_pretraining.set_train(False)
-    param_dict = load_checkpoint(load_checkpoint_path)
-    load_param_into_net(net_for_pretraining, param_dict)
     model = Model(net_for_pretraining)
+    model.load_checkpoint((load_checkpoint_path))
 
     if assessment_method == "accuracy":
         callback = Accuracy()
@@ -154,6 +244,7 @@ def do_eval(dataset=None, network=None, num_class=2, assessment_method="accuracy
     print("==============================================================")
     eval_result_print(assessment_method, callback)
     print("==============================================================")
+
 
 def run_classifier():
     """run classifier task"""
