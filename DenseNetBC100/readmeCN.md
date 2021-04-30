@@ -1,0 +1,2 @@
+将cifar10数据集放置在train.py同级目录
+然后直接python train.py即可
