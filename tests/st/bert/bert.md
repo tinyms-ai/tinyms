@@ -73,6 +73,28 @@ data_dir只需要给定文件夹就可以，他会遍历目录下所有的tfreco
 单卡telsaV100，因此建议使用--train_steps 10
 比如只训练10步，用来测试模型能否正常运行即可
 
+### for finetune
+#### train
+```
+python bert_for_classfier.py \
+--device_target GPU \
+--do_train \
+--train_data_file_path {train.tf_record path} \
+--device_id 0 \
+--save_finetune_checkpoint_path {save_path} \
+--load_pretrain_checkpoint_path ../../../bert_base.ckpt \
+--num_class 15
+```
+#### evaluate
+```
+python bert_for_classfier.py \
+--device_target GPU \
+--do_eval \
+--eval_data_file_path {dev.tf_record path} \
+--device_id 0 \
+--load_finetune_checkpoint_path {finetune path ckpt} \
+--num_class 15
+```
 
-
+![avatar](bert_finetune结果.jpg)
 
