@@ -263,9 +263,9 @@ def run_classifier():
     parser.add_argument("--device_id", type=int, default=0, help="Device id, default is 0.")
     parser.add_argument("--epoch_num", type=int, default="1", help="Epoch number, default is 1.")
     parser.add_argument("--num_class", type=int, default="2", help="The number of class, default is 2.")
-    parser.add_argument("--train_data_shuffle", type=str, default="true", choices=["true", "false"],
+    parser.add_argument("--train_data_shuffle", type=bool, default=True,
                         help="Enable train data shuffle, default is true")
-    parser.add_argument("--eval_data_shuffle", type=str, default="false", choices=["true", "false"],
+    parser.add_argument("--eval_data_shuffle", type=bool, default=False,
                         help="Enable eval data shuffle, default is false")
     parser.add_argument("--save_finetune_checkpoint_path", type=str, default="", help="Save checkpoint path")
     parser.add_argument("--load_pretrain_checkpoint_path", type=str, default="", help="Load checkpoint file path")
@@ -308,7 +308,7 @@ def run_classifier():
                                            assessment_method=assessment_method,
                                            data_file_path=args_opt.train_data_file_path,
                                            schema_file_path=args_opt.schema_file_path,
-                                           do_shuffle=(args_opt.train_data_shuffle.lower() == "true"))
+                                           do_shuffle=args_opt.train_data_shuffle)
         do_train(ds, netwithloss, load_pretrain_checkpoint_path, save_finetune_checkpoint_path, epoch_num)
 
         if args_opt.do_eval:
@@ -324,7 +324,7 @@ def run_classifier():
                                            assessment_method=assessment_method,
                                            data_file_path=args_opt.eval_data_file_path,
                                            schema_file_path=args_opt.schema_file_path,
-                                           do_shuffle=(args_opt.eval_data_shuffle.lower() == "true"))
+                                           do_shuffle=args_opt.eval_data_shuffle)
         do_eval(ds, BertCLS, args_opt.num_class, assessment_method, load_finetune_checkpoint_path)
 
 if __name__ == "__main__":
