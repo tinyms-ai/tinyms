@@ -19,6 +19,7 @@ Bert evaluation assessment method script.
 import math
 import numpy as np
 
+
 def postprocess(backpointers, best_tag_id):
     '''
     Do postprocess

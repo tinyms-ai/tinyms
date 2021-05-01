@@ -32,7 +32,8 @@ from tinyms.layers import DynamicLossScaleUpdateCell
 from tinyms.data import TFRecordDataset
 from tinyms.model.bert import BertFinetuneLayer, BertCLS
 from tinyms.optimizers import AdamWeightDecay, Lamb, Momentum
-from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack, LearningRateScheduler
+from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, TimeMonitor, BertLossCallBack
+from mindspore.nn.learning_rate_schedule import LearningRateSchedule, PolynomialDecayLR, WarmUpLR
 
 
 logging.basicConfig(
