@@ -130,7 +130,7 @@ class MCC(object):
         return mcc
 
 
-class Spearman_Correlation(object):
+class SpearmanCorrelation(object):
     '''
     Calculate Spearman Correlation Coefficient
     '''

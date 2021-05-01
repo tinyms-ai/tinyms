@@ -21,7 +21,7 @@ import argparse
 import logging
 
 from finetune_eval_config import optimizer_cfg, bert_net_cfg
-from assessment_method import Accuracy, F1, MCC, Spearman_Correlation
+from assessment_method import Accuracy, F1, MCC, SpearmanCorrelation
 
 import tinyms as ts
 from tinyms import context
@@ -133,7 +133,7 @@ def create_classification_dataset(batch_size=1, repeat_count=1, assessment_metho
     type_cast_op = vision.TypeCast(ts.int32)
     ds = TFRecordDataset([data_file_path], schema_file_path if schema_file_path != "" else None,
                             columns_list=["input_ids", "input_mask", "segment_ids", "label_ids"], shuffle=do_shuffle)
-    if assessment_method == "Spearman_correlation":
+    if assessment_method == "Spearmancorrelation":
         type_cast_op_float = vision.TypeCast(ts.float32)
         ds = ds.map(operations=type_cast_op_float, input_columns="label_ids")
     else:
@@ -229,7 +229,7 @@ def do_eval(dataset=None, network=None, num_class=2, assessment_method="accuracy
     elif assessment_method == "mcc":
         callback = MCC()
     elif assessment_method == "spearman_correlation":
-        callback = Spearman_Correlation()
+        callback = SpearmanCorrelation()
     else:
         raise ValueError("Assessment method not supported, support: [accuracy, f1, mcc, spearman_correlation]")
 
