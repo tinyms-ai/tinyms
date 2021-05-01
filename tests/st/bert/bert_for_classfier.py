@@ -294,11 +294,14 @@ def run_classifier():
         context.set_context(mode=context.GRAPH_MODE, device_target="Ascend", device_id=args_opt.device_id)
     elif args_opt.device_target == "GPU":
         context.set_context(mode=context.GRAPH_MODE, device_target="GPU", device_id=args_opt.device_id)
+        context.set_context(enable_graph_kernel=True)
         if bert_net_cfg.compute_type != ts.float32:
             logger.warning('GPU only support fp32 temporarily, run with fp32.')
             bert_net_cfg.compute_type = ts.float32
     else:
         raise Exception("Target error, GPU or Ascend is supported.")
+
+
 
     netwithloss = BertCLS(bert_net_cfg, True, num_labels=args_opt.num_class, dropout_prob=0.1,
                           assessment_method=assessment_method)
