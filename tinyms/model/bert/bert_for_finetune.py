@@ -48,8 +48,8 @@ class CrossEntropyCalculation(layers.Layer):
     def __init__(self, is_training=True):
         super(CrossEntropyCalculation, self).__init__()
         self.onehot = P.OneHot()
-        self.on_value = Tensor(1.0, mstype.float32)
-        self.off_value = Tensor(0.0, mstype.float32)
+        self.on_value = Tensor(1.0, ts.float32)
+        self.off_value = Tensor(0.0, ts.float32)
         self.reduce_sum = P.ReduceSum()
         self.reduce_mean = P.ReduceMean()
         self.reshape = P.Reshape()
@@ -64,7 +64,7 @@ class CrossEntropyCalculation(layers.Layer):
             one_hot_labels = self.onehot(label_ids, num_labels, self.on_value, self.off_value)
             per_example_loss = self.neg(self.reduce_sum(one_hot_labels * logits, self.last_idx))
             loss = self.reduce_mean(per_example_loss, self.last_idx)
-            return_value = self.cast(loss, mstype.float32)
+            return_value = self.cast(loss, ts.float32)
         else:
             return_value = logits * 1.0
         return return_value
@@ -98,7 +98,7 @@ class BertFinetuneLayer(layers.Layer):
             self.get_status = P.NPUGetFloatStatus()
             self.clear_before_grad = P.NPUClearFloatStatus()
         self.reduce_sum = P.ReduceSum(keep_dims=False)
-        self.depend_parameter_use = P.ControlDepend(depend_mode=1)
+        self.depend_parameter_use = P.Depend()
         self.base = Tensor(1, ts.float32)
         self.less_equal = P.LessEqual()
         self.hyper_map = P.HyperMap()
@@ -130,7 +130,7 @@ class BertFinetuneLayer(layers.Layer):
         if not self.gpu_target:
             init = self.alloc_status()
             clear_before_grad = self.clear_before_grad(init)
-            P.control_depend(loss, init)
+            loss = P.depend(loss, init)
             self.depend_parameter_use(clear_before_grad, scaling_sens)
         grads = self.grad(self.network, weights)(input_ids,
                                                  input_mask,
@@ -143,8 +143,8 @@ class BertFinetuneLayer(layers.Layer):
         if not self.gpu_target:
             flag = self.get_status(init)
             flag_sum = self.reduce_sum(init, (0,))
-            P.control_depend(grads, flag)
-            P.control_depend(flag, flag_sum)
+            grads = P.depend(grads, flag)
+            flag_sum = P.depend(flag, flag_sum)
         else:
             flag_sum = self.hyper_map(P.partial(_grad_overflow), grads)
             flag_sum = self.addn(flag_sum)
@@ -159,7 +159,7 @@ class BertFinetuneLayer(layers.Layer):
         else:
             succ = self.optimizer(grads)
         ret = (loss, cond)
-        return P.Depend()(ret, succ)
+        return P.depend(ret, succ)
 
 
 class BertSquadLayer(layers.Layer):
@@ -181,7 +181,7 @@ class BertSquadLayer(layers.Layer):
         self.get_status = P.NPUGetFloatStatus()
         self.clear_before_grad = P.NPUClearFloatStatus()
         self.reduce_sum = P.ReduceSum(keep_dims=False)
-        self.depend_parameter_use = P.ControlDepend(depend_mode=1)
+        self.depend_parameter_use = P.Depend()
         self.base = Tensor(1, ts.float32)
         self.less_equal = P.LessEqual()
         self.hyper_map = P.HyperMap()
@@ -223,15 +223,15 @@ class BertSquadLayer(layers.Layer):
                                                  self.cast(scaling_sens,
                                                            ts.float32))
         clear_before_grad = self.clear_before_grad(init)
-        P.control_depend(loss, init)
-        self.depend_parameter_use(clear_before_grad, scaling_sens)
+        loss = P.depend(loss, init)
+        clear_before_grad = self.depend_parameter_use(clear_before_grad, scaling_sens)
         grads = self.hyper_map(P.partial(grad_scale, scaling_sens), grads)
         grads = self.hyper_map(P.partial(clip_grad, GRADIENT_CLIP_TYPE, GRADIENT_CLIP_VALUE), grads)
         flag = self.get_status(init)
         flag_sum = self.reduce_sum(init, (0,))
         cond = self.less_equal(self.base, flag_sum)
-        P.control_depend(grads, flag)
-        P.control_depend(flag, flag_sum)
+        grads = P.depend(grads, flag)
+        flag = P.depend(flag, flag_sum)
         overflow = cond
         if sens is None:
             overflow = self.loss_scaling_manager(self.loss_scale, cond)

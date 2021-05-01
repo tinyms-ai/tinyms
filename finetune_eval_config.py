@@ -20,7 +20,7 @@ from easydict import EasyDict as edict
 
 import tinyms as ts
 
-from .config import BertConfig
+from config import BertConfig
 
 optimizer_cfg = edict({
     'batch_size': 16,

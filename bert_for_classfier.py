@@ -93,7 +93,7 @@ class BertLearningRate(LearningRateSchedule):
     def construct(self, global_step):
         decay_lr = self.decay_lr(global_step)
         if self.warmup_flag:
-            is_warmup = self.cast(self.greater(self.warmup_steps, global_step), mstype.float32)
+            is_warmup = self.cast(self.greater(self.warmup_steps, global_step), ts.float32)
             warmup_lr = self.warmup_lr(global_step)
             lr = (self.one - is_warmup) * decay_lr + is_warmup * warmup_lr
         else:
@@ -256,9 +256,9 @@ def run_classifier():
                         choices=["Mcc", "Spearman_correlation", "Accuracy", "F1"],
                         help="assessment_method including [Mcc, Spearman_correlation, Accuracy, F1],\
                              default is Accuracy")
-    parser.add_argument("--do_train", type=str, default="false", choices=["true", "false"],
+    parser.add_argument("--do_train", action="store_true",
                         help="Enable train, default is false")
-    parser.add_argument("--do_eval", type=str, default="false", choices=["true", "false"],
+    parser.add_argument("--do_eval", action="store_true",
                         help="Enable eval, default is false")
     parser.add_argument("--device_id", type=int, default=0, help="Device id, default is 0.")
     parser.add_argument("--epoch_num", type=int, default="1", help="Epoch number, default is 1.")
@@ -283,18 +283,17 @@ def run_classifier():
     save_finetune_checkpoint_path = args_opt.save_finetune_checkpoint_path
     load_finetune_checkpoint_path = args_opt.load_finetune_checkpoint_path
 
-    if args_opt.do_train.lower() == "false" and args_opt.do_eval.lower() == "false":
+    if args_opt.do_train and args_opt.do_eval:
         raise ValueError("At least one of 'do_train' or 'do_eval' must be true")
-    if args_opt.do_train.lower() == "true" and args_opt.train_data_file_path == "":
+    if args_opt.do_train and args_opt.train_data_file_path == "":
         raise ValueError("'train_data_file_path' must be set when do finetune task")
-    if args_opt.do_eval.lower() == "true" and args_opt.eval_data_file_path == "":
+    if args_opt.do_eval and args_opt.eval_data_file_path == "":
         raise ValueError("'eval_data_file_path' must be set when do evaluation task")
 
-    target = args_opt.device_target
-    if target == "Ascend":
+    if args_opt.device_target == "Ascend":
         context.set_context(mode=context.GRAPH_MODE, device_target="Ascend", device_id=args_opt.device_id)
-    elif target == "GPU":
-        context.set_context(mode=context.GRAPH_MODE, device_target="GPU")
+    elif args_opt.device_target == "GPU":
+        context.set_context(mode=context.GRAPH_MODE, device_target="GPU", device_id=args_opt.device_id)
         if bert_net_cfg.compute_type != ts.float32:
             logger.warning('GPU only support fp32 temporarily, run with fp32.')
             bert_net_cfg.compute_type = ts.float32
@@ -304,7 +303,7 @@ def run_classifier():
     netwithloss = BertCLS(bert_net_cfg, True, num_labels=args_opt.num_class, dropout_prob=0.1,
                           assessment_method=assessment_method)
 
-    if args_opt.do_train.lower() == "true":
+    if args_opt.do_train:
         ds = create_classification_dataset(batch_size=optimizer_cfg.batch_size, repeat_count=1,
                                            assessment_method=assessment_method,
                                            data_file_path=args_opt.train_data_file_path,
@@ -312,7 +311,7 @@ def run_classifier():
                                            do_shuffle=(args_opt.train_data_shuffle.lower() == "true"))
         do_train(ds, netwithloss, load_pretrain_checkpoint_path, save_finetune_checkpoint_path, epoch_num)
 
-        if args_opt.do_eval.lower() == "true":
+        if args_opt.do_eval:
             if save_finetune_checkpoint_path == "":
                 load_finetune_checkpoint_dir = _cur_dir
             else:
@@ -320,7 +319,7 @@ def run_classifier():
             load_finetune_checkpoint_path = LoadNewestCkpt(load_finetune_checkpoint_dir,
                                                            ds.get_dataset_size(), epoch_num, "classifier")
 
-    if args_opt.do_eval.lower() == "true":
+    if args_opt.do_eval:
         ds = create_classification_dataset(batch_size=optimizer_cfg.batch_size, repeat_count=1,
                                            assessment_method=assessment_method,
                                            data_file_path=args_opt.eval_data_file_path,
