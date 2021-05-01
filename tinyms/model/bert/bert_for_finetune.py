@@ -144,7 +144,7 @@ class BertFinetuneLayer(layers.Layer):
             flag = self.get_status(init)
             flag_sum = self.reduce_sum(init, (0,))
             grads = P.depend(grads, flag)
-            flag_sum = P.depend(flag, flag_sum)
+            flag_sum = P.depend(flag_sum, flag)
         else:
             flag_sum = self.hyper_map(P.partial(_grad_overflow), grads)
             flag_sum = self.addn(flag_sum)
@@ -224,14 +224,14 @@ class BertSquadLayer(layers.Layer):
                                                            ts.float32))
         clear_before_grad = self.clear_before_grad(init)
         loss = P.depend(loss, init)
-        clear_before_grad = self.depend_parameter_use(clear_before_grad, scaling_sens)
+        self.depend_parameter_use(clear_before_grad, scaling_sens)
         grads = self.hyper_map(P.partial(grad_scale, scaling_sens), grads)
         grads = self.hyper_map(P.partial(clip_grad, GRADIENT_CLIP_TYPE, GRADIENT_CLIP_VALUE), grads)
         flag = self.get_status(init)
         flag_sum = self.reduce_sum(init, (0,))
         cond = self.less_equal(self.base, flag_sum)
-        grads = P.depend(grads, flag)
-        flag = P.depend(flag, flag_sum)
+        P.depend(grads, flag)
+        P.depend(flag, flag_sum)
         overflow = cond
         if sens is None:
             overflow = self.loss_scaling_manager(self.loss_scale, cond)

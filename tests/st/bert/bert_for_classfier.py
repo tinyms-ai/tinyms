@@ -142,9 +142,9 @@ def create_classification_dataset(batch_size=1, repeat_count=1, assessment_metho
     ds = ds.map(operations=type_cast_op, input_columns="segment_ids")
     ds = ds.map(operations=type_cast_op, input_columns="input_mask")
     ds = ds.map(operations=type_cast_op, input_columns="input_ids")
-    ds = ds.repeat(repeat_count)
     # apply batch operations
     ds = ds.batch(batch_size, drop_remainder=True)
+    ds = ds.repeat(repeat_count)
     return ds
 
 
