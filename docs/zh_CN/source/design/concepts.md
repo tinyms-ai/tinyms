@@ -45,6 +45,7 @@ TinyMS的架构目标：
 | model | Model高阶API以及预置网络 | `from tinyms.model import Model, lenet5` |
 | serving | 模型部署模块 | `from tinyms.serving import predict` |
 | vision | CV领域相关的数据处理 | `from tinyms.vision import mnist_transform, Resize` |
+| text | NLP领域相关的数据处理 | `from tinyms.text import Lookup` |
 | callbacks | 模型训练过程的回调处理 | `from tinyms.callbacks import ModelCheckpoint` |
 | common | 基础组件，包括Tensor、numpy风格的函数 | `from tinyms import Tensor, array` |
 | context | 全局上下文 | `from tinyms import context` |
@@ -79,7 +80,7 @@ from tinyms.data import MnistDataset
 mnist_ds = MnistDataset(mnist_path, shuffle=True)
 ```
 
-### 数据处理（*vision*）
+### 数据处理（*vision*和*text*）
 
 通常在构建AI模型开发应用时，数据处理是我们面临的第一大挑战：数据量不足、人为标注工作量大、数据格式不规范等问题都又可能导致训练之后的网络精度不达标，因此绝大多数AI框架都会提供数据处理的相关模块。以MindSpore为例，MindSpore当前提供CV和NLP等常用场景的数据处理功能（相关接口定义可以查阅[`mindspore.dataset.vision`](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.dataset.vision.html)和[`mindspore.dataset.text`](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.dataset.text.html)），用户可以直接调用其中预设的数据处理算子对图片或文本进行处理，然后通过构建数据处理pipeline来对海量数据进行高效并行处理（详见[此处](https://www.mindspore.cn/news/newschildren?id=399)）。
 

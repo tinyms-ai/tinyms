@@ -2,13 +2,15 @@
 
 # TinyMS
 
-[![Pypi](https://img.shields.io/pypi/v/tinyms.svg)](https://pypi.org/project/tinyms)
-[![Python](https://img.shields.io/pypi/pyversions/tinyms.svg)](https://pypi.org/project/tinyms)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tinyms.svg)](https://pypi.org/project/tinyms)
+[![PyPI](https://badge.fury.io/py/tinyms.svg)](https://badge.fury.io/py/tinyms)
 [![Downloads](https://pepy.tech/badge/tinyms)](https://pepy.tech/project/tinyms)
+[![DockerHub](https://img.shields.io/docker/pulls/tinyms/tinyms.svg)](https://hub.docker.com/r/tinyms/tinyms)
 [![Build Status](https://github.com/tinyms-ai/tinyms/actions/workflows/install_and_test.yml/badge.svg?branch=main)](https://github.com/tinyms-ai/tinyms/actions/workflows/install_and_test.yml)
 [![Documentation Status](https://readthedocs.org/projects/tinyms/badge/?versoin=latest)](https://readthedocs.org/projects/tinyms)
 [![Releases](https://img.shields.io/github/release/tinyms-ai/tinyms/all.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/releases)
 [![LICENSE](https://img.shields.io/github/license/tinyms-ai/tinyms.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/mindspore/shared_invite/zt-dgk65rli-3ex4xvS4wHX7UDmsQmfu8w)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 中文 | [View English](./README.md)
@@ -18,6 +20,15 @@ TinyMS是基于[MindSpore AI框架](https://www.mindspore.cn/)开发，面向上
 <img src="docs/pic/tinyms-architecture.png" alt="TinyMS Architecture" width="600"/>
 
 ## 安装
+
+| 版本分发工具 | 版本 | 安装命令 |
+| :---------- | :--- | :------ |
+| PyPI | x.y.z | `pip install tinyms==x.y.z` |
+|  | latest | `pip install git+https://github.com/tinyms-ai/tinyms.git` |
+| Docker | x.y.z | `docker pull tinyms==x.y.z` |
+|  | latest | - |
+
+> **注意：** 表格中的`x.y.z`需替换成具体的版本号。
 
 欢迎查阅[安装文档](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html)实现一键安装TinyMS。
 
@@ -117,14 +128,14 @@ print("The label is:", mnist_transform.postprocess(res))
 如果您想了解TinyMS的Python API接口，请访问[TinyMS API文档](https://tinyms.readthedocs.io/zh_CN/latest/tinyms/tinyms.html)。
 
 ## 教程
+
 TinyMS配套了完善的教程，适合纯小白入手。
 
-| 集数 | 标题                                                         | 主题内容                                                     | 学习文档                                                     | 状态   | 更新时间  |
-| ---- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------ | --------- |
-| EP01 | [最适合小白的深度学习入门课程来了!](https://www.bilibili.com/video/BV1MB4y1P79S) | 老师简介+深度学习科普+课程介绍                               | 无                                                           | 已发布 | 2021.3.30 |
-| EP02 | [计算机是如何识别图像的?](https://www.bilibili.com/video/BV18v41187fX) | 计算机识别图像科普+TinyMS安装（Ubuntu、Win10、Docker安装）   | [TinyMS快速安装](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html) | 已发布 | 2020.3.31 |
-| EP03 | [30min速成Shell脚本命令](https://www.bilibili.com/video/BV1vy4y1b7jh) | shell基本命令、变量与传参、数组、运算符、test命令、使用函数、输入输出重定向、流程控制函数以及常见的文件操作命令 | [Shell脚本30min速成指南](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP03/30min速成Shell脚本.md) | 已发布 | 2020.4.1  |
-
+| 集数 | 标题 | 主题内容 | 学习文档 | 状态 | 更新时间 |
+| ---- | ---- | ------- | -------- | ---- | -------- |
+| EP01 | [最适合小白的深度学习入门课程来了!](https://www.bilibili.com/video/BV1MB4y1P79S) | 老师简介+深度学习科普+课程介绍 | 无 | 已发布 | 2021.3.30 |
+| EP02 | [计算机是如何识别图像的?](https://www.bilibili.com/video/BV18v41187fX) | 计算机识别图像科普+TinyMS安装（Ubuntu、Win10、Docker安装） | [TinyMS快速安装](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html) | 已发布 | 2020.3.31 |
+| EP03 | [30min速成Shell脚本命令](https://www.bilibili.com/video/BV1vy4y1b7jh) | shell基本命令、变量与传参、数组、运算符、test命令、使用函数、输入输出重定向、流程控制函数以及常见的文件操作命令 | [Shell脚本30min速成指南](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP03/30min速成Shell脚本.md) | 已发布 | 2020.4.1 |
 
 ## 社区
 

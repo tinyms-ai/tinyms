@@ -19,7 +19,7 @@ import os
 import setuptools
 
 package_name = 'tinyms'
-version_tag = '0.1.0'
+version_tag = '0.2.0'
 pwd = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -34,18 +34,36 @@ readme = _read_file('README.md')
 def _write_version(file):
     file.write("__version__ = '{}'\n".format(version_tag))
 
-
-required_package = [
-    'easydict >= 1.9',
-    'scipy >= 1.5.3',
-    'mindspore == 1.1.1',
-    'matplotlib >= 3.1.1',
-    'Pillow >= 6.2.0',
-    'requests >= 2.22.0',
-    'flask >= 1.1.1',
+setup_required_package = [
     'wheel >= 0.32.0',
     'setuptools >= 40.8.0',
 ]
+
+
+install_required_package = [
+    'numpy >= 1.17.0',
+    'easydict >= 1.9',
+    'scipy >= 1.5.2',
+    'matplotlib >= 3.1.3',
+    'Pillow >= 6.2.0',
+    'mindspore == 1.2.0',
+    'requests >= 2.22.0',
+    'flask >= 1.1.1',
+    'python-Levenshtein >= 0.10.2',
+    'gensim >= 3.8.1',
+]
+
+test_required_package = [
+    'pycocotools >= 2.0.0',
+]
+
+package_data = {
+    '': [
+        '*.md',
+        'LICENSE',
+        'NOTICE',
+    ]
+}
 
 if __name__ == "__main__":
     with open(os.path.join(pwd, package_name, 'version.py'), 'w') as f:
@@ -66,8 +84,12 @@ if __name__ == "__main__":
         long_description="\n\n".join([readme]),
         long_description_content_type="text/markdown",
         packages=setuptools.find_packages(),
+        package_data=package_data,
+        include_package_data=True,
         python_requires='>=3.7',
-        install_requires=required_package,
+        setup_requires=setup_required_package,
+        install_requires=install_required_package,
+        tests_require=test_required_package,
         classifiers=[
             'Development Status :: 3 - Alpha',
             'Environment :: Console',

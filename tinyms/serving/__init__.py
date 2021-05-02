@@ -12,7 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-""".. TinyMS Serving package."""
+"""
+.. TinyMS Serving package.
+
+This module refers to the process of serving pre-trained models so that
+they can quickly and efficiently process data input by users and obtain
+results. TinyMS provides a complete set of start server (`start_server`),
+check backend (`list_servables`), check start status (`server_started`)
+and shut down the server (`shutdown`) and other functions based on
+`Flask` (https://flask.palletsprojects.com/en/1.1.x/).
+
+Examples:
+    >>> from tinyms.serving import Server, Client
+    >>>
+    >>> server = Server()
+    >>> server.start_server()
+    Server starts at host 127.0.0.1, port 5000
+    >>> client = Client()
+    >>> client.list_servables()
+    >>> client.predict('example.jpg', 'servable_name', dataset_name='mnist')
+"""
 from . import client, server
 from .client import *
 from .server import *

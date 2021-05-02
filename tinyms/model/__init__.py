@@ -15,8 +15,9 @@
 
 from mindspore import Model as _Model
 from mindspore.train.serialization import load_checkpoint as _load_checkpoint, \
-    save_checkpoint as _save_checkpoint, export as _export
+    save_checkpoint as _save_checkpoint, export as _export, load as _load
 
+from ..layers import GraphLayer
 from .lenet5 import lenet5, LeNet
 from .resnet50 import resnet50, ResNet
 from .mobilenetv2 import mobilenetv2, mobilenetv2_infer, MobileNetV2
@@ -24,18 +25,20 @@ from .ssd300 import ssd300_mobilenetv2, ssd300_infer, SSD300
 from .cycle_gan.cycle_gan import cycle_gan, cycle_gan_infer
 from .densenetBC_100 import densenetBC_100, DenseNet
 from .alexnet import alexnet, AlexNet
+from .sentimentnet import sentimentnet, SentimentNet
 
 
 __all__ = [
     'Model',
+    'load',
     'lenet5', 'LeNet',
     'resnet50', 'ResNet',
     'mobilenetv2', 'mobilenetv2_infer', 'MobileNetV2',
     'ssd300_mobilenetv2', 'ssd300_infer', 'SSD300',
     'cycle_gan', 'cycle_gan_infer',
     'densenetBC_100', 'DenseNet',
-    'alexnet', 'AlexNet'
-
+    'alexnet', 'AlexNet',
+    'sentimentnet', 'SentimentNet',
 ]
 
 
@@ -138,13 +141,12 @@ class Model(_Model):
         """
         return _save_checkpoint(self._network, ckpt_file_name)
 
-    def export(self, *inputs, file_name, file_format='MINDIR', **kwargs):
+    def export(self, inputs, file_name, file_format='MINDIR', **kwargs):
         """
         Export the TinyMS prediction model to a file in the specified format.
 
         Args:
             inputs (Tensor): Inputs of the `net`.
-            file_name (str): File name of the model to be exported.
             file_name (str): File name of the model to be exported.
             file_format (str): MindSpore currently supports `AIR`, `ONNX` and `MINDIR` format for exported model.
                 Default: MINDIR.
@@ -165,5 +167,41 @@ class Model(_Model):
                 - mean: Input data mean. Default: 127.5.
                 - std_dev: Input data variance. Default: 127.5.
         """
-        return _export(self._network, inputs, file_name,
+        return _export(self._network, inputs, file_name=file_name,
                        file_format=file_format, **kwargs)
+
+
+def load(file_name):
+    """
+    Load MindIR graph and return the network with parameters.
+
+    The returned object is wrapperred by a `GraphLayer`. However, there are some limitations to
+    the current use of `GraphLayer`, see class :class:`tinyms.layers.GraphLayer` for more details.
+
+    Args:
+        file_name (str): MindIR file name.
+
+    Returns:
+        GraphLayer instance, a compiled graph with parameters.
+
+    Raises:
+        ValueError: MindIR file is incorrect.
+
+    Examples:
+        >>> import tinyms as ts
+        >>> import tinyms.layers as layers
+        >>> from tinyms.model import Model, load
+        >>>
+        >>> net = layers.Conv2d(1, 1, kernel_size=3)
+        >>> model = Model(net)
+        >>> input = ts.ones([1, 1, 3, 3])
+        >>> model.export(input, "net", file_format="MINDIR")
+        ...
+        >>> net = load("net.mindir")
+        >>> print(net(input))
+        [[[[ 0.02548009  0.04010789  0.03120251]
+           [ 0.00268656  0.02353744  0.03807815]
+           [-0.00896441 -0.00303641  0.01502199]]]]
+    """
+    graph = _load(file_name)
+    return GraphLayer(graph)

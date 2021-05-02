@@ -37,6 +37,7 @@ class GlobalAvgPooling(layers.Layer):
     Returns:
         Tensor, output tensor.
     """
+
     def __init__(self):
         super(GlobalAvgPooling, self).__init__()
         self.mean = ReduceMean(keep_dims=False)
@@ -95,6 +96,7 @@ class InvertedResidual(layers.Layer):
     Returns:
         Tensor, output tensor.
     """
+
     def __init__(self, inp, oup, stride, expand_ratio):
         super(InvertedResidual, self).__init__()
         assert stride in [1, 2]
@@ -133,6 +135,7 @@ class MobileNetV2Backbone(layers.Layer):
     Returns:
         Tensor, output tensor.
     """
+
     def __init__(self, width_mult=1., round_nearest=8, input_channel=32, last_channel=1280):
         super(MobileNetV2Backbone, self).__init__()
         # setting of inverted residual blocks
@@ -193,6 +196,7 @@ class MobileNetV2Head(layers.Layer):
     Returns:
         Tensor, output tensor.
     """
+
     def __init__(self, input_channel=1280, class_num=1000, use_activation=False):
         super(MobileNetV2Head, self).__init__()
         # mobilenet head
@@ -232,6 +236,7 @@ class MobileNetV2(layers.Layer):
     Returns:
         Tensor, output tensor.
     """
+
     def __init__(self, class_num=1000, width_mult=1.,
                  round_nearest=8, input_channel=32, last_channel=1280, is_training=True):
         super(MobileNetV2, self).__init__()
@@ -250,26 +255,26 @@ class MobileNetV2(layers.Layer):
 
 def mobilenetv2(class_num=1000, is_training=True):
     """
-    Get MobileNetV2 instance for training.
+    Get MobileNetV2 instance for model training, evaluation and prediction.
 
     Args:
         class_num (int): The number of classes.
         is_training (bool): Whether to do training job, default: True.
 
     Returns:
-        MobileNetV2 instance.
+        model.MobileNetV2, MobileNetV2 instance.
     """
     return MobileNetV2(class_num=class_num, is_training=is_training)
 
 
 def mobilenetv2_infer(class_num=1000):
     """
-    Get MobileNetV2 instance for predict.
+    Get MobileNetV2 instance for model prediction.
 
     Args:
         class_num (int): The number of classes.
 
     Returns:
-        MobileNetV2 instance.
+        model.MobileNetV2, MobileNetV2 instance.
     """
     return MobileNetV2(class_num=class_num, is_training=False)

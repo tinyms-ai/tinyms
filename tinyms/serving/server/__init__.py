@@ -13,6 +13,6 @@
 # limitations under the License.
 # ============================================================================
 """The server part of TinyMS serving"""
-from .server import start_server, shutdown, run_flask
+from .server import Server, run_flask
 
-__all__ = ["start_server", "shutdown", "run_flask"]
+__all__ = ["Server", "run_flask"]
