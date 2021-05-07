@@ -34,7 +34,7 @@ from .utils import generate_image_list, load_img
 
 
 __all__ = ['UnalignedDataset', 'GanImageFolderDataset', 'ImdbDataset',
-           'DistributedSampler']
+           'DistributedSampler', 'BertDataset']
 __all__.extend(engine.__all__)
 
 random.seed(1)
@@ -108,6 +108,46 @@ class GanImageFolderDataset:
 
     def __len__(self):
         return self.size
+
+
+class BertDataset:
+    """
+    This dataset class can load bert from data folder.
+
+    Args:
+        data_dir (str): '{data_dir}/result1.tfrecord', '{data_dir}/result2.tfrecord', etc.
+        num_parallel_workers (int): The number of concurrent workers. Default: None.
+        shuffle (Union[bool, Shuffle level], optional): Perform reshuffling of the data every epoch
+            (default=Shuffle.GLOBAL).
+            If shuffle is False, no shuffling will be performed;
+            If shuffle is True, the behavior is the same as setting shuffle to be Shuffle.GLOBAL
+            Otherwise, there are two levels of shuffling:
+
+            - Shuffle.GLOBAL: Shuffle both the files and samples.
+
+            - Shuffle.FILES: Shuffle files only.
+        schema (Union[str, Schema], optional): Path to the JSON schema file or schema object (default=None).
+            If the schema is not provided, the meta data from the TFData file is considered the schema.
+
+    Examples:
+        >>> from tinyms.data import BertDataset
+        >>>
+        >>> bert_ds = BertDataset('data')
+    """
+
+    def __init__(self, data_dir, schema_dir=None, shuffle=True, num_parallel_workers=None):
+        files = os.listdir(data_dir)
+
+        self.data_files = []
+        for file_name in files:
+            if "tfrecord" in file_name:
+                self.data_files.append(os.path.join(data_dir, file_name))
+        self.data_set = TFRecordDataset(self.data_files, schema_dir if schema_dir != "" else None,
+                                      columns_list=["input_ids", "input_mask", "segment_ids", "next_sentence_labels",
+                                                    "masked_lm_positions", "masked_lm_ids", "masked_lm_weights"],
+                                      shuffle=shuffle,
+                                      shard_equal_rows=True,
+                                      num_parallel_workers=num_parallel_workers)
 
 
 class ImdbDataset:

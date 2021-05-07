@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
 import numpy as np
-import tinyms as ts
 from PIL import Image
+import tinyms as ts
 
 from . import _transform_ops
 from ._transform_ops import *
@@ -30,12 +29,12 @@ __all__ = [
     'cifar10_transform', 'Cifar10Transform',
     'imagefolder_transform', 'ImageFolderTransform',
     'voc_transform', 'VOCTransform',
-    'cyclegan_transform', 'CycleGanDatasetTransform',
+    'cyclegan_transform', 'CycleGanDatasetTransform'
 ]
 __all__.extend(_transform_ops.__all__)
 
 
-class DatasetTransform():
+class DatasetTransform(object):
     r'''
     Base class for all dataset transforms.
     '''
