@@ -82,7 +82,7 @@ class BertConfig:
 
 
 cfg = edict({
-    'batch_size': 32,
+    'batch_size': 128,
     'bert_network': 'base',
     'loss_scale_value': 65536,
     'scale_factor': 2,
