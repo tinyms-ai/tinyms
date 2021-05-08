@@ -186,14 +186,11 @@ def do_train(dataset=None, network=None, load_checkpoint_path="", save_checkpoin
     ckpoint_cb = ModelCheckpoint(prefix="classifier",
                                  directory=None if save_checkpoint_path == "" else save_checkpoint_path,
                                  config=ckpt_config)
-    # from mindspore import load_checkpoint, load_param_into_net
-    # param_dict = load_checkpoint(load_checkpoint_path)
-    # load_param_into_net(network, param_dict)
-
     update_layer = DynamicLossScaleUpdateCell(loss_scale_value=2**32, scale_factor=2, scale_window=1000)
     netwithgrads = BertFinetuneLayer(network, optimizer=optimizer, scale_update_layer=update_layer)
     model = Model(netwithgrads)
     model.load_checkpoint(load_checkpoint_path)
+
     callbacks = [TimeMonitor(dataset.get_dataset_size()), BertLossCallBack(dataset.get_dataset_size()), ckpoint_cb]
     model.train(epoch_num, dataset, callbacks=callbacks)
 
