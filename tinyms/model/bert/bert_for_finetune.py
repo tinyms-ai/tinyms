@@ -22,6 +22,8 @@ from tinyms import Parameter
 from tinyms import context
 from tinyms import layers
 from tinyms import primitives as P
+from tinyms.initializers import  initializer
+
 from .bert_for_pretraining import clip_grad
 from .finetune_eval_model import BertCLSModel, BertNERModel, BertSquadModel
 
@@ -82,6 +84,7 @@ class BertFinetuneLayer(layers.Layer):
         self.network.set_grad()
         self.weights = optimizer.parameters
         self.optimizer = optimizer
+        self.optimizer.global_step = Parameter(initializer(0., [1,]), name='global_step')
         self.grad = P.GradOperation(get_by_list=True,
                                     sens_param=True)
         self.allreduce = P.AllReduce()
