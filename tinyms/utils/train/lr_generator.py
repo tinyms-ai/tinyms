@@ -17,6 +17,8 @@
 import math
 import tinyms as ts
 
+__all__ = ['mobilenetv2_lr', 'cyclegan_lr']
+
 
 def mobilenetv2_lr(global_step, lr_init, lr_end, lr_max, warmup_epochs, total_epochs, steps_per_epoch):
     """
@@ -75,4 +77,3 @@ def cyclegan_lr(max_epoch, n_epoch, dataset_size):
         lrs += [lr_epoch] * dataset_size
     lrs += [lr_epoch] * dataset_size * (max_epoch - n_epochs_decay - n_epoch)
     return ts.array(lrs, dtype=ts.float32)
-

@@ -133,7 +133,7 @@ class GanReporter(logging.Logger):
 
     def epoch_end(self, net):
         """
-        Print log and save cgeckpoints when epoch end.
+        Print log and save checkpoints when epoch end.
 
         Args:
             net (layers.Layer): TrainOneStepG instance.
@@ -285,4 +285,3 @@ def gan_load_ckpt(G_A_ckpt=None, G_B_ckpt=None, D_A_ckpt=None, D_B_ckpt=None,
     if D_B is not None and D_B_ckpt is not None:
         param_DB = load_checkpoint(D_B_ckpt)
         load_param_into_net(D_B, param_DB)
-

@@ -17,15 +17,16 @@ Layer module contains pre-defined building blocks or computing units to construc
 
 The high-level components (Layers) used to construct the neural network.
 """
-from mindspore.nn import wrap
+
 from mindspore.nn import Cell, GraphCell
 from mindspore.nn.layer.container import SequentialCell, CellList
+from mindspore.nn import wrap
+from mindspore.nn.wrap import *
 from mindspore.nn.layer import activation, normalization, conv, lstm, basic, \
     embedding, pooling, math as nn_math, combined
 from mindspore.nn.layer.activation import *
 from mindspore.nn.layer.normalization import *
 from mindspore.nn.layer.conv import *
-from mindspore.nn.wrap import *
 from mindspore.nn.layer.lstm import *
 from mindspore.nn.layer.basic import *
 from mindspore.nn.layer.embedding import *

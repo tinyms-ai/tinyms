@@ -13,11 +13,10 @@
 # limitations under the License.
 # ============================================================================
 
-from tinyms.utils import common_utils, train, predict, eval
+from . import common_utils, train, predict, eval
 
 __all__ = []
 __all__.extend(common_utils.__all__)
 __all__.extend(train.__all__)
 __all__.extend(predict.__all__)
 __all__.extend(eval.__all__)
-

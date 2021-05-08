@@ -13,7 +13,9 @@
 # limitations under the License.
 # ============================================================================
 
-from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossTimeMonitor
+from ...callbacks import ModelCheckpoint, CheckpointConfig, LossTimeMonitor
+
+__all__ = ['mobilenetv2_cb']
 
 
 def mobilenetv2_cb(device_target, lr, is_saving_checkpoint, save_checkpoint_epochs, step_size):
@@ -41,4 +43,3 @@ def mobilenetv2_cb(device_target, lr, is_saving_checkpoint, save_checkpoint_epoc
             ckpt_cb = ModelCheckpoint(prefix="mobilenetv2_cifar10", directory=ckpt_save_dir, config=config_ck)
             cb += [ckpt_cb]
     return cb
-

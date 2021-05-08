@@ -13,11 +13,13 @@
 # limitations under the License.
 # ============================================================================
 
-from tinyms.utils.train.cb_config import mobilenetv2_cb
-from tinyms.utils.train.lr_generator import cyclegan_lr, mobilenetv2_lr
+from . import cb_config, lr_generator, loss_manager
+from .cb_config import *
+from .lr_generator import *
+from .loss_manager import *
 
-__all__ = [
-    'mobilenetv2_cb',
-    'cyclegan_lr',
-    'mobilenetv2_lr',
-]
+
+__all__ = []
+__all__.extend(cb_config.__all__)
+__all__.extend(lr_generator.__all__)
+__all__.extend(loss_manager.__all__)
