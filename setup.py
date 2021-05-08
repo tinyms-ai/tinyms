@@ -58,10 +58,8 @@ test_required_package = [
 ]
 
 package_data = {
-    '': [
-        '*.md',
-        'LICENSE',
-        'NOTICE',
+    'tinyms.hub': [
+        'assets/tinyms/*/*.yaml',
     ]
 }
 
