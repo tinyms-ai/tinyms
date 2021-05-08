@@ -71,7 +71,7 @@ from tinyms.data import download_dataset
 mnist_path = download_dataset('mnist', local_path='./')
 ```
 
-For data loading operations, TinyMS completely inherits MindSpore's native [Data Loading API](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.dataset.html). Users can use the xxxDataset interface to instantiate different data sets very conveniently. Take [MnistDataset](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/dataset/mindspore.dataset.MnistDataset.html#mindspore.dataset.MnistDataset) as an example:
+For data loading operations, TinyMS completely inherits MindSpore's native [Data Loading API](https://www.mindspore.cn/doc/api_python/en/r1.2/mindspore/mindspore.dataset.html). Users can use the xxxDataset interface to instantiate different data sets very conveniently. Take [MnistDataset](https://www.mindspore.cn/doc/api_python/en/r1.2/mindspore/dataset/mindspore.dataset.MnistDataset.html#mindspore.dataset.MnistDataset) as an example:
 
 ```python
 from tinyms.data import MnistDataset
@@ -81,7 +81,7 @@ mnist_ds = MnistDataset(mnist_path, shuffle=True)
 
 ### Data preprocessing (*vision*, *text*)
 
-Usually in the model development workflow, data processing presents a big challenge: insufficient data, heavy manual labeling task, irregular data format and many other issues. Any of them could affect the network accuracy after training. Most frameworks provide data processing modules. Take MindSpore as an example, it currently provides data processing functions for common scenarios such as CV and NLP (for relevant interface definitions, please refer to [`mindspore.dataset.vision`](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.dataset.vision.html) and [`mindspore.dataset.text`](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.dataset.text.html)), the user can directly call the preset data processing operator to process pictures or text, and then construct a data processing pipeline to efficiently parallelize massive data (see [here](https://www.mindspore.cn/news/newschildren?id=399)).
+Usually in the model development workflow, data processing presents a big challenge: insufficient data, heavy manual labeling task, irregular data format and many other issues. Any of them could affect the network accuracy after training. Most frameworks provide data processing modules. Take MindSpore as an example, it currently provides data processing functions for common scenarios such as CV and NLP (for relevant interface definitions, please refer to [`mindspore.dataset.vision`](https://www.mindspore.cn/doc/api_python/en/r1.2/mindspore/mindspore.dataset.vision.html) and [`mindspore.dataset.text`](https://www.mindspore.cn/doc/api_python/en/r1.2/mindspore/mindspore.dataset.text.html)), the user can directly call the preset data processing operator to process pictures or text, and then construct a data processing pipeline to efficiently parallelize massive data (see [here](https://www.mindspore.cn/news/newschildren?id=399)).
 
 TinyMS has made further abstraction and encapsulation on the basis of MindSpore, and directly corresponds to the processing of the dataset itself through the `DatasetTransform` interface, allowing users to utilize a single piece of data or the entire dataset with just one line of code regarding preprocessing operation; take `MnistTransform` as an example:
 
@@ -105,7 +105,7 @@ from tinyms.model import lenet5
 net = lenet5(class_num=10)
 ```
 
-In addition to encapsulating the commonly used network structures, TinyMS also provides a `Model` high-level API interface (based on [MindSpore Model](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.html#mindspore.Model) interface package), by drawing on the design idea of ​​[Keras Model](https://keras.io/api/models/model/#model-class) interface, it not only improves the original API functionalities, but also provides a consistent development experience for Keras users who wants to try TinyMS:
+In addition to encapsulating the commonly used network structures, TinyMS also provides a `Model` high-level API interface (based on [MindSpore Model](https://www.mindspore.cn/doc/api_python/en/r1.2/mindspore/mindspore.html#mindspore.Model) interface package), by drawing on the design idea of ​​[Keras Model](https://keras.io/api/models/model/#model-class) interface, it not only improves the original API functionalities, but also provides a consistent development experience for Keras users who wants to try TinyMS:
 
 ```python
 from tinyms.model import Model
@@ -128,7 +128,7 @@ net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
 net_opt = Momentum(net.trainable_params(), lr, momentum)
 ```
 
-Regarding the definition of callback functions, in addition to commonly used callback functions (such as `TimeMonitor`, `LossMonitor`, etc.), MindSpore itself provides [Callback](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.train.html#mindspore.train.callback.Callback) interface to facilitate user-defined callback functions. The TinyMS high-level API also provides network-level encapsulation, so that users can complete the initialization of the callback function with one line of code; take the `MobileNetV2` network as an example:
+Regarding the definition of callback functions, in addition to commonly used callback functions (such as `TimeMonitor`, `LossMonitor`, etc.), MindSpore itself provides [Callback](https://www.mindspore.cn/doc/api_python/en/r1.2/mindspore/mindspore.train.html#mindspore.train.callback.Callback) interface to facilitate user-defined callback functions. The TinyMS high-level API also provides network-level encapsulation, so that users can complete the initialization of the callback function with one line of code; take the `MobileNetV2` network as an example:
 
 ```python
 from tinyms.callbacks import mobilenetv2_cb
@@ -138,7 +138,7 @@ net_cb = mobilenetv2_cb(device_target, lr, is_saving_checkpoint, save_checkpoint
 
 ### Model evaluating (*metrics*)
 
-Model accuracy verification is an indispensable process to verify whether the model accuracy meets the SOTA criteria. MindSpore natively provides measurement interfaces for indicators such as `Accuracy` and `Precision` (see [here](https://www.mindspore.cn/doc/api_python/en/r1.1/mindspore/mindspore.nn.html#metrics)), while providing users with a custom measurement interface `Metric`. In terms of metric measurement, TinyMS directly inherits the native MindSpore API:
+Model accuracy verification is an indispensable process to verify whether the model accuracy meets the SOTA criteria. MindSpore natively provides measurement interfaces for indicators such as `Accuracy` and `Precision` (see [here](https://www.mindspore.cn/doc/api_python/en/r1.2/mindspore/mindspore.nn.html#metrics)), while providing users with a custom measurement interface `Metric`. In terms of metric measurement, TinyMS directly inherits the native MindSpore API:
 
 ```python
 from tinyms.model import Model
@@ -150,18 +150,20 @@ model.compile(metrics={"Accuracy": Accuracy())
 
 ### Model deployment (*serving*)
 
-Model deployment refers to the process of servicing pre-trained models so that they can quickly and efficiently process data input by users and obtain results. MindSpore provides the [predict](https://mindspore.cn/doc/api_python/en/r1.1/_modules/mindspore/train/model.html#Model.predict) function for inference. TinyMS provides a complete set of start server (`start_server`), check backend (`list_servables`), check start status (`server_started`) and shut down the server (`shutdown`) and other functions based on [Flask](https://flask.palletsprojects.com/en/1.1.x/) ; Take the `LeNet5` network as an example:
+Model deployment refers to the process of servicing pre-trained models so that they can quickly and efficiently process data input by users and obtain results. MindSpore provides the [predict](https://mindspore.cn/doc/api_python/en/r1.2/_modules/mindspore/train/model.html#Model.predict) function for inference. TinyMS provides a complete set of start server (`start_server`), check backend (`list_servables`), check start status (`server_started`) and shut down the server (`shutdown`) and other functions based on [Flask](https://flask.palletsprojects.com/en/1.1.x/) ; Take the `LeNet5` network as an example:
 
 ```python
-from tinyms.serving import start_server, predict, list_servables, server_started, shutdown
+from tinyms.serving import Server, Client
 
+server = Server()
 # Start prediction server
-start_server()
+server.start_server()
+
+client = Client()
 # List all servables available
-list_servables()
+client.list_servables()
 # Call predict interface
-if server_started():
-    res = predict(image_path, 'lenet5', 'mnist')
+client.predict(image_path, 'lenet5', dataset_name='mnist')
 # Shutdown the prediction server
-shutdown()
+server.shutdown()
 ```
