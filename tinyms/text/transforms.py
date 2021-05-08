@@ -16,6 +16,10 @@ import tinyms as ts
 
 from . import _transform_ops
 from ._transform_ops import *
+<<<<<<< HEAD
+=======
+from ..data import BertDataset
+>>>>>>> 42c338461d15c0cc4bdacf628c912ad956975f85
 
 
 __all__ = [
@@ -33,6 +37,11 @@ class BertDatasetTransform(object):
 
     def apply_ds(self, data_set, batch_size):
 
+<<<<<<< HEAD
+=======
+        assert isinstance(data_set, BertDataset), "For BertDatasetTransform, BertDataset is needed"
+
+>>>>>>> 42c338461d15c0cc4bdacf628c912ad956975f85
         type_cast_op = TypeCast(ts.int32)
         data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_ids")
         data_set = data_set.map(operations=type_cast_op, input_columns="masked_lm_positions")
