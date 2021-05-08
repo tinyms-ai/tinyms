@@ -16,7 +16,7 @@ import tinyms as ts
 
 from . import _transform_ops
 from ._transform_ops import *
-from ..data import *
+from ..data import BertDataset
 
 
 __all__ = [
