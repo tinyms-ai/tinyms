@@ -72,7 +72,7 @@ from tinyms.data import download_dataset
 mnist_path = download_dataset('mnist', local_path='./')
 ```
 
-对于数据加载操作，TinyMS完全继承了MindSpore原生的[数据加载API](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.dataset.html)，这样用户可以非常方便地使用xxxDataset接口进行不同数据集的实例化；以[MnistDataset](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/dataset/mindspore.dataset.MnistDataset.html#mindspore.dataset.MnistDataset)为例：
+对于数据加载操作，TinyMS完全继承了MindSpore原生的[数据加载API](https://www.mindspore.cn/doc/api_python/zh-CN/r1.2/mindspore/mindspore.dataset.html)，这样用户可以非常方便地使用xxxDataset接口进行不同数据集的实例化；以[MnistDataset](https://www.mindspore.cn/doc/api_python/zh-CN/r1.2/mindspore/dataset/mindspore.dataset.MnistDataset.html#mindspore.dataset.MnistDataset)为例：
 
 ```python
 from tinyms.data import MnistDataset
@@ -82,7 +82,7 @@ mnist_ds = MnistDataset(mnist_path, shuffle=True)
 
 ### 数据处理（*vision*和*text*）
 
-通常在构建AI模型开发应用时，数据处理是我们面临的第一大挑战：数据量不足、人为标注工作量大、数据格式不规范等问题都又可能导致训练之后的网络精度不达标，因此绝大多数AI框架都会提供数据处理的相关模块。以MindSpore为例，MindSpore当前提供CV和NLP等常用场景的数据处理功能（相关接口定义可以查阅[`mindspore.dataset.vision`](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.dataset.vision.html)和[`mindspore.dataset.text`](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.dataset.text.html)），用户可以直接调用其中预设的数据处理算子对图片或文本进行处理，然后通过构建数据处理pipeline来对海量数据进行高效并行处理（详见[此处](https://www.mindspore.cn/news/newschildren?id=399)）。
+通常在构建AI模型开发应用时，数据处理是我们面临的第一大挑战：数据量不足、人为标注工作量大、数据格式不规范等问题都又可能导致训练之后的网络精度不达标，因此绝大多数AI框架都会提供数据处理的相关模块。以MindSpore为例，MindSpore当前提供CV和NLP等常用场景的数据处理功能（相关接口定义可以查阅[`mindspore.dataset.vision`](https://www.mindspore.cn/doc/api_python/zh-CN/r1.2/mindspore/mindspore.dataset.vision.html)和[`mindspore.dataset.text`](https://www.mindspore.cn/doc/api_python/zh-CN/r1.2/mindspore/mindspore.dataset.text.html)），用户可以直接调用其中预设的数据处理算子对图片或文本进行处理，然后通过构建数据处理pipeline来对海量数据进行高效并行处理（详见[此处](https://www.mindspore.cn/news/newschildren?id=399)）。
 
 TinyMS在MindSpore的基础上做了进一步的抽象与封装，通过`DatasetTransform`接口直接对应到数据集本身的处理，让用户可以一行代码就实现单条数据或者整个数据集的预处理操作；以`MnistTransform`为例：
 
@@ -106,7 +106,7 @@ from tinyms.model import lenet5
 net = lenet5(class_num=10)
 ```
 
-除了封装常用的网络结构之外，TinyMS还提供了`Model`高阶API接口（基于[MindSpore Model](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.html#mindspore.Model)接口封装），通过借鉴[Keras Model](https://keras.io/api/models/model/#model-class)接口的设计思想，不仅完善了原生API接口的功能，还为希望尝试TinyMS的Keras用户提供了一致性的开发体验：
+除了封装常用的网络结构之外，TinyMS还提供了`Model`高阶API接口（基于[MindSpore Model](https://www.mindspore.cn/doc/api_python/zh-CN/r1.2/mindspore/mindspore.html#mindspore.Model)接口封装），通过借鉴[Keras Model](https://keras.io/api/models/model/#model-class)接口的设计思想，不仅完善了原生API接口的功能，还为希望尝试TinyMS的Keras用户提供了一致性的开发体验：
 
 ```python
 from tinyms.model import Model
@@ -129,7 +129,7 @@ net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
 net_opt = Momentum(net.trainable_params(), lr, momentum)
 ```
 
-关于回调函数的定义，除了常用的回调函数外（比如`TimeMonitor`、`LossMonitor`等），MindSpore本身提供了[Callback](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.train.html#mindspore.train.callback.Callback)接口以方便用户自定义回调函数。而TinyMS高阶API同样提供了网络层面的封装，这样用户可以用一行代码完成回调函数的初始化工作；以`MobileNetV2`网络为例：
+关于回调函数的定义，除了常用的回调函数外（比如`TimeMonitor`、`LossMonitor`等），MindSpore本身提供了[Callback](https://www.mindspore.cn/doc/api_python/zh-CN/r1.2/mindspore/mindspore.train.html#mindspore.train.callback.Callback)接口以方便用户自定义回调函数。而TinyMS高阶API同样提供了网络层面的封装，这样用户可以用一行代码完成回调函数的初始化工作；以`MobileNetV2`网络为例：
 
 ```python
 from tinyms.callbacks import mobilenetv2_cb
@@ -139,7 +139,7 @@ net_cb = mobilenetv2_cb(device_target, lr, is_saving_checkpoint, save_checkpoint
 
 ### 模型精度验证（*metrics*）
 
-模型精度验证是检验模型精度是否达标必不可少的过程，MindSpore原生提供了`Accuracy`、`Precision`等指标的度量接口（详见[此处](https://www.mindspore.cn/doc/api_python/zh-CN/r1.1/mindspore/mindspore.nn.html#metrics)），同时为用户提供了`Metric`自定义度量接口。在指标度量方面TinyMS直接继承了原生MindSpore API，用户可以沿用MindSpore的习惯来进行精度验证：
+模型精度验证是检验模型精度是否达标必不可少的过程，MindSpore原生提供了`Accuracy`、`Precision`等指标的度量接口（详见[此处](https://www.mindspore.cn/doc/api_python/zh-CN/r1.2/mindspore/mindspore.nn.html#metrics)），同时为用户提供了`Metric`自定义度量接口。在指标度量方面TinyMS直接继承了原生MindSpore API，用户可以沿用MindSpore的习惯来进行精度验证：
 
 ```python
 from tinyms.model import Model
@@ -151,18 +151,20 @@ model.compile(metrics={"Accuracy": Accuracy())
 
 ### 模型部署推理（*serving*）
 
-模型部署推理是指将预训练好的模型服务化，使其快速、高效地对用户输入的数据进行处理，得到结果的过程。MindSpore提供了[predict](https://mindspore.cn/doc/api_python/zh-CN/r1.1/_modules/mindspore/train/model.html#Model.predict)函数用于推理，同样的，TinyMS针对这个函数进行了相应的封装，以同一个接口对接不同的后端网络。为了实现服务化，TinyMS基于[Flask](https://flask.palletsprojects.com/en/1.1.x/)提供了整套的启动服务器（`start_server`）、检查后端(`list_servables`)、检查是否启动(`server_started`)和关闭服务器(`shutdown`)等功能； 以`LeNet5`网络为例：
+模型部署推理是指将预训练好的模型服务化，使其快速、高效地对用户输入的数据进行处理，得到结果的过程。MindSpore提供了[predict](https://mindspore.cn/doc/api_python/zh-CN/r1.2/_modules/mindspore/train/model.html#Model.predict)函数用于推理，同样的，TinyMS针对这个函数进行了相应的封装，以同一个接口对接不同的后端网络。为了实现服务化，TinyMS基于[Flask](https://flask.palletsprojects.com/en/1.1.x/)提供了整套的启动服务器（`start_server`）、检查后端(`list_servables`)、检查是否启动(`server_started`)和关闭服务器(`shutdown`)等功能； 以`LeNet5`网络为例：
 
 ```python
-from tinyms.serving import start_server, predict, list_servables, server_started, shutdown
+from tinyms.serving import Server, Client
 
+server = Server()
 # 启动推理服务器
-start_server()
+server.start_server()
+
+client = Client()
 # 查看当前可用的推理模型
-list_servables()
+client.list_servables()
 # 从客户端调用推理接口
-if server_started():
-    res = predict(image_path, 'lenet5', 'mnist')
+client.predict(image_path, 'lenet5', dataset_name='mnist')
 # 关闭推理服务器
-shutdown()
+server.shutdown()
 ```
