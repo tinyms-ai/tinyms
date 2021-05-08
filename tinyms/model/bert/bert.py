@@ -120,7 +120,7 @@ class EmbeddingPostprocessor(layers.Layer):
         self.shape = tuple(embedding_shape)
         self.layernorm = layers.LayerNorm((embedding_size,))
         self.dropout = layers.Dropout(1 - dropout_prob)
-        self.gather = P.GatherV2()
+        self.gather = P.Gather()
         self.use_relative_positions = use_relative_positions
         self.slice = P.StridedSlice()
         self.full_position_embeddings = Parameter(initializer
