@@ -33,8 +33,10 @@ from mindspore.mindrecord import FileWriter
 from .utils import generate_image_list, load_img
 
 
-__all__ = ['UnalignedDataset', 'GanImageFolderDataset', 'ImdbDataset',
-           'DistributedSampler', 'BertDataset']
+common_dataset = ['UnalignedDataset', 'GanImageFolderDataset', 'ImdbDataset', 'BertDataset']
+common_sampler = ['DistributedSampler']
+
+__all__ = common_dataset + common_sampler
 __all__.extend(engine.__all__)
 
 random.seed(1)

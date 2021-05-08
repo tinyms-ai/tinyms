@@ -22,7 +22,7 @@ from tinyms import Parameter
 from tinyms import context
 from tinyms import layers
 from tinyms import primitives as P
-from .bert_for_pre_training import clip_grad
+from .bert_for_pretraining import clip_grad
 from .finetune_eval_model import BertCLSModel, BertNERModel, BertSquadModel
 
 

@@ -14,7 +14,7 @@
 # ============================================================================
 """Bert Init."""
 
-from .bert_for_pre_training import BertNetworkWithLoss, BertPreTraining, \
+from .bert_for_pretraining import BertNetworkWithLoss, BertPreTraining, \
     BertPretrainingLoss, GetMaskedLMOutput, GetNextSentenceOutput, \
     BertTrainOneStepCell, BertTrainOneStepWithLossScaleCell, \
     BertTrainAccumulationAllReduceEachWithLossScaleLayer, \

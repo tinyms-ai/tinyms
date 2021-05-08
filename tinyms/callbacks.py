@@ -93,7 +93,6 @@ class BertLossCallBack(Callback):
         None
 
     Examples:
-        >>> from tinyms import Tensor
         >>> from tinyms.callbacks import BertLossCallBack
         >>>
         >>> BertLossCallBack(dataset_size=1)
