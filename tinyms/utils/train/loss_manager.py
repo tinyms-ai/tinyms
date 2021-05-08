@@ -13,4 +13,11 @@
 # limitations under the License.
 # ============================================================================
 
-from mindspore.train.loss_scale_manager import *
+from mindspore.train.loss_scale_manager import LossScaleManager, \
+    FixedLossScaleManager, DynamicLossScaleManager
+
+__all__ = [
+    'LossScaleManager',
+    'FixedLossScaleManager',
+    'DynamicLossScaleManager',
+]
