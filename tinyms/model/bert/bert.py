@@ -105,39 +105,49 @@ class EmbeddingPostprocessor(layers.Layer):
         self.token_type_vocab_size = token_type_vocab_size
         self.use_one_hot_embeddings = use_one_hot_embeddings
         self.max_position_embeddings = max_position_embeddings
-        self.token_type_embedding = layers.Embedding(
-            vocab_size=token_type_vocab_size,
-            embedding_size=embedding_size,
-            use_one_hot=use_one_hot_embeddings)
+        self.embedding_table = Parameter(initializer
+                                         (TruncatedNormal(initializer_range),
+                                          [token_type_vocab_size,
+                                           embedding_size]),
+                                         name='embedding_table')
+
         self.shape_flat = (-1,)
-        self.one_hot = P.OneHot()
+        self.one_hot = layers.OneHot()
         self.on_value = Tensor(1.0, ts.float32)
         self.off_value = Tensor(0.1, ts.float32)
         self.array_mul = P.MatMul()
         self.reshape = P.Reshape()
         self.shape = tuple(embedding_shape)
+        self.layernorm = layers.LayerNorm((embedding_size,))
         self.dropout = layers.Dropout(1 - dropout_prob)
-        self.gather = P.Gather()
+        self.gather = P.GatherV2()
         self.use_relative_positions = use_relative_positions
         self.slice = P.StridedSlice()
-        _, seq, _ = self.shape
-        self.full_position_embedding = layers.Embedding(
-            vocab_size=max_position_embeddings,
-            embedding_size=embedding_size,
-            use_one_hot=False)
-        self.layernorm = layers.LayerNorm((embedding_size,))
-        self.position_ids = Tensor(np.arange(seq).reshape(-1, seq).astype(np.int32))
-        self.add = P.Add()
+        self.full_position_embeddings = Parameter(initializer
+                                                  (TruncatedNormal(initializer_range),
+                                                   [max_position_embeddings,
+                                                    embedding_size]),
+                                                  name='full_position_embeddings')
 
     def construct(self, token_type_ids, word_embeddings):
         """Postprocessors apply positional and token type embeddings to word embeddings."""
         output = word_embeddings
         if self.use_token_type:
-            token_type_embeddings = self.token_type_embedding(token_type_ids)
-            output = self.add(output, token_type_embeddings)
+            flat_ids = self.reshape(token_type_ids, self.shape_flat)
+            if self.use_one_hot_embeddings:
+                one_hot_ids = self.one_hot(flat_ids,
+                                           self.token_type_vocab_size, self.on_value, self.off_value)
+                token_type_embeddings = self.array_mul(one_hot_ids,
+                                                       self.embedding_table)
+            else:
+                token_type_embeddings = self.gather(self.embedding_table, flat_ids, 0)
+            token_type_embeddings = self.reshape(token_type_embeddings, self.shape)
+            output += token_type_embeddings
         if not self.use_relative_positions:
-            position_embeddings = self.full_position_embedding(self.position_ids)
-            output = self.add(output, position_embeddings)
+            _, seq, width = self.shape
+            position_embeddings = self.slice(self.full_position_embeddings, (0, 0), (seq, width), (1, 1))
+            position_embeddings = self.reshape(position_embeddings, (1, seq, width))
+            output += position_embeddings
         output = self.layernorm(output)
         output = self.dropout(output)
         return output
