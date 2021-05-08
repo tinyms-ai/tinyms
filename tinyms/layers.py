@@ -17,6 +17,7 @@ Layer module contains pre-defined building blocks or computing units to construc
 
 The high-level components (Layers) used to construct the neural network.
 """
+from mindspore.nn import wrap
 from mindspore.nn import Cell, GraphCell
 from mindspore.nn.layer.container import SequentialCell, CellList
 from mindspore.nn.layer import activation, normalization, conv, lstm, basic, \
@@ -24,12 +25,14 @@ from mindspore.nn.layer import activation, normalization, conv, lstm, basic, \
 from mindspore.nn.layer.activation import *
 from mindspore.nn.layer.normalization import *
 from mindspore.nn.layer.conv import *
+from mindspore.nn.wrap import *
 from mindspore.nn.layer.lstm import *
 from mindspore.nn.layer.basic import *
 from mindspore.nn.layer.embedding import *
 from mindspore.nn.layer.pooling import *
 from mindspore.nn.layer.math import *
 from mindspore.nn.layer.combined import *
+
 
 __all__ = ['Layer', 'SequentialLayer', 'LayerList']
 __all__.extend(activation.__all__)
@@ -41,6 +44,7 @@ __all__.extend(embedding.__all__)
 __all__.extend(pooling.__all__)
 __all__.extend(nn_math.__all__)
 __all__.extend(combined.__all__)
+__all__.extend(wrap.__all__)
 
 
 class Layer(Cell):

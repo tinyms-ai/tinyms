@@ -26,7 +26,7 @@ from .cycle_gan.cycle_gan import cycle_gan, cycle_gan_infer
 from .densenetBC_100 import densenetBC_100, DenseNet
 from .alexnet import alexnet, AlexNet
 from .sentimentnet import sentimentnet, SentimentNet
-
+from .bert import bert, Bert
 
 __all__ = [
     'Model',
@@ -39,6 +39,7 @@ __all__ = [
     'densenetBC_100', 'DenseNet',
     'alexnet', 'AlexNet',
     'sentimentnet', 'SentimentNet',
+    'bert', 'Bert',
 ]
 
 

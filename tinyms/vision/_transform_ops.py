@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
 from mindspore.dataset.vision.py_transforms import Grayscale, RandomHorizontalFlip as PILRandomHorizontalFlip
 from mindspore.dataset.vision.c_transforms import *
 from mindspore.dataset.transforms.c_transforms import *
