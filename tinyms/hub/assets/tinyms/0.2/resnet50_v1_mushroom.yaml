@@ -1,5 +1,5 @@
 ##################################################################################################
-# ResNet50 with Cifar10
+# ResNet50 with Mushroom
 ##################################################################################################
 ---
 model-name: resnet50
@@ -8,10 +8,10 @@ module-type: cv-classification
 fine-tunable: False
 input-shape: [3, 224, 224]
 model-version: 1.0
-train-dataset: cifar10
-accuracy: 0.986
+train-dataset: mushroom
+accuracy: 0.781
 author: TinyMS team
-update-time: 2021-05-07
+update-time: 2021-05-10
 user-id: TinyMS
 used-for: inference
 train-backend:
@@ -22,7 +22,7 @@ infer-backend:
 tinyms-version: 0.2
 asset:
   file-format: ckpt
-  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/resnet50_v1_cifar10/resnet50.ckpt
-  asset-sha256: c2425a93c916ba79f582e4bfce523939078d1289c576fab44a2c5c24c3e60802
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/resnet50_v1_mushroom/resnet50.ckpt
+  asset-sha256: 5114f21685313c4326d275d738b8097686ead413078d97364bc843f2b8cabb0c
 license: Apache-2.0
-summary: ResNet50 model used to classify the 10 classes of Cifar10 dataset.
+summary: ResNet50 model used to classify the 9 classes of mushroom dataset.
