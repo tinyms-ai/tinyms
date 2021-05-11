@@ -332,8 +332,9 @@ def ssd300_mobilenetv2(**kwargs):
     Returns:
         model.SSD300, SSD300 instance.
     """
-    net = SSD300(SSDWithMobileNetV2(), class_num=kwargs['class_num'], is_training=kwargs['is_training'])
-    if kwargs['is_training'] is False:
+    net = SSD300(SSDWithMobileNetV2(), class_num=kwargs.get('class_num', 21),
+                 is_training=kwargs.get('is_training', True))
+    if kwargs.get('is_training') is False:
         net = SSDInferWithDecoder(net)
 
     return net

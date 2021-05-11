@@ -173,9 +173,10 @@ def densenet100(**kwargs):
     Get DenseNet instance for model training, evaluation and prediction.
 
     Args:
-        class_num (int): The number of classes.
+        class_num (int): The number of classes. Default: 10.
 
     Returns:
         model.DenseNet, DenseNet instance.
     """
-    return DenseNet(class_num=kwargs['class_num'], growth_rate=12, block_config=(16, 16, 16))
+    return DenseNet(class_num=kwargs.get('class_num', 10),
+                    growth_rate=12, block_config=(16, 16, 16))
