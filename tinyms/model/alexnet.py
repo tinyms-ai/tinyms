@@ -153,4 +153,4 @@ def alexnet(**kwargs):
         >>>
         >>> net = alexnet(class_num=10)
     """
-    return AlexNet(class_num=kwargs['class_num'])
+    return AlexNet(class_num=kwargs.get('class_num', 10))

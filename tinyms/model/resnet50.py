@@ -239,4 +239,4 @@ def resnet50(**kwargs):
                   [64, 256, 512, 1024],
                   [256, 512, 1024, 2048],
                   [1, 2, 2, 2],
-                  kwargs['class_num'])
+                  kwargs.get('class_num', 10))

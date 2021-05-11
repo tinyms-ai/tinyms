@@ -258,10 +258,11 @@ def mobilenetv2(**kwargs):
     Get MobileNetV2 instance for model training, evaluation and prediction.
 
     Args:
-        class_num (int): The number of classes.
+        class_num (int): The number of classes. Default: 1000.
         is_training (bool): Whether to do training job, default: True.
 
     Returns:
         model.MobileNetV2, MobileNetV2 instance.
     """
-    return MobileNetV2(class_num=kwargs['class_num'], is_training=kwargs['is_training'])
+    return MobileNetV2(class_num=kwargs.get('class_num', 1000),
+                       is_training=kwargs.get('is_training', True))
