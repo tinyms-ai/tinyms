@@ -221,7 +221,7 @@ class ResNet(layers.Layer):
         return out
 
 
-def resnet50(class_num=10):
+def resnet50(**kwargs):
     """
     Get ResNet50 neural network.
 
@@ -239,4 +239,4 @@ def resnet50(class_num=10):
                   [64, 256, 512, 1024],
                   [256, 512, 1024, 2048],
                   [1, 2, 2, 2],
-                  class_num)
+                  kwargs['class_num'])

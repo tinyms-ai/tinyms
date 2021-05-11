@@ -32,8 +32,8 @@ servable_path = os.path.join(serving_path, 'servable.json')
 model_checker = {
     "lenet5": model.lenet5,
     "resnet50": model.resnet50,
-    "mobilenetv2": model.mobilenetv2_infer,
-    "ssd300": model.ssd300_infer,
+    "mobilenetv2": model.mobilenetv2,
+    "ssd300": model.ssd300_mobilenetv2,
     "cycle_gan": model.cycle_gan_infer
 }
 
@@ -137,7 +137,7 @@ def predict(instance, servable_name, servable_model, strategy):
     else:
         # build the network
         class_num = servable_model['class_num']
-        net = net_func(class_num=class_num)
+        net = net_func(class_num=class_num, is_training=False)
         serve_model = model.Model(net)
 
         # load checkpoint

@@ -253,7 +253,7 @@ class MobileNetV2(layers.Layer):
         return x
 
 
-def mobilenetv2(class_num=1000, is_training=True):
+def mobilenetv2(**kwargs):
     """
     Get MobileNetV2 instance for model training, evaluation and prediction.
 
@@ -264,17 +264,4 @@ def mobilenetv2(class_num=1000, is_training=True):
     Returns:
         model.MobileNetV2, MobileNetV2 instance.
     """
-    return MobileNetV2(class_num=class_num, is_training=is_training)
-
-
-def mobilenetv2_infer(class_num=1000):
-    """
-    Get MobileNetV2 instance for model prediction.
-
-    Args:
-        class_num (int): The number of classes.
-
-    Returns:
-        model.MobileNetV2, MobileNetV2 instance.
-    """
-    return MobileNetV2(class_num=class_num, is_training=False)
+    return MobileNetV2(class_num=kwargs['class_num'], is_training=kwargs['is_training'])

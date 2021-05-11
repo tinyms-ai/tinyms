@@ -70,7 +70,7 @@ if __name__ == "__main__":
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('mnist')
     # build the network
-    net = lenet5()
+    net = lenet5(class_num=10)
     model = Model(net)
     # define the loss function
     net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')

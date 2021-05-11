@@ -90,7 +90,7 @@ if __name__ == '__main__':
     step_size = ds_train.get_dataset_size()
 
     # build the network
-    net = mobilenetv2(args_opt.num_classes, is_training=not args_opt.do_eval)
+    net = mobilenetv2(class_num=args_opt.num_classes, is_training=not args_opt.do_eval)
     model = Model(net)
     # define the loss function
     loss = CrossEntropyWithLabelSmooth(smooth_factor=args_opt.label_smooth,
