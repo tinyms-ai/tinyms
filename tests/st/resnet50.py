@@ -76,7 +76,7 @@ if __name__ == '__main__':
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('cifar10')
     # build the network
-    net = resnet50(args_opt.num_classes)
+    net = resnet50(class_num=args_opt.num_classes)
     model = Model(net)
     # define the loss function
     net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction="mean")

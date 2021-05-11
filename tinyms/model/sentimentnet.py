@@ -74,14 +74,14 @@ class StackLSTM(layers.Layer):
             input_size_list.append(hidden_size * num_directions)
 
         # layers
-        layers = []
+        layer_list = []
         for i in range(num_layers):
-            layers.append(layers.LSTMCell(input_size=input_size_list[i],
-                                          hidden_size=hidden_size,
-                                          has_bias=has_bias,
-                                          batch_first=batch_first,
-                                          bidirectional=bidirectional,
-                                          dropout=dropout))
+            layer_list.append(layers.LSTMCell(input_size=input_size_list[i],
+                                              hidden_size=hidden_size,
+                                              has_bias=has_bias,
+                                              batch_first=batch_first,
+                                              bidirectional=bidirectional,
+                                              dropout=dropout))
 
         # weights
         weights = []
@@ -100,7 +100,7 @@ class StackLSTM(layers.Layer):
             weights.append(Parameter(initializer(Tensor(w_np), w_np.shape), name="weight" + str(i)))
 
         #
-        self.lstm = layers
+        self.lstm = layer_list
         self.weight = ParameterTuple(tuple(weights))
 
     def construct(self, x, hx):

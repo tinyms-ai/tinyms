@@ -23,7 +23,7 @@ import tinyms as ts
 from tinyms import context, layers, primitives as P, Tensor
 from tinyms.data import VOCDataset, download_dataset
 from tinyms.vision import voc_transform, coco_eval
-from tinyms.model import Model, ssd300_mobilenetv2, ssd300_infer
+from tinyms.model import Model, ssd300_mobilenetv2
 from tinyms.losses import net_with_loss
 from tinyms.optimizers import Momentum
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor, TimeMonitor
@@ -195,7 +195,7 @@ if __name__ == '__main__':
         ds_train = create_dataset(voc_path, batch_size=batch_size)
         dataset_size = ds_train.get_dataset_size()
         # build the SSD300 network
-        net = ssd300_mobilenetv2(class_num=args_opt.num_classes)
+        net = ssd300_mobilenetv2(class_num=args_opt.num_classes, is_training=True)
         # define the loss function
         if args_opt.device_target == "GPU":
             net.to_float(ts.float16)
@@ -221,7 +221,7 @@ if __name__ == '__main__':
         ds_eval = create_dataset(voc_path, batch_size=1, is_training=False)
         total = ds_eval.get_dataset_size()
         # define the infer wrapper
-        eval_net = ssd300_infer(class_num=args_opt.num_classes)
+        eval_net = ssd300_mobilenetv2(class_num=args_opt.num_classes, is_training=False)
         model = Model(eval_net)
         if args_opt.checkpoint_path:
             model.load_checkpoint(args_opt.checkpoint_path)

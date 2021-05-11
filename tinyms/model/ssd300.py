@@ -285,20 +285,6 @@ class SSD300(layers.Layer):
         return pred_loc, pred_label
 
 
-def ssd300_mobilenetv2(class_num=21, is_training=True):
-    """
-    Get SSD300 model instance for training, evaluation and prediction.
-
-    Args:
-        class_num (int): The number of classes. Default: 21.
-        is_training (bool): Whether to do training job, default: True.
-
-    Returns:
-        model.SSD300, SSD300 instance.
-    """
-    return SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=is_training)
-
-
 class SSDInferWithDecoder(layers.Layer):
     """
     SSD300 infer wrapper to decode the bbox locations.
@@ -335,15 +321,19 @@ class SSDInferWithDecoder(layers.Layer):
         return pred_xy, pred_label
 
 
-def ssd300_infer(class_num=21):
+def ssd300_mobilenetv2(**kwargs):
     """
-    Get SSD300 model instance for prediction.
+    Get SSD300 model instance for training, evaluation and prediction.
 
     Args:
         class_num (int): The number of classes. Default: 21.
+        is_training (bool): Whether to do training job, default: True.
 
     Returns:
         model.SSD300, SSD300 instance.
     """
-    net = SSD300(SSDWithMobileNetV2(), class_num=class_num, is_training=False)
-    return SSDInferWithDecoder(net)
+    net = SSD300(SSDWithMobileNetV2(), class_num=kwargs['class_num'], is_training=kwargs['is_training'])
+    if kwargs['is_training'] is False:
+        net = SSDInferWithDecoder(net)
+
+    return net

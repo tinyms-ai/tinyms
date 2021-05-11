@@ -168,7 +168,7 @@ class DenseNet(layers.Layer):
         return features
 
 
-def densenetBC_100(class_num=10):
+def densenet100(**kwargs):
     """
     Get DenseNet instance for model training, evaluation and prediction.
 
@@ -178,4 +178,4 @@ def densenetBC_100(class_num=10):
     Returns:
         model.DenseNet, DenseNet instance.
     """
-    return DenseNet(class_num=class_num, growth_rate=12, block_config=(16, 16, 16))
+    return DenseNet(class_num=kwargs['class_num'], growth_rate=12, block_config=(16, 16, 16))
