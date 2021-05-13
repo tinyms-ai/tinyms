@@ -13,6 +13,8 @@
 # limitations under the License.
 # ============================================================================
 
+from mindspore import train
+from mindspore.train import *
 from . import cb_config, lr_generator, loss_manager
 from .cb_config import *
 from .lr_generator import *
@@ -23,3 +25,4 @@ __all__ = []
 __all__.extend(cb_config.__all__)
 __all__.extend(lr_generator.__all__)
 __all__.extend(loss_manager.__all__)
+__all__.extend(train.__all__)
