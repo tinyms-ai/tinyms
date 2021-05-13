@@ -9,13 +9,12 @@ fine-tunable: False
 input-shape: [3, 224, 224]
 model-version: 1.0
 train-dataset: mushroom
+train-backend: GPU
 accuracy: 0.781
 author: TinyMS team
 update-time: 2021-05-10
 user-id: TinyMS
 used-for: inference
-train-backend:
-  - GPU
 infer-backend:
   - CPU
   - GPU

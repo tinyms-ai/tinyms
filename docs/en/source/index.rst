@@ -55,6 +55,7 @@ designed to providing quick-start guidelines for machine learning beginners.
    tinyms/tinyms.optimizers
    tinyms/tinyms.callbacks
    tinyms/tinyms.metrics
+   tinyms/tinyms.hub
    tinyms/tinyms.serving
 
 .. toctree::

@@ -13,6 +13,13 @@
 # limitations under the License.
 # ============================================================================
 
-from .load import load, load_weights
+from easydict import EasyDict as ed
 
-__all__ = ['load', 'load_weights']
+from tinyms import model
+
+MODEL_HUB = ed({
+    "lenet5": model.lenet5,
+    "resnet50": model.resnet50,
+    "mobilenetv2": model.mobilenetv2,
+    "ssd300": model.ssd300_mobilenetv2,
+})

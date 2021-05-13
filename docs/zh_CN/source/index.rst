@@ -52,6 +52,7 @@ Welcome to TinyMS's documentation!
    tinyms/tinyms.optimizers
    tinyms/tinyms.callbacks
    tinyms/tinyms.metrics
+   tinyms/tinyms.hub
    tinyms/tinyms.serving
 
 .. toctree::
