@@ -1,0 +1,27 @@
+##################################################################################################
+# SSD300 with VOC2007
+##################################################################################################
+---
+model-name: ssd300
+backbone-name: ssd300
+module-type: cv-objectdetection
+fine-tunable: False
+input-shape: [3, 300, 300]
+model-version: v1
+train-dataset: voc2007
+train-backend: GPU
+accuracy: 0.621
+author: TinyMS team
+update-time: 2021-05-14
+user-id: TinyMS
+used-for: inference
+infer-backend:
+  - CPU
+  - GPU
+tinyms-version: 0.2
+asset:
+  file-format: ckpt
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/ssd300_v1_voc2007/ssd300.ckpt
+  asset-sha256: 29ada5f9a903267b424c10e543d1419538905e958dcd0a2d6c5ad563c2b31ce1
+license: Apache-2.0
+summary: SSD300 model used to detect object with the 10 classes of VOC2007 dataset.

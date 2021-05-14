@@ -82,7 +82,8 @@ def load(uid, pretrained=True, **kwargs):
         >>> hub.load('tinyms/0.2/lenet5_v1_mnist', class_num=10)
     '''
     uid_info = UidInfo(uid)
-    net_func = MODEL_HUB.get(uid_info.model_name)
+    model_info = uid_info.model_name + '_' + uid_info.model_version
+    net_func = MODEL_HUB.get(model_info)
     if net_func is None:
         raise ValueError("Currently model_name only supports " + str(list(MODEL_HUB.keys())) + "!")
 

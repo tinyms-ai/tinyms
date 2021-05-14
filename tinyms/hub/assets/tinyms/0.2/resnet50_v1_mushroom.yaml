@@ -7,7 +7,7 @@ backbone-name: resnet50
 module-type: cv-classification
 fine-tunable: False
 input-shape: [3, 224, 224]
-model-version: 1.0
+model-version: v1.5
 train-dataset: mushroom
 train-backend: GPU
 accuracy: 0.781
