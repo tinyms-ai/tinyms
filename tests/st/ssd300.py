@@ -37,15 +37,20 @@ def parse_args():
                         help='device where the code will be implemented (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='VOC2007/VOC2012 dataset path.')
     parser.add_argument("--num_classes", type=int, default=21, help="The VOC dataset class number, default is 21.")
-    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
     parser.add_argument("--lr", type=float, default=0.01, help="Learning rate, default is 0.01.")
     parser.add_argument("--epoch_size", type=int, default=800, help="Epoch size, default is 800.")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size, default is 32.")
-    parser.add_argument("--checkpoint_path", type=str, default=None, help="Pretrained Checkpoint file path.")
     parser.add_argument("--pre_trained_epoch_size", type=int, default=0, help="Pretrained epoch size.")
     parser.add_argument('--save_checkpoint_epochs', type=int, default=10,
                         help='Specify epochs interval to save each checkpoints.')
     parser.add_argument("--loss_scale", type=int, default=1, help="Loss scale, default is 1.")
+    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not. (default: False)')
+    parser.add_argument('--load_pretrained', type=str, choices=['hub', 'local'], default='local',
+                        help='Specify where to load pretrained model, only valid in do_eval mode. (default: local)')
+    parser.add_argument('--checkpoint_path', type=str, default=None,
+                        help='Checkpoint file path. Only valid when load_pretrained is `local`.')
+    parser.add_argument('--hub_uid', type=str, default=None,
+                        help='Model asset uid. Only valid when load_pretrained is `hub`.')
     args_opt = parser.parse_args()
 
     return args_opt
@@ -221,10 +226,15 @@ if __name__ == '__main__':
         ds_eval = create_dataset(voc_path, batch_size=1, is_training=False)
         total = ds_eval.get_dataset_size()
         # define the infer wrapper
-        eval_net = ssd300_mobilenetv2(class_num=args_opt.num_classes, is_training=False)
+        if args_opt.load_pretrained == 'hub':
+            from tinyms import hub
+            eval_net = hub.load(args_opt.hub_uid, class_num=args_opt.num_classes, is_training=False)
+        else:
+            eval_net = ssd300_mobilenetv2(class_num=args_opt.num_classes, is_training=False)
         model = Model(eval_net)
-        if args_opt.checkpoint_path:
-            model.load_checkpoint(args_opt.checkpoint_path)
+        if args_opt.load_pretrained == 'local':
+            if args_opt.checkpoint_path:
+                model.load_checkpoint(args_opt.checkpoint_path)
         # perform the model predict operation
         print("\n========================================\n")
         print("total images num: ", total)
