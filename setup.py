@@ -34,6 +34,7 @@ readme = _read_file('README.md')
 def _write_version(file):
     file.write("__version__ = '{}'\n".format(version_tag))
 
+
 setup_required_package = [
     'wheel >= 0.32.0',
     'setuptools >= 40.8.0',
@@ -51,6 +52,7 @@ install_required_package = [
     'flask >= 1.1.1',
     'python-Levenshtein >= 0.10.2',
     'gensim >= 3.8.1',
+    'PyYAML',
 ]
 
 test_required_package = [
