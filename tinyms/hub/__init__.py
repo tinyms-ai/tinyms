@@ -13,6 +13,6 @@
 # limitations under the License.
 # ============================================================================
 
-from .load import load, load_weights
+from .load import load, load_checkpoint, load_weights
 
-__all__ = ['load', 'load_weights']
+__all__ = ['load', 'load_checkpoint', 'load_weights']

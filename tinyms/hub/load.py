@@ -15,7 +15,7 @@
 
 import os
 import tempfile
-from tinyms.utils.train import load_checkpoint, load_param_into_net
+from tinyms.utils.train import load_checkpoint, load_param_into_net, save_checkpoint
 
 from .hubconf import MODEL_HUB
 from .utils.download import download_file_from_url
@@ -94,6 +94,27 @@ def load(uid, pretrained=True, **kwargs):
         load_param_into_net(net, ckpt_params)
 
     return net
+
+
+def load_checkpoint(uid, dst):
+    '''
+    Load model checkpoint file from remote TinyMS Hub.
+
+    Args:
+        uid (str): Uid. The format should be strictly consistent with
+            the official example: `tinyms/0.2/lenet5_v1_mnist`.
+        dst (str): Full path of filename where the checkpoint file
+            will be loaded, e.g. `/tmp/lenet5.ckpt`.
+
+    Examples:
+        >>> from tinyms import hub
+        >>>
+        >>> hub.load_checkpoint('tinyms/0.2/lenet5_v1_mnist', '/tmp/lenet5.ckpt')
+    '''
+    uid_info = UidInfo(uid)
+    asset_path = _get_model_asset_path(uid_info)
+    weights = _load_weights(asset_path)
+    save_checkpoint(weights, dst)
 
 
 def load_weights(uid):
