@@ -1,0 +1,27 @@
+##################################################################################################
+# ResNet50 with Mushroom
+##################################################################################################
+---
+model-name: resnet50
+backbone-name: resnet50
+module-type: cv-classification
+fine-tunable: False
+input-shape: [3, 224, 224]
+model-version: v1
+train-dataset: mushroom
+train-backend: GPU
+accuracy: 0.781
+author: TinyMS team
+update-time: 2021-05-10
+user-id: TinyMS
+used-for: inference
+infer-backend:
+  - CPU
+  - GPU
+tinyms-version: 0.2
+asset:
+  file-format: ckpt
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/resnet50_v1_mushroom/resnet50.ckpt
+  asset-sha256: 5114f21685313c4326d275d738b8097686ead413078d97364bc843f2b8cabb0c
+license: Apache-2.0
+summary: ResNet50 model used to classify the 9 classes of mushroom dataset.

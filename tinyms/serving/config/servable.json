@@ -1,0 +1,20 @@
+[
+    {
+        "name": "resnet50_mushroom",
+        "description": "This servable hosts a ResNet50 model predicting for mushrooms",
+        "model": {
+            "name": "resnet50",
+            "format": "ckpt",
+            "class_num": 9
+        }
+    },
+    {
+        "name": "cyclegan_cityscape",
+        "description": "This servable hosts a Cycle GAN model predicting for cityscape dataset",
+        "model": {
+            "name": "cycle_gan",
+            "format": "ckpt",
+            "g_model": "resnet"
+        }
+    }
+]

@@ -1,0 +1,26 @@
+##################################################################################################
+# LeNet5 with Mnist
+##################################################################################################
+---
+model-name: lenet5
+backbone-name: lenet5
+module-type: cv-classification
+fine-tunable: False
+input-shape: [1, 32, 32]
+model-version: v1
+train-dataset: mnist
+train-backend: CPU
+accuracy: 0.981
+author: TinyMS team
+update-time: 2021-05-07
+user-id: TinyMS
+used-for: inference
+infer-backend:
+  - CPU
+tinyms-version: 0.2
+asset:
+  file-format: ckpt
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/lenet5_v1_mnist/lenet5.ckpt
+  asset-sha256: b0f748227734236960b97750665cab696d60d88cb7436743b1d8a9f431ff85f1
+license: Apache-2.0
+summary: LeNet5 model used to classify the 10 classes of Mnist dataset.

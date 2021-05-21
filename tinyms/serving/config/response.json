@@ -1,0 +1,22 @@
+{
+    "status": 0,
+    "instance": {
+        "shape": [
+            1,
+            9
+        ],
+        "dtype": "float32",
+        "data": ""
+    },
+    "servables": [
+        {
+            "name": "resnet50_mushroom",
+            "description": "This servable hosts a ResNet50 model predicting for mushrooms",
+            "model": {
+                "format": "ckpt",
+                "class_num": 9
+            }
+        }
+    ],
+    "err_msg": ""
+}

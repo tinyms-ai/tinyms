@@ -1,0 +1,27 @@
+##################################################################################################
+# MobileNetV2 with Cifar10
+##################################################################################################
+---
+model-name: mobilenetv2
+backbone-name: mobilenetv2
+module-type: cv-classification
+fine-tunable: False
+input-shape: [3, 224, 224]
+model-version: v2
+train-dataset: cifar10
+train-backend: GPU
+accuracy: 0.970
+author: TinyMS team
+update-time: 2021-05-14
+user-id: TinyMS
+used-for: inference
+infer-backend:
+  - CPU
+  - GPU
+tinyms-version: 0.2
+asset:
+  file-format: ckpt
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/mobilenet_v2_cifar10/mobilenetv2.ckpt
+  asset-sha256: 62c750a3e37d09121fcf72b56be7df31757d2f1ef3b3fb144085092837e225df
+license: Apache-2.0
+summary: MobileNetV2 model used to classify the 10 classes of Cifar10 dataset.

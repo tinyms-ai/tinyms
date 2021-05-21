@@ -1,0 +1,27 @@
+##################################################################################################
+# ResNet50 with Cifar10
+##################################################################################################
+---
+model-name: resnet50
+backbone-name: resnet50
+module-type: cv-classification
+fine-tunable: False
+input-shape: [3, 224, 224]
+model-version: v1
+train-dataset: cifar10
+train-backend: GPU
+accuracy: 0.982
+author: TinyMS team
+update-time: 2021-05-07
+user-id: TinyMS
+used-for: inference
+infer-backend:
+  - CPU
+  - GPU
+tinyms-version: 0.2
+asset:
+  file-format: ckpt
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/resnet50_v1_cifar10/resnet50.ckpt
+  asset-sha256: c2425a93c916ba79f582e4bfce523939078d1289c576fab44a2c5c24c3e60802
+license: Apache-2.0
+summary: ResNet50 model used to classify the 10 classes of Cifar10 dataset.
