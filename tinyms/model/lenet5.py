@@ -52,12 +52,12 @@ class LeNet(layers.Layer):
         return x
 
 
-def lenet5(class_num=10):
+def lenet5(**kwargs):
     """
     Get LeNet5 neural network.
 
     Args:
-        class_num (int): Class number.
+        class_num (int): Class number. Default: 10.
 
     Returns:
         layers.Layer, layer instance of LeNet5 neural network.
@@ -65,4 +65,4 @@ def lenet5(class_num=10):
     Examples:
         >>> net = lenet5(class_num=10)
     """
-    return LeNet(class_num=class_num)
+    return LeNet(class_num=kwargs.get('class_num', 10))

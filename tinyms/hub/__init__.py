@@ -12,3 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+
+from .load import load, load_checkpoint, load_weights
+
+__all__ = ['load', 'load_checkpoint', 'load_weights']

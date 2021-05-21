@@ -1,27 +1,26 @@
 ##################################################################################################
-# ResNet50 with Cifar10
+# LeNet5 with Mnist
 ##################################################################################################
 ---
-model-name: resnet50
-backbone-name: resnet50
+model-name: lenet5
+backbone-name: lenet5
 module-type: cv-classification
 fine-tunable: False
-input-shape: [3, 224, 224]
+input-shape: [1, 32, 32]
 model-version: v1
-train-dataset: cifar10
-train-backend: GPU
-accuracy: 0.982
+train-dataset: mnist
+train-backend: CPU
+accuracy: 0.981
 author: TinyMS team
 update-time: 2021-05-07
 user-id: TinyMS
 used-for: inference
 infer-backend:
   - CPU
-  - GPU
 tinyms-version: 0.2
 asset:
   file-format: ckpt
-  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/resnet50_v1_cifar10/resnet50.ckpt
-  asset-sha256: c2425a93c916ba79f582e4bfce523939078d1289c576fab44a2c5c24c3e60802
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/lenet5_v1_mnist/lenet5.ckpt
+  asset-sha256: b0f748227734236960b97750665cab696d60d88cb7436743b1d8a9f431ff85f1
 license: Apache-2.0
-summary: ResNet50 model used to classify the 10 classes of Cifar10 dataset.
+summary: LeNet5 model used to classify the 10 classes of Mnist dataset.

@@ -13,12 +13,13 @@
 # limitations under the License.
 # ============================================================================
 
-from . import loader, converter, utils
-from .loader import *
-from .converter import *
-from .utils import *
+from easydict import EasyDict as ed
 
-__all__ = []
-__all__.extend(loader.__all__)
-__all__.extend(converter.__all__)
-__all__.extend(utils.__all__)
+from tinyms import model
+
+MODEL_HUB = ed({
+    "lenet5_v1": model.lenet5,
+    "resnet50_v1": model.resnet50,
+    "mobilenet_v2": model.mobilenetv2,
+    "ssd300_v1": model.ssd300_mobilenetv2,
+})

@@ -31,12 +31,17 @@ from tinyms.losses import SoftmaxCrossEntropyWithLogits
 def parse_args():
     parser = argparse.ArgumentParser(description='MindSpore LeNet Example')
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
-                        help='device where the code will be implemented (default: CPU)')
+                        help='device where the code will be implemented. (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='Mnist dataset path.')
-    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
     parser.add_argument('--epoch_size', type=int, default=1, help='Epoch size.')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
-    parser.add_argument('--checkpoint_path', type=str, default=None, help='CheckPoint file path.')
+    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
+    parser.add_argument('--load_pretrained', type=str, choices=['hub', 'local'], default='local',
+                        help='Specify where to load pretrained model, only valid in do_eval mode. (default: local)')
+    parser.add_argument('--checkpoint_path', type=str, default=None,
+                        help='Checkpoint file path. Only valid when load_pretrained is `local`.')
+    parser.add_argument('--hub_uid', type=str, default=None,
+                        help='Model asset uid. Only valid when load_pretrained is `hub`.')
     args_opt = parser.parse_args()
 
     return args_opt
@@ -70,7 +75,11 @@ if __name__ == "__main__":
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('mnist')
     # build the network
-    net = lenet5()
+    if args_opt.do_eval and args_opt.load_pretrained == 'hub':
+        from tinyms import hub
+        net = hub.load(args_opt.hub_uid)
+    else:
+        net = lenet5()
     model = Model(net)
     # define the loss function
     net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
@@ -88,8 +97,9 @@ if __name__ == "__main__":
         # load testing dataset
         ds_eval = create_dataset(os.path.join(mnist_path, "test"))
         # load the saved model for evaluation
-        if args_opt.checkpoint_path:
-            model.load_checkpoint(args_opt.checkpoint_path)
+        if args_opt.load_pretrained == 'local':
+            if args_opt.checkpoint_path:
+                model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
         print("============== Accuracy:{} ==============".format(acc))
     else:  # as for train, users could use model.train

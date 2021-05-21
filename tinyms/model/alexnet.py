@@ -138,7 +138,7 @@ class AlexNet(layers.Layer):
         return x
 
 
-def alexnet(class_num=10):
+def alexnet(**kwargs):
     """
     Get AlexNet neural network.
 
@@ -153,4 +153,4 @@ def alexnet(class_num=10):
         >>>
         >>> net = alexnet(class_num=10)
     """
-    return AlexNet(class_num=class_num)
+    return AlexNet(class_num=kwargs.get('class_num', 10))

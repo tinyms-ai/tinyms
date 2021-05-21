@@ -21,7 +21,7 @@ import argparse
 from tinyms import context
 from tinyms.data import Cifar10Dataset, download_dataset
 from tinyms.vision import cifar10_transform
-from tinyms.model import Model, densenetBC_100
+from tinyms.model import Model, densenet100
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor
 from tinyms.metrics import Accuracy
 from tinyms.optimizers import Momentum
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('cifar10')
     # build the network
-    net = densenetBC_100(args_opt.num_classes)
+    net = densenet100(class_num=args_opt.num_classes)
     net.update_parameters_name(prefix='huawei')
     model = Model(net)
     # define the loss function

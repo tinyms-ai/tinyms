@@ -13,12 +13,8 @@
 # limitations under the License.
 # ============================================================================
 
-from . import loader, converter, utils
-from .loader import *
-from .converter import *
-from .utils import *
+from mindspore import mindrecord
+from mindspore.mindrecord import *
 
 __all__ = []
-__all__.extend(loader.__all__)
-__all__.extend(converter.__all__)
-__all__.extend(utils.__all__)
+__all__.extend(mindrecord.__all__)

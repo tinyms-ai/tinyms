@@ -10,4 +10,5 @@ requests >= 2.22.0
 flask >= 1.1.1
 python-Levenshtein >= 0.10.2
 gensim >= 3.8.1
+PyYAML
 pycocotools >= 2.0.0          # for st test

@@ -20,10 +20,10 @@ from mindspore.train.serialization import load_checkpoint as _load_checkpoint, \
 from ..layers import GraphLayer
 from .lenet5 import lenet5, LeNet
 from .resnet50 import resnet50, ResNet
-from .mobilenetv2 import mobilenetv2, mobilenetv2_infer, MobileNetV2
-from .ssd300 import ssd300_mobilenetv2, ssd300_infer, SSD300
+from .mobilenetv2 import mobilenetv2, MobileNetV2
+from .ssd300 import ssd300_mobilenetv2, SSD300
 from .cycle_gan.cycle_gan import cycle_gan, cycle_gan_infer
-from .densenetBC_100 import densenetBC_100, DenseNet
+from .densenet100 import densenet100, DenseNet
 from .alexnet import alexnet, AlexNet
 from .sentimentnet import sentimentnet, SentimentNet
 from .bert import bert, Bert
@@ -33,10 +33,10 @@ __all__ = [
     'load',
     'lenet5', 'LeNet',
     'resnet50', 'ResNet',
-    'mobilenetv2', 'mobilenetv2_infer', 'MobileNetV2',
-    'ssd300_mobilenetv2', 'ssd300_infer', 'SSD300',
+    'mobilenetv2', 'MobileNetV2',
+    'ssd300_mobilenetv2', 'SSD300',
     'cycle_gan', 'cycle_gan_infer',
-    'densenetBC_100', 'DenseNet',
+    'densenet100', 'DenseNet',
     'alexnet', 'AlexNet',
     'sentimentnet', 'SentimentNet',
     'bert', 'Bert',
