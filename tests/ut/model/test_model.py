@@ -16,7 +16,7 @@
 import tinyms as ts
 from tinyms import context, layers
 from tinyms.model import Model, lenet5, resnet50, alexnet, densenet100, \
-    mobilenetv2, ssd300_mobilenetv2
+    mobilenetv2, ssd300_mobilenetv2, vgg16
 
 
 def test_sequential():
@@ -66,6 +66,14 @@ def test_densenet100():
     model = Model(densenet100())
     model.compile()
     z = model.predict(ts.ones((1, 3, 32, 32)))
+    print(z.asnumpy())
+
+def test_vgg16():
+    context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
+
+    model = Model(vgg16())
+    model.compile()
+    z = model.predict(ts.ones((1, 3, 224, 224)))
     print(z.asnumpy())
 
 
