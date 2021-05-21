@@ -1,1 +1,0 @@
-# Documentation Figures and Pictures
