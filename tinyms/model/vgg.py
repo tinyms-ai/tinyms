@@ -13,17 +13,31 @@
 # limitations under the License.
 # ============================================================================
 
-from tinyms import layers
+import numpy as np
+
+from tinyms import layers, Tensor
+from tinyms.layers import BatchNorm2d, ReLU, Conv2d, MaxPool2d, \
+    Flatten, SequentialLayer, Layer
 
 
-class VGG(layers.Layer):
+def _weight_variable(shape, factor=0.01):
+    init_value = np.random.randn(*shape).astype(np.float32) * factor
+    return Tensor(init_value)
+
+
+def _conv3x3(in_channel, out_channel, stride=1):
+    weight_shape = (out_channel, in_channel, 3, 3)
+    weight = _weight_variable(weight_shape)
+    return Conv2d(in_channel, out_channel,
+                         kernel_size=3, stride=stride, padding=0, pad_mode='same', weight_init=weight)
+
+class VGG(Layer):
 
     def __init__(self, features, class_num=10):
         super(VGG, self).__init__()
         self.features = features
-        self.avgpool = layers.AvgPool2d(kernel_size=2,stride=2)
-        self.flatten = layers.Flatten()
-        self.classifier = layers.Sequential(
+        self.flatten = Flatten()
+        self.classifier = SequentialLayer([
             layers.Dense(512 * 7 * 7, 4096),
             layers.ReLU(),
             layers.Dropout(),
@@ -31,11 +45,10 @@ class VGG(layers.Layer):
             layers.ReLU(),
             layers.Dropout(),
             layers.Dense(4096, class_num),
-        )
+        ])
 
-    def forward(self, x):
+    def construct(self, x):
         x = self.features(x)
-        x = self.avgpool(x)
         x = self.flatten(x)
         x = self.classifier(x)
         return x
@@ -46,15 +59,15 @@ def make_layers(cfg, batch_norm=False):
     in_channels = 3
     for v in cfg:
         if v == 'M':
-            layers += [layers.MaxPool2d(kernel_size=2, stride=2)]
+            layers += [MaxPool2d(kernel_size=2, stride=2)]
         else:
-            conv2d = layers.Conv2d(in_channels, v, kernel_size=3, padding=1)
+            conv2d = _conv3x3(in_channels, v)
             if batch_norm:
-                layers += [conv2d, layers.BatchNorm2d(v), layers.ReLU()]
+                layers += [conv2d, BatchNorm2d(v), ReLU()]
             else:
-                layers += [conv2d, layers.ReLU()]
+                layers += [conv2d, ReLU()]
             in_channels = v
-    return layers.Sequential(*layers)
+    return SequentialLayer(layers)
 
 
 cfgs = {
@@ -152,7 +165,7 @@ def vgg16(**kwargs):
         >>>
         >>> net = vgg16(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['C'], batch_norm=False), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['D'], batch_norm=False), class_num=kwargs.get('class_num', 10))
 
 
 def vgg16_bn(**kwargs):
@@ -170,7 +183,7 @@ def vgg16_bn(**kwargs):
         >>>
         >>> net = vgg16_bn(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['C'], batch_norm=True), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['D'], batch_norm=True), class_num=kwargs.get('class_num', 10))
 
 
 def vgg19(**kwargs):
@@ -188,7 +201,7 @@ def vgg19(**kwargs):
         >>>
         >>> net = vgg19(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['D'], batch_norm=False), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['E'], batch_norm=False), class_num=kwargs.get('class_num', 10))
 
 
 def vgg19_bn(**kwargs):
@@ -206,4 +219,4 @@ def vgg19_bn(**kwargs):
         >>>
         >>> net = vgg19_bn(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['D'], batch_norm=True), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['E'], batch_norm=True), class_num=kwargs.get('class_num', 10))

@@ -76,7 +76,7 @@ if __name__ == '__main__':
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('cifar10')
     # build the network
-    net = vgg16(args_opt.num_classes)
+    net = vgg16(class_num=args_opt.num_classes)
     net.update_parameters_name(prefix='huawei')
     model = Model(net)
     # define the loss function
