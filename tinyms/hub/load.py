@@ -15,7 +15,8 @@
 
 import os
 import tempfile
-from tinyms.utils.train import load_checkpoint, load_param_into_net, save_checkpoint
+from tinyms.utils.train import load_checkpoint as _load_checkpoint, \
+    load_param_into_net, save_checkpoint as _save_checkpoint
 
 from .hubconf import MODEL_HUB
 from .utils.download import download_file_from_url
@@ -58,7 +59,7 @@ def _load_weights(path):
             download_url = asset_info.asset['asset-link']
             asset_sha256 = asset_info.asset["asset-sha256"]
             ckpt_path = download_file_from_url(download_url, asset_sha256, target_path)
-            return load_checkpoint(ckpt_path)
+            return _load_checkpoint(ckpt_path)
     except Exception as e:
         raise Exception(e)
 
@@ -114,7 +115,7 @@ def load_checkpoint(uid, dst):
     uid_info = UidInfo(uid)
     asset_path = _get_model_asset_path(uid_info)
     weights = _load_weights(asset_path)
-    save_checkpoint(weights, dst)
+    _save_checkpoint(weights, dst)
 
 
 def load_weights(uid):
