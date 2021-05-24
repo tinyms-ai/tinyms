@@ -98,7 +98,7 @@ if __name__ == '__main__':
         print("============== Accuracy:{} ==============".format(acc))
     else:  # as for train, users could use model.train
         ds_train = create_dataset(cifar10_path, batch_size=batch_size)
-        ckpoint_cb = ModelCheckpoint(prefix="alexnet_cifar10", config=CheckpointConfig(
+        ckpoint_cb = ModelCheckpoint(prefix="vgg_cifar10", config=CheckpointConfig(
             save_checkpoint_steps=save_checkpoint_epochs * ds_train.get_dataset_size(),
             keep_checkpoint_max=10))
         model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()],
