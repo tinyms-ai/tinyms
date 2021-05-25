@@ -78,7 +78,7 @@ cfgs = {
 }
 
 
-def vgg11(class_num=10):
+def vgg11(**kwargs):
     """
     Get vgg11 neural network.
 
@@ -93,10 +93,10 @@ def vgg11(class_num=10):
         >>>
         >>> net = vgg11(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['A'], batch_norm=False), class_num=class_num)
+    return VGG(make_layers(cfg=cfgs['A'], batch_norm=False), class_num=kwargs.get('class_num', 10))
 
 
-def vgg11_bn(class_num=10):
+def vgg11_bn(**kwargs):
     """
     Get vgg11_bn neural network.
 
@@ -111,7 +111,7 @@ def vgg11_bn(class_num=10):
         >>>
         >>> net = vgg11_bn(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['A'], batch_norm=True), class_num=class_num)
+    return VGG(make_layers(cfg=cfgs['A'], batch_norm=True), class_num=kwargs.get('class_num', 10))
 
 
 def vgg13(**kwargs):
