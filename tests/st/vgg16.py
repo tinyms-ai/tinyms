@@ -36,6 +36,7 @@ def parse_args():
                         help='device where the code will be implemented (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='Cifar10 dataset path.')
     parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
+    parser.add_argument('--batch_norm', type=bool, default=False, help='Use BatchNormalization or not.')
     parser.add_argument('--epoch_size', type=int, default=90, help='Epoch size.')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
     parser.add_argument('--num_classes', type=int, default=10, help='Num classes.')
@@ -76,7 +77,7 @@ if __name__ == '__main__':
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('cifar10')
     # build the network
-    net = vgg16(args_opt.num_classes)
+    net = vgg16(class_num=args_opt.num_classes, batch_norm=args_opt.batch_norm)
     net.update_parameters_name(prefix='huawei')
     model = Model(net)
     # define the loss function
@@ -98,7 +99,7 @@ if __name__ == '__main__':
         print("============== Accuracy:{} ==============".format(acc))
     else:  # as for train, users could use model.train
         ds_train = create_dataset(cifar10_path, batch_size=batch_size)
-        ckpoint_cb = ModelCheckpoint(prefix="vgg_cifar10", config=CheckpointConfig(
+        ckpoint_cb = ModelCheckpoint(prefix="vgg16_cifar10", config=CheckpointConfig(
             save_checkpoint_steps=save_checkpoint_epochs * ds_train.get_dataset_size(),
             keep_checkpoint_max=10))
         model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()],
