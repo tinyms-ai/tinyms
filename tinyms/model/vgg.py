@@ -16,8 +16,6 @@
 import numpy as np
 
 from tinyms import layers, Tensor
-from tinyms.layers import BatchNorm2d, ReLU, Conv2d, MaxPool2d, \
-    Flatten, SequentialLayer, Layer
 
 
 def _weight_variable(shape, factor=0.01):
@@ -28,16 +26,16 @@ def _weight_variable(shape, factor=0.01):
 def _conv3x3(in_channel, out_channel, stride=1):
     weight_shape = (out_channel, in_channel, 3, 3)
     weight = _weight_variable(weight_shape)
-    return Conv2d(in_channel, out_channel,
+    return layers.Conv2d(in_channel, out_channel,
                          kernel_size=3, stride=stride, padding=0, pad_mode='same', weight_init=weight)
 
-class VGG(Layer):
+class VGG(layers.Layer):
 
     def __init__(self, features, class_num=10):
         super(VGG, self).__init__()
         self.features = features
-        self.flatten = Flatten()
-        self.classifier = SequentialLayer([
+        self.flatten = layers.Flatten()
+        self.classifier = layers.SequentialLayer([
             layers.Dense(512 * 7 * 7, 4096),
             layers.ReLU(),
             layers.Dropout(),
@@ -55,19 +53,19 @@ class VGG(Layer):
 
 
 def make_layers(cfg, batch_norm=False):
-    layers = []
+    Layers = []
     in_channels = 3
     for v in cfg:
         if v == 'M':
-            layers += [MaxPool2d(kernel_size=2, stride=2)]
+            Layers += [layers.MaxPool2d(kernel_size=2, stride=2)]
         else:
             conv2d = _conv3x3(in_channels, v)
             if batch_norm:
-                layers += [conv2d, BatchNorm2d(v), ReLU()]
+                Layers += [conv2d, layers.BatchNorm2d(v), layers.ReLU()]
             else:
-                layers += [conv2d, ReLU()]
+                Layers += [conv2d, layers.ReLU()]
             in_channels = v
-    return SequentialLayer(layers)
+    return layers.SequentialLayer(Layers)
 
 
 cfgs = {
@@ -84,6 +82,7 @@ def vgg11(**kwargs):
 
     Args:
         class_num (int): Class number. Default: 10.
+        batch_norm (bool): Whether to use BatchNormalization. Default: False
 
     Returns:
         layers.Layer, layer instance of vgg11 neural network.
@@ -93,25 +92,7 @@ def vgg11(**kwargs):
         >>>
         >>> net = vgg11(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['A'], batch_norm=False), class_num=kwargs.get('class_num', 10))
-
-
-def vgg11_bn(**kwargs):
-    """
-    Get vgg11_bn neural network.
-
-    Args:
-        class_num (int): Class number. Default: 10.
-
-    Returns:
-        layers.Layer, layer instance of vgg11_bn neural network.
-
-    Examples:
-        >>> from tinyms.model import vgg11_bn
-        >>>
-        >>> net = vgg11_bn(class_num=10)
-    """
-    return VGG(make_layers(cfg=cfgs['A'], batch_norm=True), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['A'], batch_norm=kwargs.get('batch_norm', False)), class_num=kwargs.get('class_num', 10))
 
 
 def vgg13(**kwargs):
@@ -120,6 +101,7 @@ def vgg13(**kwargs):
 
     Args:
         class_num (int): Class number. Default: 10.
+        batch_norm (bool): Whether to use BatchNormalization. Default: False
 
     Returns:
         layers.Layer, layer instance of vgg13 neural network.
@@ -129,25 +111,7 @@ def vgg13(**kwargs):
         >>>
         >>> net = vgg13(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['B'], batch_norm=False), class_num=kwargs.get('class_num', 10))
-
-
-def vgg13_bn(**kwargs):
-    """
-    Get vgg13_bn neural network.
-
-    Args:
-        class_num (int): Class number. Default: 10.
-
-    Returns:
-        layers.Layer, layer instance of vgg13_bn neural network.
-
-    Examples:
-        >>> from tinyms.model import vgg13_bn
-        >>>
-        >>> net = vgg13_bn(class_num=10)
-    """
-    return VGG(make_layers(cfg=cfgs['B'], batch_norm=True), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['B'], batch_norm=kwargs.get('batch_norm', False)), class_num=kwargs.get('class_num', 10))
 
 
 def vgg16(**kwargs):
@@ -156,6 +120,7 @@ def vgg16(**kwargs):
 
     Args:
         class_num (int): Class number. Default: 10.
+        batch_norm (bool): Whether to use BatchNormalization. Default: False
 
     Returns:
         layers.Layer, layer instance of vgg16 neural network.
@@ -165,25 +130,7 @@ def vgg16(**kwargs):
         >>>
         >>> net = vgg16(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['D'], batch_norm=False), class_num=kwargs.get('class_num', 10))
-
-
-def vgg16_bn(**kwargs):
-    """
-    Get vgg16_bn neural network.
-
-    Args:
-        class_num (int): Class number. Default: 10.
-
-    Returns:
-        layers.Layer, layer instance of vgg16_bn neural network.
-
-    Examples:
-        >>> from tinyms.model import vgg16_bn
-        >>>
-        >>> net = vgg16_bn(class_num=10)
-    """
-    return VGG(make_layers(cfg=cfgs['D'], batch_norm=True), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['D'], batch_norm=kwargs.get('batch_norm', False)), class_num=kwargs.get('class_num', 10))
 
 
 def vgg19(**kwargs):
@@ -192,6 +139,7 @@ def vgg19(**kwargs):
 
     Args:
         class_num (int): Class number. Default: 10.
+        batch_norm (bool): Whether to use BatchNormalization. Default: False
 
     Returns:
         layers.Layer, layer instance of vgg19 neural network.
@@ -201,22 +149,4 @@ def vgg19(**kwargs):
         >>>
         >>> net = vgg19(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['E'], batch_norm=False), class_num=kwargs.get('class_num', 10))
-
-
-def vgg19_bn(**kwargs):
-    """
-    Get vgg19_bn neural network.
-
-    Args:
-        class_num (int): Class number. Default: 10.
-
-    Returns:
-        layers.Layer, layer instance of vgg19_bn neural network.
-
-    Examples:
-        >>> from tinyms.model import vgg19_bn
-        >>>
-        >>> net = vgg19_bn(class_num=10)
-    """
-    return VGG(make_layers(cfg=cfgs['E'], batch_norm=True), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['E'], batch_norm=kwargs.get('batch_norm', False)), class_num=kwargs.get('class_num', 10))

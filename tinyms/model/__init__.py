@@ -27,8 +27,7 @@ from .densenet100 import densenet100, DenseNet
 from .alexnet import alexnet, AlexNet
 from .sentimentnet import sentimentnet, SentimentNet
 from .bert import bert, Bert
-from .vgg import vgg11, vgg11_bn, vgg13, vgg13_bn, vgg16, vgg16_bn,\
-    vgg19_bn, vgg19, VGG
+from .vgg import vgg11, vgg13, vgg16, vgg19, VGG
 
 __all__ = [
     'Model',
@@ -42,7 +41,7 @@ __all__ = [
     'alexnet', 'AlexNet',
     'sentimentnet', 'SentimentNet',
     'bert', 'Bert',
-    'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn', 'vgg19', 'vgg19_bn', 'VGG'
+    'vgg11', 'vgg13', 'vgg16', 'vgg19', 'VGG'
 ]
 
 
