@@ -30,8 +30,23 @@ def _conv3x3(in_channel, out_channel, stride=1):
                          kernel_size=3, stride=stride, padding=0, pad_mode='same', weight_init=weight)
 
 class VGG(layers.Layer):
+    """
+    Get VGG neural network.
 
-    def __init__(self, features, class_num=10):
+    Args:
+        features (layers.Layer): Feature extractor.
+        class_num (int): Class number. Default: 1000.
+
+    Returns:
+        layers.Layer, layer instance of AlexNet neural network.
+
+    Examples:
+        >>> from tinyms.model import VGG
+        >>>
+        >>> net = VGG(features=make_layers(cfg=cfgs['A']),class_num=1000)
+    """
+
+    def __init__(self, features, class_num=1000):
         super(VGG, self).__init__()
         self.features = features
         self.flatten = layers.Flatten()
