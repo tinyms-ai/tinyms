@@ -1,4 +1,4 @@
-# Copyright 2020-2021 Huawei Technologies Co., Ltd
+# Copyright 2021 Huawei Technologies Co., Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,31 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-"""Tool for generate sha256 for given file path."""
+"""Tool for validating the model asset yaml file."""
 
 import argparse
-import hashlib
 import os
+
+from tinyms.hub.utils.check import ValidHubAsset
 
 
 def parse_args():
-    args_parser = argparse.ArgumentParser("Generate sha256 from specific file")
-    args_parser.add_argument("--input_file", type=str, required=True, help="which file to calculate the sha256")
+    args_parser = argparse.ArgumentParser("Validate the model asset from specific file")
+    args_parser.add_argument("--input_file", type=str, required=True, help="which file to verify")
     return args_parser.parse_args()
 
 
-def gen_sha256(path):
+def validate_asset(path):
     if not os.path.exists(path):
         print(f"File {path} not exists")
         return
 
-    with open(path, 'rb') as fr:
-        content = fr.read()
-        m = hashlib.sha256()
-        m.update(content)
-        print(f"sha256: {m.hexdigest()}")
+    if ValidHubAsset(path).validate_asset():
+        print(f"Asset file {path} validation passed")
+    return
 
 
 if __name__ == "__main__":
     args = parse_args()
-    gen_sha256(args.input_file)
+    validate_asset(args.input_file)
