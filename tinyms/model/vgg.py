@@ -107,7 +107,7 @@ def vgg11(**kwargs):
         >>>
         >>> net = vgg11(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['A'], batch_norm=kwargs.get('batch_norm', False)), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['A'], batch_norm=kwargs.get('batch_norm', True)), class_num=kwargs.get('class_num', 10))
 
 
 def vgg13(**kwargs):
@@ -126,7 +126,7 @@ def vgg13(**kwargs):
         >>>
         >>> net = vgg13(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['B'], batch_norm=kwargs.get('batch_norm', False)), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['B'], batch_norm=kwargs.get('batch_norm', True)), class_num=kwargs.get('class_num', 10))
 
 
 def vgg16(**kwargs):
@@ -145,7 +145,7 @@ def vgg16(**kwargs):
         >>>
         >>> net = vgg16(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['D'], batch_norm=kwargs.get('batch_norm', False)), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['D'], batch_norm=kwargs.get('batch_norm', True)), class_num=kwargs.get('class_num', 10))
 
 
 def vgg19(**kwargs):
@@ -164,4 +164,4 @@ def vgg19(**kwargs):
         >>>
         >>> net = vgg19(class_num=10)
     """
-    return VGG(make_layers(cfg=cfgs['E'], batch_norm=kwargs.get('batch_norm', False)), class_num=kwargs.get('class_num', 10))
+    return VGG(make_layers(cfg=cfgs['E'], batch_norm=kwargs.get('batch_norm', True)), class_num=kwargs.get('class_num', 10))
