@@ -22,4 +22,5 @@ MODEL_HUB = ed({
     "resnet50_v1": model.resnet50,
     "mobilenet_v2": model.mobilenetv2,
     "ssd300_v1": model.ssd300_mobilenetv2,
+    "vgg16_v1": model.vgg16,
 })

@@ -1,0 +1,27 @@
+##################################################################################################
+# VGG16 with Cifar10
+##################################################################################################
+---
+model-name: vgg16
+backbone-name: vgg16
+module-type: cv-classification
+fine-tunable: False
+input-shape: [3, 224, 224]
+model-version: v1
+train-dataset: cifar10
+train-backend: GPU
+accuracy: 0.925
+author: TinyMS team
+update-time: 2021-05-26
+user-id: TinyMS
+used-for: inference
+infer-backend:
+  - CPU
+  - GPU
+tinyms-version: 0.2
+asset:
+  file-format: ckpt
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/vgg16_v1_cifar10/vgg16.ckpt
+  asset-sha256: 3ec8a1cc68c231d932bbc19511248938eb684687af5fbe820882a8721ba8e7e9
+license: Apache-2.0
+summary: VGG16 model used to classify the 10 classes of Cifar10 dataset.
