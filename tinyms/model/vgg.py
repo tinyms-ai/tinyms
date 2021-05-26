@@ -97,7 +97,7 @@ def vgg11(**kwargs):
 
     Args:
         class_num (int): Class number. Default: 10.
-        batch_norm (bool): Whether to use BatchNormalization. Default: False
+        batch_norm (bool): Whether to use BatchNormalization. Default: True
 
     Returns:
         layers.Layer, layer instance of vgg11 neural network.
@@ -116,7 +116,7 @@ def vgg13(**kwargs):
 
     Args:
         class_num (int): Class number. Default: 10.
-        batch_norm (bool): Whether to use BatchNormalization. Default: False
+        batch_norm (bool): Whether to use BatchNormalization. Default: True
 
     Returns:
         layers.Layer, layer instance of vgg13 neural network.
@@ -135,7 +135,7 @@ def vgg16(**kwargs):
 
     Args:
         class_num (int): Class number. Default: 10.
-        batch_norm (bool): Whether to use BatchNormalization. Default: False
+        batch_norm (bool): Whether to use BatchNormalization. Default: True
 
     Returns:
         layers.Layer, layer instance of vgg16 neural network.
@@ -154,7 +154,7 @@ def vgg19(**kwargs):
 
     Args:
         class_num (int): Class number. Default: 10.
-        batch_norm (bool): Whether to use BatchNormalization. Default: False
+        batch_norm (bool): Whether to use BatchNormalization. Default: True
 
     Returns:
         layers.Layer, layer instance of vgg19 neural network.
