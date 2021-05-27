@@ -42,6 +42,7 @@ TinyMS的架构目标：
 | 模块名称 | 功能介绍 | 样例代码 |
 | :------ | :------- | :------ |
 | data | 数据集一键下载和加载 | `from tinyms.data import MnistDataset, download_dataset` |
+| hub | 预训练模型库，适用于模型推理和迁移学习 | `from tinyms import hub` |
 | model | Model高阶API以及预置网络 | `from tinyms.model import Model, lenet5` |
 | serving | 模型部署模块 | `from tinyms.serving import predict` |
 | vision | CV领域相关的数据处理 | `from tinyms.vision import mnist_transform, Resize` |

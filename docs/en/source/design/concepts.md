@@ -43,6 +43,7 @@ TinyMS has the following modules:
 | Name | Introduction | Example Code |
 | :--- | :----------- | :----------- |
 | data | Dataset Loading and Downloading | `from tinyms.data import MnistDataset, download_dataset` |
+| hub | Pre-trained Model Hub for Inference and Transfer Learning | `from tinyms import hub` |
 | model | Model High Level API and Predefined Network | `from tinyms.model import Model, lenet5` |
 | serving | Model Serving | `from tinyms.serving import predict` |
 | vision | Computer Vision Related Data Processing | `from tinyms.vision import mnist_transform, Resize` |

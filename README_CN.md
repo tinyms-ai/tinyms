@@ -11,13 +11,13 @@
 [![Releases](https://img.shields.io/github/release/tinyms-ai/tinyms/all.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/releases)
 [![LICENSE](https://img.shields.io/github/license/tinyms-ai/tinyms.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/blob/main/LICENSE)
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/mindspore/shared_invite/zt-dgk65rli-3ex4xvS4wHX7UDmsQmfu8w)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/tinyms-ai/tinyms/pulls)
 
 中文 | [View English](./README.md)
 
 TinyMS是基于[MindSpore AI框架](https://www.mindspore.cn/)开发，面向上层用户的一个高级API开发库，目的是让小白用户能够更加轻松地上手开发深度学习应用。
 
-<img src="docs/pic/tinyms-architecture.png" alt="TinyMS Architecture" width="600"/>
+<p align="center"><img src="docs/pic/tinyms-architecture.png" alt="TinyMS Architecture" width="800" /></p>
 
 ## 安装
 
