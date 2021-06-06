@@ -32,7 +32,7 @@ from tinyms.utils.eval import CityScapes, fast_hist, get_scores
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='MindSpore Cycle GAN Example')
+    parser = argparse.ArgumentParser(description='TinyMS Cycle GAN Example')
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
                         help='device where the code will be implemented (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='cityscape dataset path.')
