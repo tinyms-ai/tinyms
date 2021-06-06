@@ -29,7 +29,7 @@ from tinyms.losses import SoftmaxCrossEntropyWithLogits
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='MindSpore LeNet Example')
+    parser = argparse.ArgumentParser(description='TinyMS LeNet Example')
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
                         help='device where the code will be implemented. (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='Mnist dataset path.')

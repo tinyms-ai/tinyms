@@ -1,0 +1,27 @@
+##################################################################################################
+# AlexNet with Cifar10
+##################################################################################################
+---
+model-name: alexnet
+backbone-name: alexnet
+module-type: cv-classification
+fine-tunable: False
+input-shape: [3, 224, 224]
+model-version: v1
+train-dataset: cifar10
+train-backend: GPU
+accuracy: 0.887
+author: TinyMS team
+update-time: 2021-06-04
+user-id: TinyMS
+used-for: inference
+infer-backend:
+  - CPU
+  - GPU
+tinyms-version: 0.2
+asset:
+  file-format: ckpt
+  asset-link: https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.2/alexnet_v1_cifar10/alexnet.ckpt
+  asset-sha256: 941cbd3dcf9af40decf992a67c3635f77e1a797ca0c69e9cc4dae23bb3300bb4
+license: Apache-2.0
+summary: AlexNet model used to classify the 10 classes of Cifar10 dataset.

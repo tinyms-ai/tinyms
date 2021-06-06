@@ -21,7 +21,7 @@ import argparse
 from tinyms import context
 from tinyms.data import Cifar10Dataset, download_dataset
 from tinyms.vision import cifar10_transform
-from tinyms.model import Model, AlexNet
+from tinyms.model import Model, alexnet
 from tinyms.callbacks import ModelCheckpoint, CheckpointConfig, LossMonitor
 from tinyms.metrics import Accuracy
 from tinyms.optimizers import Momentum
@@ -31,17 +31,21 @@ random.seed(1)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Image classification')
+    parser = argparse.ArgumentParser(description='TinyMS AlexNet Example')
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'],
                         help='device where the code will be implemented (default: CPU)')
     parser.add_argument('--dataset_path', type=str, default=None, help='Cifar10 dataset path.')
-    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
     parser.add_argument('--epoch_size', type=int, default=90, help='Epoch size.')
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size.')
+    parser.add_argument('--do_eval', type=bool, default=False, help='Do eval or not.')
     parser.add_argument('--num_classes', type=int, default=10, help='Num classes.')
+    parser.add_argument('--load_pretrained', type=str, choices=['hub', 'local'], default='local',
+                        help='Specify where to load pretrained model, only valid in do_eval mode. (default: local)')
     parser.add_argument('--save_checkpoint_epochs', type=int, default=5,
                         help='Specify epochs interval to save each checkpoints.')
     parser.add_argument('--checkpoint_path', type=str, default=None, help='Checkpoint file path.')
+    parser.add_argument('--hub_uid', type=str, default=None,
+                        help='Model asset uid. Only valid when load_pretrained is `hub`.')
     args_opt = parser.parse_args()
 
     return args_opt
@@ -76,8 +80,12 @@ if __name__ == '__main__':
     if not args_opt.dataset_path:
         args_opt.dataset_path = download_dataset('cifar10')
     # build the network
-    net = AlexNet(args_opt.num_classes)
-    net.update_parameters_name(prefix='huawei')
+    if args_opt.do_eval and args_opt.load_pretrained == 'hub':
+        from tinyms import hub
+        net = hub.load(args_opt.hub_uid)
+    else:
+        net = alexnet(class_num=args_opt.num_classes)
+        net.update_parameters_name(prefix='huawei')
     model = Model(net)
     # define the loss function
     net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction="mean")
@@ -90,10 +98,13 @@ if __name__ == '__main__':
     cifar10_path = args_opt.dataset_path
     save_checkpoint_epochs = args_opt.save_checkpoint_epochs
     dataset_sink_mode = not args_opt.device_target == "CPU"
+
     if args_opt.do_eval:  # as for evaluation, users could use model.eval
         ds_eval = create_dataset(cifar10_path, batch_size=batch_size, is_training=False)
-        if args_opt.checkpoint_path:
-            model.load_checkpoint(args_opt.checkpoint_path)
+        # load the saved model for evaluation
+        if args_opt.load_pretrained == 'local':
+            if args_opt.checkpoint_path:
+                model.load_checkpoint(args_opt.checkpoint_path)
         acc = model.eval(ds_eval, dataset_sink_mode=dataset_sink_mode)
         print("============== Accuracy:{} ==============".format(acc))
     else:  # as for train, users could use model.train

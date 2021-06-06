@@ -18,6 +18,7 @@ from easydict import EasyDict as ed
 from tinyms import model
 
 MODEL_HUB = ed({
+    "alexnet_v1": model.alexnet,
     "lenet5_v1": model.lenet5,
     "resnet50_v1": model.resnet50,
     "mobilenet_v2": model.mobilenetv2,
