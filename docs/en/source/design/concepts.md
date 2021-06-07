@@ -149,6 +149,61 @@ model = Model(net)
 model.compile(metrics={"Accuracy": Accuracy())
 ```
 
+### Pre-trained model loading (*hub*)
+
+TinyMS Hub is a pre-trained model application tool, serving as a channel for model developers and application developers.
+
+- Provide model developers with a convenient and fast channel for model release and submission.
+- Provide application developers with high-quality pre-trained models, and complete the work of model migration to deployment quickly using model loading and fine-tuning APIs.
+
+Current pre-trained models in TinyMS Hub mainly cover four mainstream task scenarios including `image classification`, `object detection`, `semantic segmentation` and `recommendation`.
+
+There are several of scenarios for users to leverage `hub` to easily load the pre-trained model:
+
+* Load pre-trained model
+
+    ```python
+    from PIL import Image
+    from tinyms import hub
+    from tinyms.vision import mnist_transform
+    from tinyms.model import Model
+
+    img = Image.open(img_path)
+    img = mnist_transform(img)
+
+    # load LeNet5 pre-trained model
+    net= hub.load('tinyms/0.2/lenet5_v1_mnist', class_num=10)
+    model = Model(net)
+
+    res = model.predict(ts.expand_dims(ts.array(img), 0)).asnumpy()
+    print("The label is:", mnist_transform.postprocess(res))
+    ```
+
+* Load model checkpoint
+
+    ```python
+    from tinyms import hub
+    from tinyms.model import lenet5
+    from tinyms.utils.train import load_checkpoint
+
+    ckpt_dist_file = '/tmp/lenet5.ckpt'
+    hub.load_checkpoint('tinyms/0.2/lenet5_v1_mnist', ckpt_dist_file)
+    net = lenet5()
+    load_checkpoint(ckpt_dist_file, net=net)
+    ```
+
+* Load model weights
+
+    ```python
+    from tinyms import hub
+    from tinyms.model import lenet5
+    from tinyms.utils.train import load_param_into_net
+
+    param_dict = hub.load_weights('tinyms/0.2/lenet5_v1_mnist')
+    net = lenet5()
+    load_param_into_net(net, param_dict)
+    ```
+
 ### Model deployment (*serving*)
 
 Model deployment refers to the process of servicing pre-trained models so that they can quickly and efficiently process data input by users and obtain results. MindSpore provides the [predict](https://mindspore.cn/doc/api_python/en/r1.2/_modules/mindspore/train/model.html#Model.predict) function for inference. TinyMS provides a complete set of start server (`start_server`), check backend (`list_servables`), check start status (`server_started`) and shut down the server (`shutdown`) and other functions based on [Flask](https://flask.palletsprojects.com/en/1.1.x/) ; Take the `LeNet5` network as an example:

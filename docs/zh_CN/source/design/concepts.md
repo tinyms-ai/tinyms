@@ -150,6 +150,61 @@ model = Model(net)
 model.compile(metrics={"Accuracy": Accuracy())
 ```
 
+### 预训练模型加载（*hub*）
+
+TinyMS Hub是TinyMS生态的预训练模型应用工具，作为模型开发者和应用开发者的管道:
+
+- 向模型开发者提供方便快捷的模型发布、提交通道；
+- 向应用开发者提供高质量的预训练模型，结合模型加载以及模型Fine-tune API快速完成模型的迁移到部署的工作。
+
+TinyMS Hub提供的预训练模型主要包括`图像分类`、`目标检测`、`语义模型`、`推荐模型`等。
+
+当前`hub`模块为开发者提供了多种加载预训练模型的接口：
+
+* 加载预训练模型
+
+    ```python
+    from PIL import Image
+    from tinyms import hub
+    from tinyms.vision import mnist_transform
+    from tinyms.model import Model
+
+    img = Image.open(img_path)
+    img = mnist_transform(img)
+
+    # load LeNet5 pre-trained model
+    net= hub.load('tinyms/0.2/lenet5_v1_mnist', class_num=10)
+    model = Model(net)
+
+    res = model.predict(ts.expand_dims(ts.array(img), 0)).asnumpy()
+    print("The label is:", mnist_transform.postprocess(res))
+    ```
+
+* 加载模型ckpt文件
+
+    ```python
+    from tinyms import hub
+    from tinyms.model import lenet5
+    from tinyms.utils.train import load_checkpoint
+
+    ckpt_dist_file = '/tmp/lenet5.ckpt'
+    hub.load_checkpoint('tinyms/0.2/lenet5_v1_mnist', ckpt_dist_file)
+    net = lenet5()
+    load_checkpoint(ckpt_dist_file, net=net)
+    ```
+
+* 加载模型权重
+
+    ```python
+    from tinyms import hub
+    from tinyms.model import lenet5
+    from tinyms.utils.train import load_param_into_net
+
+    param_dict = hub.load_weights('tinyms/0.2/lenet5_v1_mnist')
+    net = lenet5()
+    load_param_into_net(net, param_dict)
+    ```
+
 ### 模型部署推理（*serving*）
 
 模型部署推理是指将预训练好的模型服务化，使其快速、高效地对用户输入的数据进行处理，得到结果的过程。MindSpore提供了[predict](https://mindspore.cn/doc/api_python/zh-CN/r1.2/_modules/mindspore/train/model.html#Model.predict)函数用于推理，同样的，TinyMS针对这个函数进行了相应的封装，以同一个接口对接不同的后端网络。为了实现服务化，TinyMS基于[Flask](https://flask.palletsprojects.com/en/1.1.x/)提供了整套的启动服务器（`start_server`）、检查后端(`list_servables`)、检查是否启动(`server_started`)和关闭服务器(`shutdown`)等功能； 以`LeNet5`网络为例：
