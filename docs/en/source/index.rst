@@ -37,6 +37,7 @@ designed to providing quick-start guidelines for machine learning beginners.
    :caption: Design
 
    design/concepts
+   design/hub_publish
 
 .. toctree::
    :maxdepth: 3

@@ -34,6 +34,7 @@ Welcome to TinyMS's documentation!
    :caption: 设计文档
 
    design/concepts
+   design/hub_publish
 
 .. toctree::
    :maxdepth: 3
