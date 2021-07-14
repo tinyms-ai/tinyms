@@ -1,5 +1,13 @@
 # TinyMS Release Notes
 
+## 0.2.1
+
+Released 2021-07-15.
+
+### Major Features and Improvements
+
+* Fix `load_checkpoint` interface bug in TinyMS 0.2.0 hub module. [#96](https://github.com/tinyms-ai/tinyms/pull/96)
+
 ## 0.2.0
 
 Released 2021-06-07.

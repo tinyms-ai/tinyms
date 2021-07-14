@@ -19,7 +19,7 @@ import os
 import setuptools
 
 package_name = 'tinyms'
-version_tag = '0.2.0'
+version_tag = '0.2.1'
 pwd = os.path.dirname(os.path.realpath(__file__))
 
 

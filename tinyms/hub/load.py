@@ -97,7 +97,7 @@ def load(uid, pretrained=True, **kwargs):
     return net
 
 
-def load_checkpoint(uid, dst):
+def load_checkpoint(uid, dst, pretrained=True, **kwargs):
     '''
     Load model checkpoint file from remote TinyMS Hub.
 
@@ -106,16 +106,26 @@ def load_checkpoint(uid, dst):
             the official example: `tinyms/0.2/lenet5_v1_mnist`.
         dst (str): Full path of filename where the checkpoint file
             will be loaded, e.g. `/tmp/lenet5.ckpt`.
+        pretrained (bool): Specified if to load pretrained weight ckpt file. Default: True.
+        kwargs (dict, optional): Keyword arguments for network initialization.
 
     Examples:
         >>> from tinyms import hub
         >>>
-        >>> hub.load_checkpoint('tinyms/0.2/lenet5_v1_mnist', '/tmp/lenet5.ckpt')
+        >>> hub.load_checkpoint('tinyms/0.2/lenet5_v1_mnist', '/tmp/lenet5.ckpt', class_num=10)
     '''
     uid_info = UidInfo(uid)
-    asset_path = _get_model_asset_path(uid_info)
-    weights = _load_weights(asset_path)
-    _save_checkpoint(weights, dst)
+    model_info = uid_info.model_name + '_' + uid_info.model_version
+    net_func = MODEL_HUB.get(model_info)
+    if net_func is None:
+        raise ValueError("Currently model_name only supports " + str(list(MODEL_HUB.keys())) + "!")
+
+    net = net_func(**kwargs)
+    if pretrained is True:
+        asset_path = _get_model_asset_path(uid_info)
+        ckpt_params = _load_weights(asset_path)
+        load_param_into_net(net, ckpt_params)
+    _save_checkpoint(net, dst)
 
 
 def load_weights(uid):
