@@ -73,7 +73,7 @@ if __name__ == "__main__":
         name=package_name,
         version=version_tag,
         author='The TinyMS Authors',
-        author_email='wanghui71leon@gmail.com',
+        author_email='simple_hlw@163.com',
         url='https://tinyms.readthedocs.io/en/latest/',
         download_url='https://github.com/tinyms-ai/tinyms/tags',
         project_urls={
