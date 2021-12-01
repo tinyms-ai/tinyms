@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" http-equiv="Access-Control-Allow-Origin" content="*">
+    <title>TinyMS Playground</title>
+</head>
+<script src="./jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+<body>
+    请选择推理的图片:<br>
+    <input type="file" id="img_btn" accept="image/JPG，image/jpg, image/jpeg, image/png">
+    <br><br> 请选择推理的'网络_数据集':<br>
+    <select id="servable_name" onchange="addStrategy()">
+        <option value="lenet5_mnist">lenet5_mnist</option>
+        <option value="cyclegan_cityscape">cyclegan_cityscape</option>
+        <option value="ssd300_shanshui">ssd300_shanshui</option>
+    </select>
+    <br><br> 请选择推理的策略:<br>
+    <select id="strategy">
+        <option value="TOP1_CLASS">TOP1_CLASS</option>
+        <option value="TOP5_CLASS">TOP5_CLASS</option>
+    </select>
+    <br><br>
+    <input type="submit" value="提交" onclick="predictImg()">
+<h2>推理结果展示：</h2>
+<p id="predict_txt"></p>
+
+<img src="./mindspore.png" width= "1000px" height="1000px" alt="图片加载..." id="predict_img" onload="AutoSize(this, this.width, this.height)">
+
+    <script>
+    function addStrategy(){
+        var servable_name = $("#servable_name").val();
+        if(servable_name == 'lenet5_mnist'){
+            $("#strategy").html("");
+            $("#strategy").append("<option value='TOP1_CLASS'>TOP1_CLASS</option>");
+            $("#strategy").append("<option value='TOP5_CLASS'>TOP5_CLASS</option>");
+        }
+        else if(servable_name == 'cyclegan_cityscape'){
+            $("#strategy").html("");
+            $("#strategy").append("<option value='gray2color'>gray2color</option>");
+            $("#strategy").append("<option value='color2gray'>color2gray</option>");
+        }
+        else{
+            $("#strategy").html("");
+            $("#strategy").append("<option value='TOP1_CLASS'>TOP1_CLASS</option>");
+        }
+    }
+
+    function predictImg(){
+    	var servable_name = $("#servable_name").val();
+		var strategy = $("#strategy").val();
+     	var file = $("#img_btn").get(0).files[0];
+     	var reader = new FileReader()
+     	reader.readAsDataURL(file)
+     	reader.onload = function(e) {
+			var img_base64 = e.target.result;
+			predict(img_base64.split(',')[1], servable_name, strategy);
+		}
+     }
+
+    function predict(img_base64, servable_name, strategy) {
+        var url="/predict";
+        var payload = {"data": img_base64, "servable_name": servable_name, "strategy": strategy};
+        $.ajax({
+          url: url,
+          type: 'POST',
+          data: JSON.stringify(payload),
+          async: false,
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function (res) {
+            if(res.status == 0){
+                instance = res.instance;
+                $("#predict_txt").html(instance.res_msg);
+                $("#predict_img").attr("src", instance.data);
+            }
+            else{
+                $("#predict_txt").html(res.err_msg);
+                $("#predict_img").attr("src","./sorry.png");
+            }
+          },
+          error: function (res) {
+              $("#predict_txt").html("抱歉！服务器出错了！");
+          }
+        });
+    }
+
+    function AutoSize(Img, maxWidth, maxHeight) {
+            var image = new Image();
+            //原图片原始地址（用于获取原图片的真实宽高，当<img>标签指定了宽、高时不受影响）
+            image.src = Img.src;
+            // 当图片比图片框小时不做任何改变
+            if (image.width < maxWidth&& image.height < maxHeight) {
+                Img.width = image.width;
+                Img.height = image.height;
+            }
+            else //原图片宽高比例 大于 图片框宽高比例,则以框的宽为标准缩放，反之以框的高为标准缩放
+            {
+                if (maxWidth/ maxHeight  <= image.width / image.height) //原图片宽高比例 大于 图片框宽高比例
+                {
+                    Img.width = maxWidth;   //以框的宽度为标准
+                    Img.height = maxWidth* (image.height / image.width);
+                }
+                else {   //原图片宽高比例 小于 图片框宽高比例
+                    Img.width = maxHeight  * (image.width / image.height);
+                    Img.height = maxHeight  ;   //以框的高度为标准
+                }
+            }
+
+    }
+    </script>
+
+</body>
+</html>
