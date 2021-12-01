@@ -119,6 +119,8 @@ class _FlaskServer(object):
     def linux_run_server(self):
         cmd = [f'python -c "from tinyms.serving import run_flask; run_flask()"']
         server_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        for line in iter(server_process.stdout.readline, b''):
+            print(line.decode('utf-8'))
 
         for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
             signal.signal(sig, self.signal_handler)
