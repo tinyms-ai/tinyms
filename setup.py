@@ -19,7 +19,7 @@ import os
 import setuptools
 
 package_name = 'tinyms'
-version_tag = '0.2.1'
+version_tag = '0.3.0'
 pwd = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -47,7 +47,7 @@ install_required_package = [
     'scipy >= 1.5.2',
     'matplotlib >= 3.1.3',
     'Pillow >= 6.2.0',
-    'mindspore == 1.2.0',
+    'mindspore == 1.3.0',
     'requests >= 2.22.0',
     'flask >= 1.1.1',
     'python-Levenshtein >= 0.10.2',
