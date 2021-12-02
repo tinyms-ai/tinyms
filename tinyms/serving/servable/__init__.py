@@ -13,6 +13,6 @@
 # limitations under the License.
 # ============================================================================
 """Servable functions"""
-from .servable import servable_search, predict
+from .servable import servable_search, predict, web_predict
 
-__all__ = ["servable_search", "predict"]
+__all__ = ["servable_search", "predict", "web_predict"]

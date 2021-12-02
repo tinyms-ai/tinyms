@@ -29,6 +29,7 @@ __all__ = [
     'cifar10_transform', 'Cifar10Transform',
     'imagefolder_transform', 'ImageFolderTransform',
     'voc_transform', 'VOCTransform',
+    'shanshui_tranform', 'ShanshuiTransform',
     'cyclegan_transform', 'CycleGanDatasetTransform'
 ]
 __all__.extend(_transform_ops.__all__)
@@ -41,7 +42,7 @@ class DatasetTransform(object):
 
     def __init__(self, labels=None):
         self.labels = labels
-        self.transform_strategy = ['TOP1_CLASS', 'TOP5_CLASS']
+        self.transform_strategy = ['TOP1_CLASS', 'TOP3_CLASS', 'TOP5_CLASS']
 
     def apply_ds(self, ds, trans_func=None, repeat_size=1, batch_size=32,
                  num_parallel_workers=None):
@@ -81,17 +82,18 @@ class DatasetTransform(object):
         score_list = softmax(Tensor(input, dtype=ts.float32)).asnumpy()
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
-            return ('TOP1: ' + str(self.labels[input[0].argmax()]) + ', score: ' + str(format(score, '.20f')))
+            return ('TOP1: {}, score: {}').format(str(self.labels[input[0].argmax()]), str(round(score, 3)))
         else:
             label_index = np.argsort(input[0])[::-1]
             score_index = np.sort(score_list[0])[::-1]
             top5_labels = []
             res = ''
             top5_scores = score_index[:5].tolist()
-            for i in range(5):
+            top_num = int(strategy.split('_')[0].split('TOP')[-1])
+            for i in range(top_num):
                 top5_labels.append(self.labels[label_index[i]])
                 res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + \
-                    ", score: " + str(format(top5_scores[i], '.20f')) + '\n'
+                       ", score: " + str(round(top5_scores[i], 5)) + '\t'
             return res
 
 
@@ -126,7 +128,8 @@ class MnistTransform(DatasetTransform):
         if not isinstance(img, (np.ndarray, Image.Image)):
             raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(img)))
         if isinstance(img, np.ndarray):
-            img = Image.fromarray(img, mode='RGB')
+            img = Image.fromarray(img.astype('uint8')).convert('RGB')
+        print(type(img))
         img = np.asarray(self.grayscale(img), dtype=np.float32)
         img = np.expand_dims(img, 2)
         img = self.resize(img)
@@ -459,7 +462,7 @@ class VOCTransform(DatasetTransform):
         Apply preprocess operation on VOCDataset instance.
 
         Args:
-            cifar10_ds (data.VOCDataset): VOCDataset instance.
+            voc_ds (data.VOCDataset): VOCDataset instance.
             repeat_size (int): The repeat size of dataset. Default: 1.
             batch_size (int): Batch size. Default: 32.
             num_parallel_workers (int): The number of concurrent workers. Default: None.
@@ -513,6 +516,195 @@ class VOCTransform(DatasetTransform):
             raise TypeError("Input should be 3-D Numpy, got {}.".format(input.ndim))
         if not strategy == 'TOP1_CLASS':
             raise ValueError("Currently VOC transform only supports 'TOP1_CLASS' strategy!")
+
+        pred_res = []
+        pred_loc, pred_cls, pred_label = ssd_bboxes_filter(input[0, :, :4], input[0, :, 4:], image_shape)
+        for loc, score, label in zip(pred_loc, pred_cls, pred_label):
+            pred_res.append({
+                'bbox': [loc[1], loc[0], loc[3] - loc[1], loc[2] - loc[0]],
+                'score': score,
+                'category_id': self.labels[label],
+            })
+
+        return pred_res
+
+
+class ShanshuiTransform(DatasetTransform):
+    r'''
+    Shanshui dataset transform class.
+
+    Inputs:
+        img (Union[numpy.ndarray, PIL.Image]): Image to be transformed in VOC-style.
+
+    Outputs:
+        numpy.ndarray, transformed image.
+
+    Examples:
+        >>> from PIL import Image
+        >>> from tinyms.vision import ShanshuiTransform
+        >>>
+        >>> shanshui_transform = ShanshuiTransform()
+        >>> img = Image.open('example.jpg')
+        >>> img = shanshui_transform(img)
+    '''
+
+    def __init__(self):
+        labels = ['Background',
+                  'Bird_spp', 'Blue_sheep', 'Glovers_pika', 'Gray_wolf',
+                  'Himalaya_marmot', 'Red_fox', 'Snow_leopard',
+                  'Tibetan_snowcock', 'Upland_Buzzard', 'White-lipped_deer']
+        super().__init__(labels=labels)
+        self.resize = Resize((300, 300))
+        self.horizontal_flip = PILRandomHorizontalFlip(1.0)
+        self.normalize = Normalize(mean=[0.485 * 255, 0.456 * 255, 0.406 * 255],
+                                   std=[0.229 * 255, 0.224 * 255, 0.225 * 255])
+        self.random_color_adjust = RandomColorAdjust(brightness=0.4, contrast=0.4, saturation=0.4)
+
+    def _preprocess_fn(self, image, boxes, labels, is_training=True):
+        """Preprocess function for shanshui dataset."""
+        def _random_sample_crop(image, boxes):
+            """Random Crop the image and boxes"""
+            height, width, _ = image.shape
+            min_iou = np.random.choice([None, 0.1, 0.3, 0.5, 0.7, 0.9])
+            if min_iou is None:
+                return image, boxes
+            # max trails (50)
+            for _ in range(50):
+                image_t = image
+                w = _rand(0.3, 1.0) * width
+                h = _rand(0.3, 1.0) * height
+                # aspect ratio constraint b/t .5 & 2
+                if h / w < 0.5 or h / w > 2:
+                    continue
+                left = _rand() * (width - w)
+                top = _rand() * (height - h)
+                rect = np.array([int(top), int(left), int(top + h), int(left + w)])
+                overlap = jaccard_numpy(boxes, rect)
+                # dropout some boxes
+                drop_mask = overlap > 0
+                if not drop_mask.any():
+                    continue
+                if overlap[drop_mask].min() < min_iou and overlap[drop_mask].max() > (min_iou + 0.2):
+                    continue
+                image_t = image_t[rect[0]:rect[2], rect[1]:rect[3], :]
+                centers = (boxes[:, :2] + boxes[:, 2:4]) / 2.0
+                m1 = (rect[0] < centers[:, 0]) * (rect[1] < centers[:, 1])
+                m2 = (rect[2] > centers[:, 0]) * (rect[3] > centers[:, 1])
+                # mask in that both m1 and m2 are true
+                mask = m1 * m2 * drop_mask
+                # have any valid boxes? try again if not
+                if not mask.any():
+                    continue
+                # take only matching gt boxes
+                boxes_t = boxes[mask, :].copy()
+                boxes_t[:, :2] = np.maximum(boxes_t[:, :2], rect[:2])
+                boxes_t[:, :2] -= rect[:2]
+                boxes_t[:, 2:4] = np.minimum(boxes_t[:, 2:4], rect[2:4])
+                boxes_t[:, 2:4] -= rect[:2]
+                return image_t, boxes_t
+            return image, boxes
+
+        # Only perform resize operation of data evaluation step
+        if not is_training:
+            img_h, img_w, _ = image.shape
+            image = self.resize(image)
+            return image, np.array((img_h, img_w), dtype=np.float32), labels
+        # Merge [x, y, w, h] and cls to [x, y, w, h, cls]
+        boxes = np.hstack((boxes, labels)).astype(np.float32)
+        # Change [x, y, w, h, cls] to [ymin, xmin, ymax, xmax, cls]
+        boxes_yxyx = np.zeros_like(boxes)
+        boxes_yxyx[:, 4] = boxes[:, 4]
+        boxes_yxyx[:, [1, 0]] = boxes[:, [0, 1]]
+        boxes_yxyx[:, [3, 2]] = boxes[:, [0, 1]] + boxes[:, [2, 3]]
+        # Random crop image and bbox
+        image, boxes_yxyx = _random_sample_crop(image, boxes_yxyx)
+        # Resize image and bbox
+        ih, iw, _ = image.shape
+        image = self.resize(image)
+        boxes_yxyx[:, [0, 2]] = boxes_yxyx[:, [0, 2]] / ih
+        boxes_yxyx[:, [1, 3]] = boxes_yxyx[:, [1, 3]] / iw
+        # Flip image and bbox or not
+        flip = _rand() < .5
+        if flip:
+            image = np.asarray(self.horizontal_flip(Image.fromarray(image, mode='RGB')))
+            boxes_yxyx[:, [1, 3]] = 1 - boxes_yxyx[:, [3, 1]]
+        # When the channels of image is 1
+        if len(image.shape) == 2:
+            image = np.expand_dims(image, axis=-1)
+            image = np.concatenate([image, image, image], axis=-1)
+
+        boxes_yxyx, label, num_match = ssd_bboxes_encode(boxes_yxyx)
+        return image, boxes_yxyx, label, num_match
+
+    def __call__(self, img):
+        if not isinstance(img, (np.ndarray, Image.Image)):
+            raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(img)))
+        img = self.resize(img)
+        img = self.normalize(img)
+        img = hwc2chw(img)
+
+        return img
+
+    def apply_ds(self, shanshui_ds, repeat_size=1, batch_size=32,
+                 num_parallel_workers=None, is_training=True):
+        r'''
+        Apply preprocess operation on shanshui_ds(VOCDataset instance).
+
+        Args:
+            shanshui_ds (data.VOCDataset): VOCDataset instance.
+            repeat_size (int): The repeat size of dataset. Default: 1.
+            batch_size (int): Batch size. Default: 32.
+            num_parallel_workers (int): The number of concurrent workers. Default: None.
+            is_training (bool): Specifies if is in training step. Default: True.
+
+        Returns:
+            data.VOCDataset, the preprocessed VOCDataset instance.
+
+        Examples:
+            >>> from tinyms.vision import ShanshuiTransform
+            >>>
+            >>> shanshui_transform = ShanshuiTransform()
+            >>> shanshui_ds = shanshui_transform.apply_ds(shanshui_ds)
+        '''
+        if not isinstance(shanshui_ds, VOCDataset):
+            raise TypeError("Input type should be VOCDataset, got {}.".format(type(shanshui_ds)))
+
+        compose_map_func = (lambda image, boxes, labels: self._preprocess_fn(image, boxes, labels, is_training))
+        if is_training:
+            output_columns = ["image", "bbox", "label", "num_match"]
+            trans_func = [self.random_color_adjust, self.normalize, hwc2chw]
+        else:
+            output_columns = ["image", "image_shape", "label"]
+            trans_func = [self.normalize, hwc2chw]
+        # apply transform functions on voc dataset
+        shanshui_ds = shanshui_ds.map(operations=compose_map_func,
+                                      input_columns=["image", "bbox", "label"],
+                                      output_columns=output_columns,
+                                      column_order=output_columns,
+                                      num_parallel_workers=num_parallel_workers)
+        shanshui_ds = super().apply_ds(shanshui_ds, trans_func=trans_func, repeat_size=repeat_size,
+                                       batch_size=batch_size, num_parallel_workers=num_parallel_workers)
+
+        return shanshui_ds
+
+    def postprocess(self, input, image_shape, strategy='TOP1_CLASS'):
+        r'''
+        Apply postprocess operation for prediction result.
+
+        Args:
+            input (numpy.ndarray): Prediction result.
+            image_shape (tuple): Image shape.
+            strategy (str): Specifies the postprocess strategy. Default: TOP1_CLASS.
+
+        Returns:
+            dict, the postprocess result.
+        '''
+        if not isinstance(input, np.ndarray):
+            raise TypeError("Input type should be numpy.ndarray, got {}.".format(type(input)))
+        if not input.ndim == 3:
+            raise TypeError("Input should be 3-D Numpy, got {}.".format(input.ndim))
+        if not strategy == 'TOP1_CLASS':
+            raise ValueError("Currently Shanshui transform only supports 'TOP1_CLASS' strategy!")
 
         pred_res = []
         pred_loc, pred_cls, pred_label = ssd_bboxes_filter(input[0, :, :4], input[0, :, 4:], image_shape)
@@ -616,4 +808,5 @@ mnist_transform = MnistTransform()
 cifar10_transform = Cifar10Transform()
 imagefolder_transform = ImageFolderTransform()
 voc_transform = VOCTransform()
+shanshui_tranform = ShanshuiTransform()
 cyclegan_transform = CycleGanDatasetTransform()

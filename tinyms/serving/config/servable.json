@@ -1,5 +1,14 @@
 [
     {
+        "name": "lenet5_mnist",
+        "description": "This servable hosts a LeNet5 model predicting for mnist dataset",
+        "model": {
+            "name": "lenet5",
+            "format": "ckpt",
+            "class_num": 10
+        }
+    },
+    {
         "name": "resnet50_mushroom",
         "description": "This servable hosts a ResNet50 model predicting for mushrooms",
         "model": {
@@ -10,11 +19,22 @@
     },
     {
         "name": "cyclegan_cityscape",
-        "description": "This servable hosts a Cycle GAN model predicting for cityscape dataset",
+        "description": "This servable hosts a Cycle GAN model predicting for cityscape style migration",
         "model": {
             "name": "cycle_gan",
             "format": "ckpt",
             "g_model": "resnet"
         }
+    },
+    {
+        "name": "ssd300_shanshui",
+        "description": "This servable hosts a SSD300 model predicting for shanshui protected animal",
+        "model": {
+            "name": "ssd300",
+            "format": "ckpt",
+            "class_num": 11
+        }
     }
 ]
+
+
