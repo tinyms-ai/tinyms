@@ -73,6 +73,30 @@ def predict_server(name):
     return jsonify(res)
 
 
+@app.route('/predict', methods=['POST'])
+@cross_origin(supports_credentials=True)
+def predict_web():
+    json_data = json.loads(request.data)
+    strategy = json_data['strategy']
+    servable_name = json_data['servable_name']
+    dataset_name = servable_name.split('_')[-1]
+    data = base64.b64decode(json_data['data'])
+    image = base64tonumpy(data)
+
+    instance = {
+        'shape': list(image.shape),
+        'dtype': image.dtype.name,
+        'data': json.dumps(image.tolist())
+    }
+    res = servable_search(servable_name)
+    if res['status'] != 0:
+        set_cross(res)
+        return jsonify(res)
+    servable = res['servables'][0]
+    res = web_predict(instance, servable_name, servable['model'], dataset_name, strategy)
+    set_cross(res)
+    return jsonify(res)
+
 class _FlaskServer(object):
     """
     Create a flask service, only be used to trigger starting the flask server
