@@ -82,7 +82,7 @@ class DatasetTransform(object):
         score_list = softmax(Tensor(input, dtype=ts.float32)).asnumpy()
         if strategy == 'TOP1_CLASS':
             score = max(score_list[0])
-            return ('TOP1: {}, score: {}').format(str(self.labels[input[0].argmax()]), str(round(score, 3)))
+            return ('TOP1: {}, score: {}').format(str(self.labels[input[0].argmax()]), str(round(score, 5)))
         else:
             label_index = np.argsort(input[0])[::-1]
             score_index = np.sort(score_list[0])[::-1]
@@ -93,7 +93,7 @@ class DatasetTransform(object):
             for i in range(top_num):
                 top5_labels.append(self.labels[label_index[i]])
                 res += 'TOP' + str(i+1) + ": " + str(top5_labels[i]) + \
-                       ", score: " + str(round(top5_scores[i], 5)) + '\t'
+                       ", score: " + str(format(top5_scores[i], '.7f')) + '\t'
             return res
 
 
@@ -129,7 +129,6 @@ class MnistTransform(DatasetTransform):
             raise TypeError("Input type should be numpy.ndarray or PIL.Image, got {}.".format(type(img)))
         if isinstance(img, np.ndarray):
             img = Image.fromarray(img.astype('uint8')).convert('RGB')
-        print(type(img))
         img = np.asarray(self.grayscale(img), dtype=np.float32)
         img = np.expand_dims(img, 2)
         img = self.resize(img)
