@@ -51,8 +51,9 @@ install_required_package = [
     'requests >= 2.22.0',
     'flask >= 1.1.1',
     'python-Levenshtein >= 0.10.2',
-    'gensim >= 3.8.1',
+    'gensim == 3.8.1',
     'PyYAML',
+    'opencv-python == 4.1.2.30'
 ]
 
 test_required_package = [
