@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+import base64
 import os
 import sys
 import json
@@ -20,11 +21,29 @@ import socket
 import logging
 import platform
 import subprocess
+import cv2
+import numpy as np
 
-from flask import request, Flask, jsonify
-from ..servable import predict, servable_search
+from flask import request, Flask, jsonify, make_response
+from flask_cors import CORS, cross_origin
+from tinyms.serving.servable import predict, servable_search, web_predict
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 20*1024*1024
+CORS(app, supports_credentials=True)
+
+
+def set_cross(res):
+    response = make_response(jsonify(res))
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Method'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = '*'
+
+
+def base64tonumpy(img_base64):
+    np_arr = np.fromstring(img_base64, np.uint8)
+    img = cv2.imdecode(np_arr, cv2.IMREAD_UNCHANGED)
+    return np.array(img)
 
 
 @app.route('/servables', methods=['GET'])
@@ -96,6 +115,7 @@ def predict_web():
     res = web_predict(instance, servable_name, servable['model'], dataset_name, strategy)
     set_cross(res)
     return jsonify(res)
+
 
 class _FlaskServer(object):
     """
