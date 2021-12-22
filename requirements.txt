@@ -16,3 +16,4 @@ flask_cors >= 3.0.10
 pycocotools >= 2.0.0          # for st test
 wget == 3.2
 scikit-learn == 1.0.1
+tqdm == 4.62.3

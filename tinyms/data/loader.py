@@ -25,9 +25,12 @@ import random
 import numpy as np
 import math
 import gensim
+import codecs
 import collections
 import pickle
+
 from itertools import chain
+from tqdm import tqdm
 
 from mindspore.dataset import engine
 from mindspore.dataset.engine import *
@@ -373,7 +376,7 @@ class KaggleDisplayAdvertisingDataset:
         self.skip_id_convert = False
         self.train_line_count = 45840617
         self.test_size = 0.1
-        self.seed = 20211222120520
+        self.seed = 20191005
         self.line_per_sample = 1000
         self.epochs = 1
         self.num_parallel_workers = num_parallel_workers
@@ -527,22 +530,24 @@ class KaggleDisplayAdvertisingDataset:
         stats data
         """
         num_splits = self.dense_dim + self.slot_dim + 1
-        error_lines_number = []
+        error_stat_lines_num = []
 
         train_file_path = os.path.join(self.data_dir, "train.txt")
-        with open(train_file_path, encoding="utf8") as f:
-            count = 0
-            for line in f:
-                count += 1
+        with codecs.open(train_file_path, encoding="utf8", buffering=32*1024*1024) as f:
+            t_f = tqdm(f)
+            t_f.set_description("Processing StatsData")
+            num_line = 0
+            for line in t_f:
+                num_line += 1
                 line = line.strip("\n")
                 items = line.split("\t")
                 if len(items) != num_splits:
-                    error_lines_number.append(count)
-                    print("Found line length: {}, suppose to be {}, the line is {}".format(
-                        len(items), num_splits, line))
+                    error_stat_lines_num.append(num_line)
+                    # print("Found line length: {}, suppose to be {}, the line is {}".format(
+                    #     len(items), num_splits, line))
                     continue
-                if count % 1000000 == 0:
-                    print("Have handled {}w lines.".format(count // 10000))
+                # if num_line % 1000000 == 0:
+                #     print("Have handled {}w lines.".format(num_line // 10000))
                 values = items[1: self.dense_dim + 1]
                 cats = items[self.dense_dim + 1:]
                 assert len(values) == self.dense_dim, "values.size: {}".format(len(values))
@@ -550,6 +555,9 @@ class KaggleDisplayAdvertisingDataset:
                 self.__stats_vals(values)
                 self.__stats_cats(cats)
         self.__save_stats_dict()
+
+        error_stat_path = os.path.join(self.data_dir, "error_stat_lines_num.npy")
+        np.save(error_stat_path, error_stat_lines_num)
 
     def convert_to_mindrecord(self):
         test_size = int(self.train_line_count * self.test_size)
@@ -577,21 +585,23 @@ class KaggleDisplayAdvertisingDataset:
 
         part_rows = 2000000
         num_splits = self.dense_dim + self.slot_dim + 1
-        error_lines_num = []
+        error_conv_lines_num = []
 
         train_file_path = os.path.join(self.data_dir, "train.txt")
-        with open(train_file_path, encoding="utf8") as f:
+        with codecs.open(train_file_path, encoding="utf8", buffering=32*1024*1024) as f:
+            t_f = tqdm(f)
+            t_f.set_description("Processing Convert2MR")
             num_line = 0
             train_part_number = 0
             test_part_number = 0
-            for line in f:
+            for line in t_f:
                 num_line += 1
-                if num_line % 1000000 == 0:
-                    print("Converting to MindRecord. Have handle {}w lines.".format(num_line // 10000), flush=True)
+                # if num_line % 1000000 == 0:
+                #     print("Converting to MindRecord. Have handle {}w lines.".format(num_line // 10000), flush=True)
                 line = line.strip("\n")
                 items = line.split("\t")
                 if len(items) != num_splits:
-                    error_lines_num.append(num_line)
+                    error_conv_lines_num.append(num_line)
                     continue
                 label = float(items[0])
                 values = items[1: 1 + self.dense_dim]
@@ -635,7 +645,9 @@ class KaggleDisplayAdvertisingDataset:
                 test_writer.write_raw_data(test_data_list)
         train_writer.commit()
         test_writer.commit()
-        np.save("error_lines_num.npy", error_lines_num)
+
+        error_stat_path = os.path.join(self.data_dir, "error_conv_lines_num.npy")
+        np.save(error_stat_path, error_conv_lines_num)
 
     def load_mindreocrd_dataset(self, usage='train', batch_size=1000):
         """
