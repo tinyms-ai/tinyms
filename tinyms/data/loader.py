@@ -386,7 +386,8 @@ class KaggleDisplayAdvertisingDataset:
         if os.path.exists(self.mindrecord_dir):
             print("mindrecord directory: {} exists! we will use it to save or read mindrecord dataset.".
                   format(self.mindrecord_dir), flush=True)
-        os.makedirs(self.mindrecord_dir)
+        else:
+            os.makedirs(self.mindrecord_dir)
 
     def _check_num_parallel_workers(self):
         # use multiprocessing to get cpu count
@@ -402,7 +403,8 @@ class KaggleDisplayAdvertisingDataset:
         if os.path.exists(self.stats_dict_dir):
             print("stats dict directory: {} exists! we will use it to save or read stats dict.".
                   format(self.stats_dict_dir), flush=True)
-        os.makedirs(self.stats_dict_dir)
+        else:
+            os.makedirs(self.stats_dict_dir)
 
     def __init_mindrecord(self):
         """
