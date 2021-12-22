@@ -47,7 +47,7 @@ install_required_package = [
     'scipy >= 1.5.2',
     'matplotlib >= 3.1.3',
     'Pillow >= 6.2.0',
-    'mindspore == 1.3.0',
+    'mindspore == 1.5.0',
     'requests >= 2.22.0',
     'flask >= 1.1.1',
     'python-Levenshtein >= 0.10.2',
@@ -55,6 +55,8 @@ install_required_package = [
     'PyYAML',
     'opencv-python == 4.1.2.30',
     'flask_cors >= 3.0.10',
+    'wget == 3.2',
+    'scikit-learn == 1.0.1',
 ]
 
 test_required_package = [
