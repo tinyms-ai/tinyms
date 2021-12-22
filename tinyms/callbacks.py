@@ -20,7 +20,7 @@ from mindspore.train import callback
 from mindspore.train.callback import *
 from . import Tensor
 
-__all__ = ['LossTimeMonitor', 'BertLossCallBack']
+__all__ = ['LossTimeMonitor', 'LossTimeMonitorV2', 'BertLossCallBack']
 __all__.extend(callback.__all__)
 
 
@@ -68,12 +68,10 @@ class LossTimeMonitor(Callback):
         step_loss = cb_params.net_outputs
 
         if isinstance(step_loss, (tuple, list)) and isinstance(step_loss[0], Tensor):
-            print("step loss type is tuple", flush=True)
             step_loss = step_loss[0]
         if isinstance(step_loss, Tensor):
-            print("step loss type is tensor", flush=True)
             step_loss = np.mean(step_loss.asnumpy())
-        print("step loss shape: {}".format(step_loss.shape), flush=True)
+
         self.losses.append(step_loss)
         cur_step_in_epoch = (cb_params.cur_step_num - 1) % cb_params.batch_num
 
@@ -81,6 +79,62 @@ class LossTimeMonitor(Callback):
             cb_params.cur_epoch_num -
             1, cb_params.epoch_num, cur_step_in_epoch, cb_params.batch_num, step_loss,
             np.mean(self.losses), step_mseconds, self.lr_init[cb_params.cur_step_num - 1]))
+
+
+class LossTimeMonitorV2(Callback):
+    """
+    Monitor loss and time version 2.0.
+    This version get learning rate from run_context.
+
+    Args:
+
+    Returns:
+        None
+
+    Examples:
+        >>> from tinyms.callbacks import LossTimeMonitorV2
+        >>>
+        >>> LossTimeMonitor()
+    """
+
+    def __init__(self):
+        super(LossTimeMonitorV2, self).__init__()
+
+    def epoch_begin(self, run_context):
+        self.losses = []
+        self.epoch_time = time.time()
+
+    def epoch_end(self, run_context):
+        cb_params = run_context.original_args()
+
+        epoch_mseconds = (time.time() - self.epoch_time) * 1000
+        per_step_mseconds = epoch_mseconds / cb_params.batch_num
+        print("epoch time: {:5.3f}, per step time: {:5.3f}, avg loss: {:5.3f}".format(epoch_mseconds,
+                                                                                      per_step_mseconds,
+                                                                                      np.mean(self.losses)))
+
+    def step_begin(self, run_context):
+        self.step_time = time.time()
+
+    def step_end(self, run_context):
+        cb_params = run_context.original_args()
+        step_mseconds = (time.time() - self.step_time) * 1000
+        step_loss = cb_params.net_outputs
+        arr_lr = cb_params.optimizer.learning_rate.asnumpy()
+        lr = float(np.array2string(arr_lr))
+
+        if isinstance(step_loss, (tuple, list)) and isinstance(step_loss[0], Tensor):
+            step_loss = step_loss[0]
+        if isinstance(step_loss, Tensor):
+            step_loss = np.mean(step_loss.asnumpy())
+
+        self.losses.append(step_loss)
+        cur_step_in_epoch = (cb_params.cur_step_num - 1) % cb_params.batch_num
+
+        print("epoch: [{:3d}/{:3d}], step:[{:5d}/{:5d}], loss:[{:5.3f}/{:5.3f}], time:[{:5.3f}], lr:[{:5.3f}]".format(
+            cb_params.cur_epoch_num -
+            1, cb_params.epoch_num, cur_step_in_epoch, cb_params.batch_num, step_loss,
+            np.mean(self.losses), step_mseconds, lr))
 
 
 class BertLossCallBack(Callback):
