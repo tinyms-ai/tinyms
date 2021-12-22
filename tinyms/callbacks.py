@@ -84,7 +84,7 @@ class LossTimeMonitor(Callback):
 class LossTimeMonitorV2(Callback):
     """
     Monitor loss and time version 2.0.
-    This version get learning rate from run_context.
+    This version will not show learning rate.
 
     Args:
 
@@ -120,8 +120,8 @@ class LossTimeMonitorV2(Callback):
         cb_params = run_context.original_args()
         step_mseconds = (time.time() - self.step_time) * 1000
         step_loss = cb_params.net_outputs
-        arr_lr = cb_params.optimizer.learning_rate.asnumpy()
-        lr = float(np.array2string(arr_lr))
+        # arr_lr = cb_params.optimizer.learning_rate.asnumpy()
+        # lr = float(np.array2string(arr_lr))
 
         if isinstance(step_loss, (tuple, list)) and isinstance(step_loss[0], Tensor):
             step_loss = step_loss[0]
@@ -131,10 +131,10 @@ class LossTimeMonitorV2(Callback):
         self.losses.append(step_loss)
         cur_step_in_epoch = (cb_params.cur_step_num - 1) % cb_params.batch_num
 
-        print("epoch: [{:3d}/{:3d}], step:[{:5d}/{:5d}], loss:[{:5.3f}/{:5.3f}], time:[{:5.3f}], lr:[{:5.3f}]".format(
+        print("epoch: [{:3d}/{:3d}], step:[{:5d}/{:5d}], loss:[{:5.3f}/{:5.3f}], time:[{:5.3f}]]".format(
             cb_params.cur_epoch_num -
             1, cb_params.epoch_num, cur_step_in_epoch, cb_params.batch_num, step_loss,
-            np.mean(self.losses), step_mseconds, lr))
+            np.mean(self.losses), step_mseconds))
 
 
 class BertLossCallBack(Callback):
