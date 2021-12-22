@@ -94,7 +94,7 @@ class LossTimeMonitorV2(Callback):
     Examples:
         >>> from tinyms.callbacks import LossTimeMonitorV2
         >>>
-        >>> LossTimeMonitor()
+        >>> LossTimeMonitorV2()
     """
 
     def __init__(self):
@@ -109,9 +109,8 @@ class LossTimeMonitorV2(Callback):
 
         epoch_mseconds = (time.time() - self.epoch_time) * 1000
         per_step_mseconds = epoch_mseconds / cb_params.batch_num
-        print("epoch time: {:5.3f}, per step time: {:5.3f}, avg loss: {:5.3f}".format(epoch_mseconds,
-                                                                                      per_step_mseconds,
-                                                                                      np.mean(self.losses)))
+        print("epoch time: {:5.3f}, per step time: {:5.3f}, avg loss: {:5.3f}".
+              format(epoch_mseconds, per_step_mseconds, np.mean(self.losses)), flush=True)
 
     def step_begin(self, run_context):
         self.step_time = time.time()
@@ -132,9 +131,8 @@ class LossTimeMonitorV2(Callback):
         cur_step_in_epoch = (cb_params.cur_step_num - 1) % cb_params.batch_num
 
         print("epoch: [{:3d}/{:3d}], step:[{:5d}/{:5d}], loss:[{:5.3f}/{:5.3f}], time:[{:5.3f}]]".format(
-            cb_params.cur_epoch_num -
-            1, cb_params.epoch_num, cur_step_in_epoch, cb_params.batch_num, step_loss,
-            np.mean(self.losses), step_mseconds))
+            cb_params.cur_epoch_num - 1, cb_params.epoch_num, cur_step_in_epoch, cb_params.batch_num, step_loss,
+            np.mean(self.losses), step_mseconds), flush=True)
 
 
 class BertLossCallBack(Callback):

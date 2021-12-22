@@ -29,27 +29,30 @@ class AUCMetric(Metric):
     Calculates the auc value.
     Implement auc metric method.
 
-    Note:
-        The method `update` must receive input of the form :math:`(y_{pred}, y)`. If some samples have
-        the same accuracy, the first sample will be chosen.
+    Computes the Area Under the Curve (AUC) using the trapezoidal rule. This is a general function, given points on a
+    curve. For computing the area under the ROC-curve.
 
     Args:
-        k (int): Specifies the top-k categorical accuracy to compute.
+        x (Union[np.array, list]): From the ROC curve(fpr), np.array with false positive rates. If multiclass,
+                                   this is a list of such np.array, one for each class. The shape :math:`(N)`.
+        y (Union[np.array, list]): From the ROC curve(tpr), np.array with true positive rates. If multiclass,
+                                   this is a list of such np.array, one for each class. The shape :math:`(N)`.
+        reorder (boolean): If True, assume that the curve is ascending in the case of ties, as for an ROC curve.
+                           If the curve is non-ascending, the result will be wrong. Default: False.
 
-    Raises:
-        TypeError: If `k` is not int.
-        ValueError: If `k` is less than 1.
+    Returns:
+        area (float): Compute result.
 
     Examples:
-        >>> x = Tensor(np.array([[0.2, 0.5, 0.3, 0.6, 0.2], [0.1, 0.35, 0.5, 0.2, 0.],
-        ...         [0.9, 0.6, 0.2, 0.01, 0.3]]), mindspore.float32)
-        >>> y = Tensor(np.array([2, 0, 1]), mindspore.float32)
-        >>> topk = nn.TopKCategoricalAccuracy(3)
-        >>> topk.clear()
-        >>> topk.update(x, y)
-        >>> output = topk.eval()
+        >>> y_pred = np.array([[3, 0, 1], [1, 3, 0], [1, 0, 2]])
+        >>> y = np.array([[0, 2, 1], [1, 2, 1], [0, 0, 1]])
+        >>> metric = nn.ROC(pos_label=2)
+        >>> metric.clear()
+        >>> metric.update(y_pred, y)
+        >>> fpr, tpr, thre = metric.eval()
+        >>> output = auc(fpr, tpr)
         >>> print(output)
-        0.6666666666666666
+        0.5357142857142857
     """
     def __init__(self):
         super(AUCMetric, self).__init__()
