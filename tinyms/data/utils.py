@@ -18,6 +18,7 @@ import sys
 import gzip
 import tarfile
 import requests
+import wget
 from PIL import Image
 import numpy as np
 from tinyms import Tensor
@@ -113,6 +114,25 @@ def _fetch_and_unzip(url, file_name):
     os.remove(file_name)
 
 
+def _fetch_and_unzip_by_wget(url, file_name):
+    """download the dataset from remote url by wget tool
+    Args:
+        url: str, remote download url
+        file_name: str, local path of downloaded file
+    """
+    # function to show download progress
+    def bar_progress(current, total, width=80):
+        progress_message = "Downloading: %d%% [%d / %d] bytes" % (current / total * 100, current, total)
+        # Don't use print() as it will print in new line every time.
+        sys.stdout.write("\r" + progress_message)
+        sys.stdout.flush()
+    # using wget is faster than fetch.
+    wget.download(url, out=file_name, bar=bar_progress)
+    print("\n============== {} is ready ==============".format(file_name))
+    _unzip(file_name)
+    os.remove(file_name)
+
+
 def _download_mnist(local_path):
     """Download the dataset from http://yann.lecun.com/exdb/mnist/."""
     dataset_path = os.path.join(local_path, 'mnist')
@@ -186,11 +206,44 @@ def _download_voc(local_path):
     return os.path.join(dataset_path, 'VOCdevkit', 'VOC2007')
 
 
+def _check_kaggle_display_advertising_files(local_path):
+    file_name_list = ["train.txt", "test.txt", "readme.txt"]
+    file_size_list = [11147184845, 1460246311, 1927]
+
+    for file_name, file_size in zip(file_name_list, file_size_list):
+        file_path = os.path.join(local_path, file_name)
+        if not os.path.exists(file_path):
+            return False
+        else:
+            if os.path.getsize(file_path) != file_size:
+                return False
+
+    return True
+
+
+def _download_kaggle_display_advertising(local_path):
+    '''Download the dataset from http://go.criteo.net/criteo-research-kaggle-display-advertising-challenge-dataset.tar.gz.'''
+    dataset_path = os.path.join(local_path, "kaggle_display_advertising")
+    if not os.path.exists(dataset_path):
+        os.makedirs(dataset_path)
+
+    print("************** Downloading the Kaggle Display Advertising Challenge dataset **************")
+    remote_url = "http://go.criteo.net/criteo-research-kaggle-display-advertising-challenge-dataset.tar.gz"
+    file_name = os.path.join(dataset_path, remote_url.split('/')[-1])
+    if not _check_kaggle_display_advertising_files(local_path):
+        _fetch_and_unzip_by_wget(remote_url, file_name)
+    else:
+        print("{} already have kaggle display advertising dataset.".format(dataset_path), flush=True)
+
+    return os.path.join(dataset_path)
+
+
 download_checker = {
     'mnist': _download_mnist,
     'cifar10': _download_cifar10,
     'cifar100': _download_cifar100,
     'voc': _download_voc,
+    'kaggle_display_advertising': _download_kaggle_display_advertising,
 }
 
 
