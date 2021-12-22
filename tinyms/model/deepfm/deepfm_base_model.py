@@ -99,16 +99,19 @@ class DeepFM(layers.Layer):
         vocab_size (int): The vocabulary size.
         embed_size (int): The embeding size.
         keep_prob (float): The keep prob value. Default: 0.9.
-        convert_dtype (bool): Whether to convert data type. Defalut: True.
+        convert_dtype (bool): Whether to convert data type.
+        CPU can only set to False. Defalut: False.
 
     Returns:
         Tensor, output tensor.
 
     Examples:
+        >>> from tinyms.model import DeepFM
+        >>>
         >>> DeepFM(field_size=39, vocab_size=184965, embed_size=80)
 
     """
-    def __init__(self, field_size, vocab_size, embed_size, keep_prob=0.9, convert_dtype=True):
+    def __init__(self, field_size, vocab_size, embed_size, keep_prob=0.9, convert_dtype=False):
         super(DeepFM, self).__init__()
         self.field_size = field_size
         self.vocab_size = vocab_size
@@ -168,16 +171,18 @@ def deepfm(**kwargs):
         vocab_size (int): The vocabulary size. Default: 184965.
         embed_size (int): The embeding size. Default: 80.
         keep_prob (float): The keep prob value. Default: 0.9.
-        convert_dtype (bool): Whether to convert data type. Defalut: True.
+        convert_dtype (bool): Whether to convert data type. Defalut: False.
 
     Returns:
         layers.Layer, layer instance of DeepFM neural network.
 
     Examples:
+        >>> from tinyms.model import deepfm
+        >>>
         >>> net = deepfm(39, 184965, 80)
     """
     return DeepFM(field_size=kwargs.get('field_size', 39),
                   vocab_size=kwargs.get('vocab_size', 184965),
                   embed_size=kwargs.get('embed_size', 80),
                   keep_prob=kwargs.get('keep_prob', 0.9),
-                  convert_dtype=kwargs.get('convert_dtype', True))
+                  convert_dtype=kwargs.get('convert_dtype', False))

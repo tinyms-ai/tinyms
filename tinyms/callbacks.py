@@ -68,10 +68,12 @@ class LossTimeMonitor(Callback):
         step_loss = cb_params.net_outputs
 
         if isinstance(step_loss, (tuple, list)) and isinstance(step_loss[0], Tensor):
+            print("step loss type is tuple", flush=True)
             step_loss = step_loss[0]
         if isinstance(step_loss, Tensor):
+            print("step loss type is tensor", flush=True)
             step_loss = np.mean(step_loss.asnumpy())
-
+        print("step loss shape: {}".format(step_loss.shape), flush=True)
         self.losses.append(step_loss)
         cur_step_in_epoch = (cb_params.cur_step_num - 1) % cb_params.batch_num
 
