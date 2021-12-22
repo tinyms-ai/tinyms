@@ -25,6 +25,7 @@ import random
 import numpy as np
 import math
 import gensim
+import collections
 import pickle
 from itertools import chain
 
@@ -425,7 +426,7 @@ class KaggleDisplayAdvertisingDataset:
         self.cat_cols = ["cat_{}".format(i + 1) for i in range(self.slot_dim)]
         self.val_min_dict = {col: 0 for col in self.val_cols}
         self.val_max_dict = {col: 0 for col in self.val_cols}
-        self.cat_count_dict = {col: 0 for col in self.cat_cols}
+        self.cat_count_dict = {col: collections.defaultdict(int) for col in self.cat_cols}
         self.oov_prefix = "OOV"
         self.cat2id_dict = {}
         self.cat2id_dict.update({col: i for i, col in enumerate(self.val_cols)})
@@ -525,8 +526,6 @@ class KaggleDisplayAdvertisingDataset:
         """
         stats data
         """
-        self.__init_stats()
-
         num_splits = self.dense_dim + self.slot_dim + 1
         error_lines_number = []
 
