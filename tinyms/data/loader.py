@@ -534,7 +534,7 @@ class KaggleDisplayAdvertisingDataset:
 
         train_file_path = os.path.join(self.data_dir, "train.txt")
         with codecs.open(train_file_path, encoding="utf8", buffering=32*1024*1024) as f:
-            t_f = tqdm(f)
+            t_f = tqdm(f, total=self.train_line_count)
             t_f.set_description("Processing StatsData")
             num_line = 0
             for line in t_f:
@@ -589,7 +589,7 @@ class KaggleDisplayAdvertisingDataset:
 
         train_file_path = os.path.join(self.data_dir, "train.txt")
         with codecs.open(train_file_path, encoding="utf8", buffering=32*1024*1024) as f:
-            t_f = tqdm(f)
+            t_f = tqdm(f, total=self.train_line_count)
             t_f.set_description("Processing Convert2MR")
             num_line = 0
             train_part_number = 0
