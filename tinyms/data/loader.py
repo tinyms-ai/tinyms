@@ -379,9 +379,12 @@ class KaggleDisplayAdvertisingDataset:
         self._check_num_parallel_workers()
         self.shuffle = shuffle
 
+        self.__init_stats()
+        self.__init_mindrecord()
+
     def __check_mindrecord_dir(self):
         if os.path.exists(self.mindrecord_dir):
-            print("mindrecord directory: {} exists! we will use it to save mindrecord dataset.".
+            print("mindrecord directory: {} exists! we will use it to save or read mindrecord dataset.".
                   format(self.mindrecord_dir), flush=True)
         os.makedirs(self.mindrecord_dir)
 
@@ -397,7 +400,7 @@ class KaggleDisplayAdvertisingDataset:
 
     def __check_stats_dict_dir(self):
         if os.path.exists(self.stats_dict_dir):
-            print("stats dict directory: {} exists! we will use it to save stats dict.".
+            print("stats dict directory: {} exists! we will use it to save or read stats dict.".
                   format(self.stats_dict_dir), flush=True)
         os.makedirs(self.stats_dict_dir)
 
@@ -630,6 +633,15 @@ class KaggleDisplayAdvertisingDataset:
         np.save("error_lines_num.npy", error_lines_num)
 
     def load_mindreocrd_dataset(self, usage='train', batch_size=1000):
+        """
+        load mindrecord dataset.
+        Args:
+            usage (str): Dataset mode. Default: 'train'.
+            batch_size (int): batch size. Default: 1000.
+
+        Returns:
+            MindDataset
+        """
         if usage == 'train':
             train_mode = True
         else:
