@@ -18,7 +18,6 @@ from tinyms import layers, Tensor
 from tinyms import Parameter
 
 from tinyms.common import dtype
-from tinyms.initializers import initializer
 from tinyms.primitives import BiasAdd, Cast, Dropout, MatMul, ReLU, Sigmoid, Tanh
 from tinyms.primitives import Concat, Gather, Mul, ReduceSum, Reshape, Square, Tile
 

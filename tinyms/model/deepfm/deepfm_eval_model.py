@@ -18,7 +18,18 @@ from tinyms.primitives import Sigmoid
 
 class DeepFMEvalModel(layers.Layer):
     """
+    Provide DeepFM training network.
 
+    Args:
+        network (layers.Layer): The base network.
+
+    Returns:
+
+    Examples:
+        >>> from tinyms.model import deepfm, DeepFMEvalModel
+        >>>
+        >>> net = deepfm()
+        >>> eval_net = DeepFMEvalModel(net)
     """
     def __init__(self, network):
         super(DeepFMEvalModel, self).__init__(auto_prefix=False)
@@ -28,5 +39,4 @@ class DeepFMEvalModel(layers.Layer):
     def construct(self, ids, wts, labels):
         logits, _, _ = self.network(ids, wts)
         predict_probs = self.sigmoid(logits)
-
         return logits, predict_probs, labels

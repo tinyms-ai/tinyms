@@ -387,6 +387,8 @@ class KaggleDisplayAdvertisingDataset:
             print("mindrecord directory: {} exists! we will use it to save or read mindrecord dataset.".
                   format(self.mindrecord_dir), flush=True)
         else:
+            print("create mindrecord directory: {} to save or read mindrecord dataset.".
+                  format(self.mindrecord_dir), flush=True)
             os.makedirs(self.mindrecord_dir)
 
     def _check_num_parallel_workers(self):
@@ -404,6 +406,8 @@ class KaggleDisplayAdvertisingDataset:
             print("stats dict directory: {} exists! we will use it to save or read stats dict.".
                   format(self.stats_dict_dir), flush=True)
         else:
+            print("create stats dict directory: {} to save or read stats dict.".
+                  format(self.stats_dict_dir), flush=True)
             os.makedirs(self.stats_dict_dir)
 
     def __init_mindrecord(self):

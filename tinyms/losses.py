@@ -22,12 +22,11 @@ from mindspore.nn.loss import *
 from mindspore.nn.loss.loss import _Loss
 import tinyms as ts
 from . import layers, primitives as P, Tensor
-from .model import DeepFM, SSD300
+from .model import SSD300
 
 
 __all__ = [
     'net_with_loss',
-    'DeepFMWithLoss',
     'SSD300WithLoss',
     'CrossEntropyWithLabelSmooth',
     'CycleGANGeneratorLoss',
@@ -69,30 +68,6 @@ class SigmoidFocalClassificationLoss(layers.Layer):
         alpha_weight_factor = label * self.alpha + (1 - label) * (1 - self.alpha)
         focal_loss = modulating_factor * alpha_weight_factor * sigmiod_cross_entropy
         return focal_loss
-
-
-class DeepFMWithLoss(layers.Layer):
-    """
-
-    """
-    def __init__(self, network, l2_coef=1e-6):
-        super(DeepFMWithLoss, self).__init__(auto_prefix=False)
-        self.network = network
-        self.l2_coef = l2_coef
-        self.square = P.Square()
-        self.reduce_mean = P.ReduceMean(keep_dims=False)
-        self.reduce_sum = P.ReduceSum(keep_dims=False)
-        self.loss = P.SigmoidCrossEntropyWithLogits()
-
-    def construct(self, ids, wts, labels):
-        predicts, fm_id_weight, fm_id_embeds = self.network(ids, wts)
-        log_loss = self.loss(predicts, labels)
-        mean_log_loss = self.reduce_mean(log_loss)
-        l2_loss_w = self.reduce_sum(self.square(fm_id_weight))
-        l2_loss_v = self.reduce_sum(self.square(fm_id_embeds))
-        l2_loss_all = self.l2_coef * (l2_loss_v + l2_loss_w) * 0.5
-        loss_df = mean_log_loss + l2_loss_all
-        return loss_df
 
 
 class SSD300WithLoss(layers.Layer):
@@ -169,8 +144,6 @@ def net_with_loss(net):
 
     if isinstance(net, SSD300):
         return SSD300WithLoss(net)
-    if isinstance(net, DeepFM):
-        return DeepFMWithLoss(net)
     else:
         raise TypeError("Input should be in [SSD300], got {}.".format(type(net)))
 

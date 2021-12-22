@@ -14,10 +14,12 @@
 # ============================================================================
 """DeepFM Init."""
 
-from .deepfm import deepfm, DeepFM
+from .deepfm_base_model import deepfm, DeepFM
 from .deepfm_eval_model import DeepFMEvalModel
+from .deepfm_train_model import DeepFMWithLoss, DeepFMTrainModel
 
 __all__ = [
     'deepfm', 'DeepFM',
-    'DeepFMEvalModel'
+    'DeepFMEvalModel',
+    'DeepFMWithLoss', 'DeepFMTrainModel'
 ]
