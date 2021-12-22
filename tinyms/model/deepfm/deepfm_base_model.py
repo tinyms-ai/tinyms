@@ -123,7 +123,7 @@ class DeepFM(layers.Layer):
         self.dense_layer_2 = DenseLayer(1024, 512, keep_prob=keep_prob, convert_dtype=convert_dtype)
         self.dense_layer_3 = DenseLayer(512, 256, keep_prob=keep_prob, convert_dtype=convert_dtype)
         self.dense_layer_4 = DenseLayer(256, 128, keep_prob=keep_prob, convert_dtype=convert_dtype)
-        self.dense_layer_4 = DenseLayer(128, 1, keep_prob=keep_prob, convert_dtype=convert_dtype)
+        self.dense_layer_5 = DenseLayer(128, 1, keep_prob=keep_prob, convert_dtype=convert_dtype)
         self.gather = Gather()
         self.mul = Mul()
         self.reduce_sum = ReduceSum(keep_dims=False)
