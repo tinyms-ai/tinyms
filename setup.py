@@ -44,7 +44,7 @@ setup_required_package = [
 install_required_package = [
     'numpy >= 1.17.0',
     'easydict >= 1.9',
-    'scipy >= 1.5.2',
+    'scipy >= 1.5.2,<1.8.0',
     'matplotlib >= 3.1.3',
     'Pillow >= 6.2.0',
     'mindspore == 1.5.0',
