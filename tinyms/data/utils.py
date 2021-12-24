@@ -207,7 +207,7 @@ def _download_voc(local_path):
 
 
 def _check_uncompressed_kaggle_display_advertising_files(local_path):
-    compressed_file_size = 4576820670
+    """check uncompressed kaggle display advertising files."""
     file_name_list = ["train.txt", "test.txt", "readme.txt"]
     file_size_list = [11147184845, 1460246311, 1927]
 
