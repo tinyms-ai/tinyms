@@ -75,6 +75,7 @@ class DeepFMTrainModel(layers.Layer):
         Should be greater than 0. Default: 1024.0.
 
     Returns:
+        Tensor, the value passed by last operator.
 
     Examples:
         >>> from tinyms.model import deepfm, DeepFMWithLoss, DeepFMTrainModel

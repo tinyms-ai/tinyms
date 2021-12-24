@@ -24,6 +24,9 @@ class DeepFMEvalModel(layers.Layer):
         network (layers.Layer): The base network.
 
     Returns:
+        logits (Tensor) - With the shape as [batch_size, vocab_size] and data type as float32.
+        predict_probs (Tensor) - With the same shape as [batch_size, vocab_size] and data type as float32.
+        labels (Tensor) - With the same shape as labels.
 
     Examples:
         >>> from tinyms.model import deepfm, DeepFMEvalModel

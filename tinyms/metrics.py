@@ -44,15 +44,9 @@ class AUCMetric(Metric):
         area (float): Compute result.
 
     Examples:
-        >>> y_pred = np.array([[3, 0, 1], [1, 3, 0], [1, 0, 2]])
-        >>> y = np.array([[0, 2, 1], [1, 2, 1], [0, 0, 1]])
-        >>> metric = nn.ROC(pos_label=2)
-        >>> metric.clear()
-        >>> metric.update(y_pred, y)
-        >>> fpr, tpr, thre = metric.eval()
-        >>> output = auc(fpr, tpr)
-        >>> print(output)
-        0.5357142857142857
+        >>> from tinyms.metrics import AUCMetric
+        >>>
+        >>> metric = AUCMetric()
     """
     def __init__(self):
         super(AUCMetric, self).__init__()
