@@ -206,7 +206,8 @@ def _download_voc(local_path):
     return os.path.join(dataset_path, 'VOCdevkit', 'VOC2007')
 
 
-def _check_kaggle_display_advertising_files(local_path):
+def _check_uncompressed_kaggle_display_advertising_files(local_path):
+    compressed_file_size = 4576820670
     file_name_list = ["train.txt", "test.txt", "readme.txt"]
     file_size_list = [11147184845, 1460246311, 1927]
 
@@ -230,10 +231,14 @@ def _download_kaggle_display_advertising(local_path):
     print("************** Downloading the Kaggle Display Advertising Challenge dataset **************")
     remote_url = "http://go.criteo.net/criteo-research-kaggle-display-advertising-challenge-dataset.tar.gz"
     file_name = os.path.join(dataset_path, remote_url.split('/')[-1])
-    if not _check_kaggle_display_advertising_files(local_path):
+    # already exist criteo-research-kaggle-display-advertising-challenge-dataset.tar.gz
+    if os.path.exists(file_name):
+        if os.path.getsize(file_name) == 4576820670:
+            _unzip(file_name)
+    if not _check_uncompressed_kaggle_display_advertising_files(local_path):
         _fetch_and_unzip_by_wget(remote_url, file_name)
     else:
-        print("{} already have kaggle display advertising dataset.".format(dataset_path), flush=True)
+        print("{} already have uncompressed kaggle display advertising dataset.".format(dataset_path), flush=True)
 
     return os.path.join(dataset_path)
 
