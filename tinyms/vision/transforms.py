@@ -22,7 +22,7 @@ from .utils import ssd_bboxes_encode, ssd_bboxes_filter, jaccard_numpy
 from .. import Tensor
 from ..data import MnistDataset, Cifar10Dataset, ImageFolderDataset, VOCDataset, GeneratorDataset
 from ..primitives import Softmax
-
+from .transform_config import get_specified_config
 
 __all__ = [
     'mnist_transform', 'MnistTransform',
@@ -40,9 +40,13 @@ class DatasetTransform(object):
     Base class for all dataset transforms.
     '''
 
-    def __init__(self, labels=None):
-        self.labels = labels
-        self.transform_strategy = ['TOP1_CLASS', 'TOP3_CLASS', 'TOP5_CLASS']
+    def __init__(self, configs=None):
+        if configs:
+            self.configs = configs
+        else:
+            self.configs = get_specified_config('DatasetTransform')
+        self.labels = self.configs['labels']
+        self.transform_strategy = self.configs['transform_strategy']
 
     def apply_ds(self, ds, trans_func=None, repeat_size=1, batch_size=32,
                  num_parallel_workers=None):
@@ -112,17 +116,24 @@ class MnistTransform(DatasetTransform):
         >>> from tinyms.vision import MnistTransform
         >>>
         >>> mnist_transform = MnistTransform()
-        >>> img = Image.open('example.jpg')
+        >>> img = Image.open('object_detection.jpg')
         >>> img = mnist_transform(img)
     '''
 
-    def __init__(self):
-        labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-        super().__init__(labels=labels)
+    def __init__(self, configs=None):
+        if configs:
+            self.configs = configs
+        else:
+            self.configs = get_specified_config('MnistTransform')
+        super().__init__(configs=self.configs)
+        self.labels = self.configs['labels']
+        self.transform_strategy = self.configs['transform_strategy']
         self.grayscale = Grayscale()
-        self.resize = Resize((32, 32))
-        self.normalize = Rescale(1 / 0.3081, -1 * 0.1307 / 0.3081)
-        self.rescale = Rescale(1.0 / 255.0, 0.0)
+        self.resize = Resize(self.configs['resize'])
+        self.normalize = Rescale(eval(self.configs['rescale1']['rescale_factor']),
+                                 eval(self.configs['rescale1']['shift_factor']))
+        self.rescale = Rescale(eval(self.configs['rescale2']['rescale_factor']),
+                               self.configs['rescale2']['shift_factor'])
 
     def __call__(self, img):
         if not isinstance(img, (np.ndarray, Image.Image)):
@@ -183,20 +194,23 @@ class Cifar10Transform(DatasetTransform):
         >>> from tinyms.vision import Cifar10Transform
         >>>
         >>> cifar10_transform = Cifar10Transform()
-        >>> img = Image.open('example.jpg')
+        >>> img = Image.open('object_detection.jpg')
         >>> img = cifar10_transform(img)
     """
     '''
 
-    def __init__(self):
-        labels = ['airplane', 'automobile', 'bird', 'cat', 'deer',
-                  'dog', 'frog', 'horse', 'ship', 'truck']
-        super().__init__(labels=labels)
-        self.random_crop = RandomCrop((32, 32), (4, 4, 4, 4))
-        self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
-        self.resize = Resize((224, 224))
-        self.rescale = Rescale(1.0 / 255.0, 0.0)
-        self.normalize = Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])
+    def __init__(self, configs=None):
+        if configs:
+            self.configs = configs
+        else:
+            self.configs = get_specified_config('Cifar10Transform')
+        super().__init__(configs=self.configs)
+        self.random_crop = RandomCrop(self.configs['random_crop']['size'], self.configs['random_crop']['padding'])
+        self.random_horizontal_flip = RandomHorizontalFlip(prob=self.configs['random_horizontal_flip']['prob'])
+        self.resize = Resize(self.configs['resize'])
+        self.rescale = Rescale(eval(self.configs['rescale']['rescale_factor']),
+                               self.configs['rescale']['shift_factor'])
+        self.normalize = Normalize(self.configs['normalize']['mean'], self.configs['normalize']['std'])
 
     def __call__(self, img):
         if not isinstance(img, (np.ndarray, Image.Image)):
@@ -258,28 +272,24 @@ class ImageFolderTransform(DatasetTransform):
         >>> from tinyms.vision import ImageFolderTransform
         >>>
         >>> imagefolder_transform = ImageFolderTransform()
-        >>> img = Image.open('example.jpg')
+        >>> img = Image.open('object_detection.jpg')
         >>> img = imagefolder_transform(img)
     '''
 
-    def __init__(self):
-        labels = ["Agaricus双孢蘑菇,伞菌目,蘑菇科,蘑菇属,广泛分布于北半球温带,无毒",
-                  "Amanita毒蝇伞,伞菌目,鹅膏菌科,鹅膏菌属,主要分布于我国黑龙江、吉林、四川、西藏、云南等地,有毒",
-                  "Boletus丽柄牛肝菌,伞菌目,牛肝菌科,牛肝菌属,分布于云南、陕西、甘肃、西藏等地,有毒",
-                  "Cortinarius掷丝膜菌,伞菌目,丝膜菌科,丝膜菌属,分布于湖南等地(夏秋季在山毛等阔叶林地上生长)",
-                  "Entoloma霍氏粉褶菌,伞菌目,粉褶菌科,粉褶菌属,主要分布于新西兰北岛和南岛西部,有毒",
-                  "Hygrocybe浅黄褐湿伞,伞菌目,蜡伞科,湿伞属,分布于香港(见于松仔园),有毒",
-                  "Lactarius松乳菇,红菇目,红菇科,乳菇属,广泛分布于亚热带松林地,无毒",
-                  "Russula褪色红菇,伞菌目,红菇科,红菇属,分布于河北、吉林、四川、江苏、西藏等地,无毒",
-                  "Suillus乳牛肝菌,牛肝菌目,乳牛肝菌科,乳牛肝菌属,分布于吉林、辽宁、山西、安徽、江西、浙江、湖南、四川、贵州等地,无毒",
-                  ]
-        super().__init__(labels=labels)
-        self.random_crop_decode_resize = RandomCropDecodeResize((224, 224), scale=(0.08, 1.0), ratio=(0.75, 1.333))
-        self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
-        self.resize = Resize((256, 256))
-        self.center_crop = CenterCrop((224, 224))
-        self.normalize = Normalize([0.485 * 255, 0.456 * 255, 0.406 * 255],
-                                   [0.229 * 255, 0.224 * 255, 0.225 * 255])
+    def __init__(self, configs=None):
+        if configs:
+            self.configs = configs
+        else:
+            self.configs = get_specified_config('ImageFolderTransform')
+        super().__init__(configs=self.configs)
+        self.random_crop_decode_resize = RandomCropDecodeResize(
+            self.configs['random_crop_decode_resize']['size'],
+            scale=tuple(self.configs['random_crop_decode_resize']['scale']),
+            ratio=tuple(self.configs['random_crop_decode_resize']['ratio']))
+        self.random_horizontal_flip = RandomHorizontalFlip(prob=self.configs['random_horizontal_flip']['prob'])
+        self.resize = Resize(self.configs['resize'])
+        self.center_crop = CenterCrop(self.configs['center_crop'])
+        self.normalize = Normalize(self.configs['normalize']['mean'], self.configs['normalize']['std'])
 
     def _center_crop(self, img):
         y, x, _ = img.shape
@@ -353,22 +363,22 @@ class VOCTransform(DatasetTransform):
         >>> from tinyms.vision import VOCTransform
         >>>
         >>> voc_transform = VOCTransform()
-        >>> img = Image.open('example.jpg')
+        >>> img = Image.open('object_detection.jpg')
         >>> img = voc_transform(img)
     '''
 
-    def __init__(self):
-        labels = ['background',
-                  'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
-                  'bus', 'car', 'cat', 'chair', 'cow',
-                  'diningtable', 'dog', 'horse', 'motorbike', 'person',
-                  'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
-        super().__init__(labels=labels)
-        self.resize = Resize((300, 300))
-        self.horizontal_flip = PILRandomHorizontalFlip(1.0)
-        self.normalize = Normalize(mean=[0.485 * 255, 0.456 * 255, 0.406 * 255],
-                                   std=[0.229 * 255, 0.224 * 255, 0.225 * 255])
-        self.random_color_adjust = RandomColorAdjust(brightness=0.4, contrast=0.4, saturation=0.4)
+    def __init__(self, configs=None):
+        if configs:
+            self.configs = configs
+        else:
+            self.configs = get_specified_config('VOCTransform')
+        super().__init__(configs=self.configs)
+        self.resize = Resize(self.configs['resize'])
+        self.horizontal_flip = PILRandomHorizontalFlip(self.configs['horizontal_flip'])
+        self.normalize = Normalize(self.configs['normalize']['mean'], self.configs['normalize']['std'])
+        self.random_color_adjust = RandomColorAdjust(brightness=self.configs['random_color_adjust']['brightness'],
+                                                     contrast=self.configs['random_color_adjust']['contrast'],
+                                                     saturation=self.configs['random_color_adjust']['saturation'])
 
     def _preprocess_fn(self, image, boxes, labels, is_training=True):
         """Preprocess function for voc dataset."""
@@ -528,7 +538,7 @@ class VOCTransform(DatasetTransform):
         return pred_res
 
 
-class ShanshuiTransform(DatasetTransform):
+class ShanshuiTransform(VOCTransform):
     r'''
     Shanshui dataset transform class.
 
@@ -543,97 +553,16 @@ class ShanshuiTransform(DatasetTransform):
         >>> from tinyms.vision import ShanshuiTransform
         >>>
         >>> shanshui_transform = ShanshuiTransform()
-        >>> img = Image.open('example.jpg')
+        >>> img = Image.open('object_detection.jpg')
         >>> img = shanshui_transform(img)
     '''
 
-    def __init__(self):
-        labels = ['Background',
-                  'Bird_spp', 'Blue_sheep', 'Glovers_pika', 'Gray_wolf',
-                  'Himalaya_marmot', 'Red_fox', 'Snow_leopard',
-                  'Tibetan_snowcock', 'Upland_Buzzard', 'White-lipped_deer']
-        super().__init__(labels=labels)
-        self.resize = Resize((300, 300))
-        self.horizontal_flip = PILRandomHorizontalFlip(1.0)
-        self.normalize = Normalize(mean=[0.485 * 255, 0.456 * 255, 0.406 * 255],
-                                   std=[0.229 * 255, 0.224 * 255, 0.225 * 255])
-        self.random_color_adjust = RandomColorAdjust(brightness=0.4, contrast=0.4, saturation=0.4)
-
-    def _preprocess_fn(self, image, boxes, labels, is_training=True):
-        """Preprocess function for shanshui dataset."""
-        def _random_sample_crop(image, boxes):
-            """Random Crop the image and boxes"""
-            height, width, _ = image.shape
-            min_iou = np.random.choice([None, 0.1, 0.3, 0.5, 0.7, 0.9])
-            if min_iou is None:
-                return image, boxes
-            # max trails (50)
-            for _ in range(50):
-                image_t = image
-                w = _rand(0.3, 1.0) * width
-                h = _rand(0.3, 1.0) * height
-                # aspect ratio constraint b/t .5 & 2
-                if h / w < 0.5 or h / w > 2:
-                    continue
-                left = _rand() * (width - w)
-                top = _rand() * (height - h)
-                rect = np.array([int(top), int(left), int(top + h), int(left + w)])
-                overlap = jaccard_numpy(boxes, rect)
-                # dropout some boxes
-                drop_mask = overlap > 0
-                if not drop_mask.any():
-                    continue
-                if overlap[drop_mask].min() < min_iou and overlap[drop_mask].max() > (min_iou + 0.2):
-                    continue
-                image_t = image_t[rect[0]:rect[2], rect[1]:rect[3], :]
-                centers = (boxes[:, :2] + boxes[:, 2:4]) / 2.0
-                m1 = (rect[0] < centers[:, 0]) * (rect[1] < centers[:, 1])
-                m2 = (rect[2] > centers[:, 0]) * (rect[3] > centers[:, 1])
-                # mask in that both m1 and m2 are true
-                mask = m1 * m2 * drop_mask
-                # have any valid boxes? try again if not
-                if not mask.any():
-                    continue
-                # take only matching gt boxes
-                boxes_t = boxes[mask, :].copy()
-                boxes_t[:, :2] = np.maximum(boxes_t[:, :2], rect[:2])
-                boxes_t[:, :2] -= rect[:2]
-                boxes_t[:, 2:4] = np.minimum(boxes_t[:, 2:4], rect[2:4])
-                boxes_t[:, 2:4] -= rect[:2]
-                return image_t, boxes_t
-            return image, boxes
-
-        # Only perform resize operation of data evaluation step
-        if not is_training:
-            img_h, img_w, _ = image.shape
-            image = self.resize(image)
-            return image, np.array((img_h, img_w), dtype=np.float32), labels
-        # Merge [x, y, w, h] and cls to [x, y, w, h, cls]
-        boxes = np.hstack((boxes, labels)).astype(np.float32)
-        # Change [x, y, w, h, cls] to [ymin, xmin, ymax, xmax, cls]
-        boxes_yxyx = np.zeros_like(boxes)
-        boxes_yxyx[:, 4] = boxes[:, 4]
-        boxes_yxyx[:, [1, 0]] = boxes[:, [0, 1]]
-        boxes_yxyx[:, [3, 2]] = boxes[:, [0, 1]] + boxes[:, [2, 3]]
-        # Random crop image and bbox
-        image, boxes_yxyx = _random_sample_crop(image, boxes_yxyx)
-        # Resize image and bbox
-        ih, iw, _ = image.shape
-        image = self.resize(image)
-        boxes_yxyx[:, [0, 2]] = boxes_yxyx[:, [0, 2]] / ih
-        boxes_yxyx[:, [1, 3]] = boxes_yxyx[:, [1, 3]] / iw
-        # Flip image and bbox or not
-        flip = _rand() < .5
-        if flip:
-            image = np.asarray(self.horizontal_flip(Image.fromarray(image, mode='RGB')))
-            boxes_yxyx[:, [1, 3]] = 1 - boxes_yxyx[:, [3, 1]]
-        # When the channels of image is 1
-        if len(image.shape) == 2:
-            image = np.expand_dims(image, axis=-1)
-            image = np.concatenate([image, image, image], axis=-1)
-
-        boxes_yxyx, label, num_match = ssd_bboxes_encode(boxes_yxyx)
-        return image, boxes_yxyx, label, num_match
+    def __init__(self, configs=None):
+        if configs:
+            self.configs = configs
+        else:
+            self.configs = get_specified_config('ShanshuiTransform')
+        super().__init__(configs=self.configs)
 
     def __call__(self, img):
         if not isinstance(img, (np.ndarray, Image.Image)):
@@ -641,80 +570,7 @@ class ShanshuiTransform(DatasetTransform):
         img = self.resize(img)
         img = self.normalize(img)
         img = hwc2chw(img)
-
         return img
-
-    def apply_ds(self, shanshui_ds, repeat_size=1, batch_size=32,
-                 num_parallel_workers=None, is_training=True):
-        r'''
-        Apply preprocess operation on shanshui_ds(VOCDataset instance).
-
-        Args:
-            shanshui_ds (data.VOCDataset): VOCDataset instance.
-            repeat_size (int): The repeat size of dataset. Default: 1.
-            batch_size (int): Batch size. Default: 32.
-            num_parallel_workers (int): The number of concurrent workers. Default: None.
-            is_training (bool): Specifies if is in training step. Default: True.
-
-        Returns:
-            data.VOCDataset, the preprocessed VOCDataset instance.
-
-        Examples:
-            >>> from tinyms.vision import ShanshuiTransform
-            >>>
-            >>> shanshui_transform = ShanshuiTransform()
-            >>> shanshui_ds = shanshui_transform.apply_ds(shanshui_ds)
-        '''
-        if not isinstance(shanshui_ds, VOCDataset):
-            raise TypeError("Input type should be VOCDataset, got {}.".format(type(shanshui_ds)))
-
-        compose_map_func = (lambda image, boxes, labels: self._preprocess_fn(image, boxes, labels, is_training))
-        if is_training:
-            output_columns = ["image", "bbox", "label", "num_match"]
-            trans_func = [self.random_color_adjust, self.normalize, hwc2chw]
-        else:
-            output_columns = ["image", "image_shape", "label"]
-            trans_func = [self.normalize, hwc2chw]
-        # apply transform functions on voc dataset
-        shanshui_ds = shanshui_ds.map(operations=compose_map_func,
-                                      input_columns=["image", "bbox", "label"],
-                                      output_columns=output_columns,
-                                      column_order=output_columns,
-                                      num_parallel_workers=num_parallel_workers)
-        shanshui_ds = super().apply_ds(shanshui_ds, trans_func=trans_func, repeat_size=repeat_size,
-                                       batch_size=batch_size, num_parallel_workers=num_parallel_workers)
-
-        return shanshui_ds
-
-    def postprocess(self, input, image_shape, strategy='TOP1_CLASS'):
-        r'''
-        Apply postprocess operation for prediction result.
-
-        Args:
-            input (numpy.ndarray): Prediction result.
-            image_shape (tuple): Image shape.
-            strategy (str): Specifies the postprocess strategy. Default: TOP1_CLASS.
-
-        Returns:
-            dict, the postprocess result.
-        '''
-        if not isinstance(input, np.ndarray):
-            raise TypeError("Input type should be numpy.ndarray, got {}.".format(type(input)))
-        if not input.ndim == 3:
-            raise TypeError("Input should be 3-D Numpy, got {}.".format(input.ndim))
-        if not strategy == 'TOP1_CLASS':
-            raise ValueError("Currently Shanshui transform only supports 'TOP1_CLASS' strategy!")
-
-        pred_res = []
-        pred_loc, pred_cls, pred_label = ssd_bboxes_filter(input[0, :, :4], input[0, :, 4:], image_shape)
-        for loc, score, label in zip(pred_loc, pred_cls, pred_label):
-            pred_res.append({
-                'bbox': [loc[1], loc[0], loc[3] - loc[1], loc[2] - loc[0]],
-                'score': score,
-                'category_id': self.labels[label],
-            })
-
-        return pred_res
 
 
 class CycleGanDatasetTransform():
@@ -732,15 +588,21 @@ class CycleGanDatasetTransform():
         >>> from tinyms.vision import CycleGanDatasetTransform
         >>>
         >>> cyclegan_transform = CycleGanDatasetTransform()
-        >>> img = Image.open('example.jpg')
+        >>> img = Image.open('object_detection.jpg')
         >>> img = cyclegan_transform(img)
     '''
 
-    def __init__(self):
-        self.random_resized_crop = RandomResizedCrop(256, scale=(0.5, 1.0), ratio=(0.75, 1.333))
-        self.random_horizontal_flip = RandomHorizontalFlip(prob=0.5)
-        self.resize = Resize((256, 256))
-        self.normalize = Normalize(mean=[0.5 * 255] * 3, std=[0.5 * 255] * 3)
+    def __init__(self, configs=None):
+        if configs:
+            self.configs = configs
+        else:
+            self.configs = get_specified_config('CycleGanDatasetTransform')
+        self.random_resized_crop = RandomResizedCrop(self.configs['random_resized_crop']['size'],
+                                                     scale=tuple(self.configs['random_resized_crop']['scale']),
+                                                     ratio=tuple(self.configs['random_resized_crop']['ratio']))
+        self.random_horizontal_flip = RandomHorizontalFlip(prob=self.configs['random_horizontal_flip']['prob'])
+        self.resize = Resize(self.configs['resize'])
+        self.normalize = Normalize(mean=self.configs['normalize']['mean'], std=self.configs['normalize']['std'])
 
     def __call__(self, img):
         if not isinstance(img, (np.ndarray, Image.Image)):

@@ -36,37 +36,39 @@ def _write_version(file):
 
 
 setup_required_package = [
-    'wheel >= 0.32.0',
-    'setuptools >= 40.8.0',
+    'wheel>=0.32.0',
+    'setuptools>=40.8.0',
 ]
 
 
 install_required_package = [
-    'numpy >= 1.17.0',
-    'easydict >= 1.9',
-    'scipy >= 1.5.2',
-    'matplotlib >= 3.1.3',
-    'Pillow >= 6.2.0',
-    'mindspore == 1.3.0',
-    'requests >= 2.22.0',
-    'flask >= 1.1.1',
-    'python-Levenshtein >= 0.10.2',
-    'gensim == 3.8.1',
+    'numpy>=1.17.0',
+    'easydict>=1.9',
+    'scipy>=1.5.2,<1.8.0',
+    'matplotlib>=3.1.3',
+    'Pillow>=6.2.0',
+    'mindspore==1.3.0',
+    'requests>=2.22.0',
+    'flask>=1.1.1',
+    'python-Levenshtein>=0.10.2',
+    'gensim==3.8.1',
     'PyYAML',
-    'opencv-python == 4.1.2.30',
-    'flask_cors >= 3.0.10',
+    'opencv-python==4.1.2.30',
+    'flask_cors>=3.0.10',
 ]
 
 test_required_package = [
-    'pycocotools >= 2.0.0',
+    'pycocotools>=2.0.0',
 ]
 
 package_data = {
     'tinyms.hub': [
         'assets/tinyms/*/*.yaml',
+    ],
+    'tinyms.vision': [
+        'configs/transform_config.yaml',
     ]
 }
-
 if __name__ == "__main__":
     with open(os.path.join(pwd, package_name, 'version.py'), 'w') as f:
         _write_version(f)
