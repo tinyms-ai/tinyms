@@ -1,0 +1,12 @@
+{
+    "model_net": "ssd300",
+    "class_num": 21,
+    "dataset": "voc",
+    "download_from_hub": true,
+    "checkpoint_url": "https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.3/ssd300_v1_voc2007/ssd300.ckpt",
+    "sha256": "29ada5f9a903267b424c10e543d1419538905e958dcd0a2d6c5ad563c2b31ce1",
+    "checkpoint_path": "/etc/tinyms/object_detection/ssd300_voc",
+    "checkpoint_name": "ssd300.ckpt",
+    "description": "This object detection hosts a ssd300 model predicting for voc dataset."
+}
+
