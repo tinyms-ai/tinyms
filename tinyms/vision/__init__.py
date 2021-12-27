@@ -21,6 +21,7 @@ from . import transforms
 from .transforms import *
 from .view import ImageViewer
 from .utils import ssd_bboxes_encode, ssd_bboxes_filter, coco_eval
+from . import transform_config
 
 vision_utils = ['Inter', 'Border', 'ImageBatchFormat']
 bbox_utils = [
@@ -32,3 +33,4 @@ bbox_utils = [
 __all__ = ['ImageViewer']
 __all__.extend(vision_utils + bbox_utils)
 __all__.extend(transforms.__all__)
+__all__.extend(transform_config.__all__)
