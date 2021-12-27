@@ -1,0 +1,12 @@
+{
+    "model_net": "ssd300",
+    "class_num": 11,
+    "dataset": "shanshui",
+    "download_from_hub": true,
+    "checkpoint_url": "https://tinyms-hub.obs.cn-north-4.myhuaweicloud.com/tinyms/0.3/ssd300_v3_shanshui2021/ssd300.ckpt",
+    "sha256": "66c4b4878ea7f7d20f5cff3b5de2d325698dd73becf79e79882fe835e0b8bf26",
+    "checkpoint_path": "/etc/tinyms/object_detection/ssd300_shanshui",
+    "checkpoint_name": "ssd300.ckpt",
+    "description": "This object detection hosts a ssd300 model predicting for shanshui protected animal dataset."
+}
+

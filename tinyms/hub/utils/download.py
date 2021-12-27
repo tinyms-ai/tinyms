@@ -64,7 +64,7 @@ def _create_path_if_not_exists(path):
         if os.path.isfile(path):
             os.remove(path)
         else:
-            os.mkdir(path)
+            os.makedirs(path)
 
 
 def download_file_from_url(url, hash_sha256=None, save_path='.'):
