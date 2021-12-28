@@ -35,7 +35,7 @@ if __name__ == '__main__':
     args_opt = parse_args()
     config_path = args_opt.config_path
     if not config_path:
-        config_path = os.path.join(os.path.dirname(__file__).split('tests')[0],
+        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)).split('tests')[0],
                                    "tinyms/app/object_detection/configs/tinyms/0.3/ssd300_shanshui.json")
     # 1.Load and parse the config json file
     config = load_and_parse_config(config_path=config_path)
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     detector = ObjectDetector(config=config)
 
     # 3.Read the input image
-    image_np = cv2.imread(img_path=args_opt.img_path)
+    image_np = cv2.imread(args_opt.img_path)
     input = image_np.copy()
 
     # 4.Detect the input image

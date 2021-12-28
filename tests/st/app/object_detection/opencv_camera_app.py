@@ -20,7 +20,7 @@ from tinyms.app.object_detection.object_detector import ObjectDetector, object_d
 from tinyms.app.object_detection.utils.view_util import visualize_boxes_on_image
 
 # 1.Load and parse the config json file
-config_path = os.path.join(os.path.dirname(__file__).split('tests')[0],
+config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)).split('tests')[0],
                            "tinyms/app/object_detection/configs/tinyms/0.3/ssd300_voc.json")
 config = load_and_parse_config(config_path=config_path)
 
