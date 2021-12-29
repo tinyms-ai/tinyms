@@ -42,6 +42,7 @@ TinyMS has the following modules:
 
 | Name | Introduction | Example Code |
 | :--- | :----------- | :----------- |
+| app | Support OpenCV to Achieve Model Reasoning Visualization | `from tinyms.app import object_detection` |
 | data | Dataset Loading and Downloading | `from tinyms.data import MnistDataset, download_dataset` |
 | hub | Pre-trained Model Hub for Inference and Transfer Learning | `from tinyms import hub` |
 | model | Model High Level API and Predefined Network | `from tinyms.model import Model, lenet5` |
@@ -222,4 +223,90 @@ client.list_servables()
 client.predict(image_path, 'lenet5', dataset_name='mnist')
 # Shutdown the prediction server
 server.shutdown()
+```
+
+In addition, TinyMS also provides a web visualization interface, convenient for users to directly upload a picture on the web page for reasoning, currently mainly support `LeNet5`, `CycleGan` and `SSD300` network. The developers only need to start the backend reasoning server, then deploy the front-end server through Nginx web server, The front-end project is stored in the `tinyms/serving/web directory` of the TinyMS project. If users want to try quickly, can visit [Install TinyMS](https://tinyms.readthedocs.io/en/latest/quickstart/install.html) `Nginx version` section:
+
+```python
+# Start web backend server
+from tinyms.serving import Server
+
+server = Server()
+server.start_server()
+```
+
+### Model reasoning visualization application（*app*）
+
+OpenCV is a library for computer vision, and TinyMS is a high-level API library for deep learning frameworks. Usually after training, when we need to load the pre-training model to verify the effect of the model, the result is usually a bunch of numbers. The data is boring and unintuitive for beginners, and it is very difficult to understand what they represent. Therefore, TinyMS takes model reasoning visualization as its main feature in version 0.3.0, and combines OpenCV to realize real-time detecting and visual detection of images to help users see the effect of reasoning more intuitively. At present, the visual reasoning module only supports object detection model `SSD300`, and more image processing models will be added in the future.
+
+Below, I will demonstrate how to use a trained model to detect static images and live, moving video images captured by computer cameras in just `5` steps:
+
+* Static image object detection
+
+```python
+import cv2
+
+from tinyms.app.object_detection.utils.config_util import load_and_parse_config
+from tinyms.app.object_detection.object_detector import ObjectDetector, object_detection_predict
+from tinyms.app.object_detection.utils.view_util import visualize_boxes_on_image
+
+# 1.Load and parse the config json file
+config_path = '**/ssd300_shanshui.json'
+config = load_and_parse_config(config_path=config_path)
+
+# 2.Generate the instance of ObjectDetector
+detector = ObjectDetector(config=config)
+
+# 3.Read the input image using OpenCV
+img_path = ('./pic/test.jpeg)
+image_np = cv2.imread(img_path)
+input = image_np.copy()
+
+# 4.Detect the input image
+detection_bbox_data = object_detection_predict(input, detector, is_training=False)
+
+# 5.Draw the box for the input image and visualize in the opencv window using OpenCV.
+detection_image_np = visualize_boxes_on_image(image_np, detection_bbox_data, box_color=(0, 255, 0),
+                                              box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
+                                              font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True)
+cv2.imshow('object detection image', cv2.resize(detection_image_np, (600, 1000)))
+cv2.waitKey(0)
+```
+
+* Real-time dynamic detection of video images collected by computer camera
+
+```python
+import cv2
+
+from tinyms.app.object_detection.utils.config_util import load_and_parse_config
+from tinyms.app.object_detection.object_detector import ObjectDetector, object_detection_predict
+from tinyms.app.object_detection.utils.view_util import visualize_boxes_on_image
+
+# 1.Load and parse the config json file
+config_path = "**/tinyms/app/object_detection/configs/tinyms/0.3/ssd300_voc.json"
+config = load_and_parse_config(config_path=config_path)
+
+# 2.Generate the instance of ObjectDetector
+detector = ObjectDetector(config=config)
+
+cap = cv2.VideoCapture(0)
+while True:
+    # 3.Read the frame image from the camera using OpenCV
+    ret, image_np = cap.read()
+    input = image_np.copy()
+
+    # 4.Detect the input frame image
+    detection_bbox_data = object_detection_predict(input, detector, is_training=False)
+
+    # 5.Draw the box for the input frame image and visualize in the opencv window using OpenCV.
+    detection_image_np = visualize_boxes_on_image(image_np, detection_bbox_data, box_color=(0, 255, 0),
+                                                  box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
+                                                  font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True)
+    cv2.imshow('object detection camera', cv2.resize(detection_image_np, (800, 600)))
+
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
 ```

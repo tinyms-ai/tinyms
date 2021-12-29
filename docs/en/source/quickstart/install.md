@@ -21,7 +21,7 @@ mkdir -pv /root/.pip \
 ```
 
 ```shell
-pip install tinyms==0.1.0
+pip install tinyms==0.3.0
 ```
 
 ### Docker
@@ -32,10 +32,14 @@ For those who don't want to affect the local develop environment due to difficul
 
 If user wants to try the tutorials that are written in `.ipynb` files，please pull jupyter version of TinyMS in which jupyter components are installed by default
 
+If user wants to experience the image inference service in a visual WEB UI，please pull nginx version of TinyMS in which nginx components are installed by default
+
+
 * Default version
 
 ```shell
-docker pull tinyms/tinyms:0.1.0
+docker pull tinyms/tinyms:0.3.0
+docker run -it tinyms/tinyms:0.3.0
 ```
 
 * Jupyter version
@@ -55,6 +59,24 @@ Open a browser on the local machine, type in
 
 Example: `188.8.8.88:8888`, the default password is `tinyms`，then user can log in to `jupyter`
 
+* Nginx version
+
+If user wants to experience the image inference service in a visual WEB UI, run the following command line
+
+```shell
+docker pull tinyms/tinyms:0.3.0-nginx
+docker run -itd --name=tinyms-nginx -p 80:80 tinyms/tinyms:0.3.0-nginx /bin/bash
+
+docker exec -it tinyms-nginx /bin/bash
+entrypoint.sh <Your_host_public_IP_address_not_docker_IP_address>
+```
+
+Open a browser on the local machine, type in
+
+```
+<Your_host_public_IP_address_not_docker_IP_address>:80
+```
+
 ## Installation For Experienced Developers
 
 For developers who want to develop based on TinyMS, install from source
@@ -69,7 +91,7 @@ python setup.py install
 
 ## Validate installation
 
-Create a `python` or `jupyter` kernel, input the following codes
+Create a `python`, `jupyter` or `nginx` kernel, input the following codes
 
 ```python
 import tinyms as ts

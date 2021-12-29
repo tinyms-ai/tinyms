@@ -21,7 +21,7 @@ mkdir -pv /root/.pip \
 ```
 
 ```shell
-pip install tinyms==0.1.0
+pip install tinyms==0.3.0
 ```
 
 ### Docker
@@ -32,11 +32,13 @@ pip install tinyms==0.1.0
 
 如果想要体验本教程中的`.ipynb`教程，建议拉取TinyMS jupyter版本的镜像，该镜像中除了tinyms外还内置了jupyter组件
 
+如果想要在WEB界面体验图片可视化推理，建议拉取TinyMS nginx版本的镜像，该镜像中除了tinyms外还内置了nginx组件
+
 * 普通版本
 
 ```shell
-docker pull tinyms/tinyms:0.1.0
-docker run -it tinyms/tinyms:0.1.0
+docker pull tinyms/tinyms:0.3.0
+docker run -it tinyms/tinyms:0.3.0
 ```
 
 * Jupyter版本
@@ -56,6 +58,24 @@ docker run -it --net=host tinyms/tinyms:0.1.0-jupyter
 
 例如 `188.8.8.88:8888`，之后在弹出的页面中，密码输入`tinyms`，就可以远程登录`jupyter`了
 
+* Nginx版本
+
+如果想在可视化WEB界面体验图片推理服务，运行下列命令行
+
+```shell
+docker pull tinyms/tinyms:0.3.0-nginx
+docker run -itd --name=tinyms-nginx -p 80:80 tinyms/tinyms:0.3.0-nginx /bin/bash
+
+docker exec -it tinyms-nginx /bin/bash
+entrypoint.sh <容器所在宿主机的公网IP地址>
+```
+
+在本地打开浏览器，输入
+
+```
+<容器所在宿主机的公网IP地址>:80
+```
+
 ## 进阶用户源码安装
 
 想针对TinyMS进行开发的开发者，可以通过源码安装
@@ -70,7 +90,7 @@ python setup.py install
 
 ## 验证
 
-进入 `python` 或 `jupyter` 环境，输入以下代码验证安装
+进入 `python`、 `jupyter` 或 `nginx` 环境，输入以下代码验证安装
 
 ```python
 import tinyms as ts

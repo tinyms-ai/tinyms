@@ -41,6 +41,7 @@ TinyMS的架构目标：
 
 | 模块名称 | 功能介绍 | 样例代码 |
 | :------ | :------- | :------ |
+| app | 支持OpenCV实现模型推理可视化 | `from tinyms.app import object_detection` |
 | data | 数据集一键下载和加载 | `from tinyms.data import MnistDataset, download_dataset` |
 | hub | 预训练模型库，适用于模型推理和迁移学习 | `from tinyms import hub` |
 | model | Model高阶API以及预置网络 | `from tinyms.model import Model, lenet5` |
@@ -223,4 +224,90 @@ client.list_servables()
 client.predict(image_path, 'lenet5', dataset_name='mnist')
 # 关闭推理服务器
 server.shutdown()
+```
+
+除此之外，TinyMS还提供了WEB可视化界面，方便使用者在网页上直接上传图片进行推理，目前主要支持`LeNet5`、`CycleGan`和`SSD300`网络，只需启动后台推理服务器，前端服务器通过Nginx web服务器部署，项目路径存放在当前tinyms项目的`tinyms/serving/web`目录下。若想快速试用，可查看[快速安装TinyMS](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html) `Nginx版本` 一节：
+
+```python
+# WEB后端服务器启动
+from tinyms.serving import Server
+
+server = Server()
+server.start_server()
+```
+
+### 模型推理可视化应用（*app*）
+
+OpenCV是用于计算机视觉的库，TinyMS是深度学习框架的高阶API库。通常我们在训练后，需要加载预训练模型验证模型的效果时，得到的结果往往是一堆数字。这些数据对于初学者是枯燥的，不直观的，要想理解它们代表的含义是非常困难的。因此，TinyMS在0.3.0版本将模型推理可视化作为主要特性，结合OpenCV实现图像的实时监测和可视化检测，去帮助用户更直观地感受推理的效果。目前，可视化推理模块仅支持目标检测模型`SSD300`，未来会增加对更多图像处理模型的支持。
+
+下面，我将演示如何使用训练过的模型来检测静态图像和电脑摄像头采集的实时动态的视频图像, 仅需`5`个步骤即可实现：
+
+* 静态图像对象检测
+
+```python
+import cv2
+
+from tinyms.app.object_detection.utils.config_util import load_and_parse_config
+from tinyms.app.object_detection.object_detector import ObjectDetector, object_detection_predict
+from tinyms.app.object_detection.utils.view_util import visualize_boxes_on_image
+
+# 1.加载和解析模型配置JSON文件
+config_path = '**/tinyms/app/object_detection/configs/tinyms/0.3/ssd300_shanshui.json'
+config = load_and_parse_config(config_path=config_path)
+
+# 2.创建ObjectDetector类的实例
+detector = ObjectDetector(config=config)
+
+# 3.使用OpenCV读取静态图像
+img_path = ('./pic/test.jpeg)
+image_np = cv2.imread(img_path)
+input = image_np.copy()
+
+# 4.对图像进行检测
+detection_bbox_data = object_detection_predict(input, detector, is_training=False)
+
+# 5.调用OpenCV库为图像画检测框并显示检测图像检测效果图
+detection_image_np = visualize_boxes_on_image(image_np, detection_bbox_data, box_color=(0, 255, 0),
+                                              box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
+                                              font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True)
+cv2.imshow('object detection image', cv2.resize(detection_image_np, (600, 1000)))
+cv2.waitKey(0)
+```
+
+* 电脑摄像头采集的视频图像实时动态检测
+
+```python
+import cv2
+
+from tinyms.app.object_detection.utils.config_util import load_and_parse_config
+from tinyms.app.object_detection.object_detector import ObjectDetector, object_detection_predict
+from tinyms.app.object_detection.utils.view_util import visualize_boxes_on_image
+
+# 1.加载和解析模型配置JSON文件
+config_path = "**/tinyms/app/object_detection/configs/tinyms/0.3/ssd300_voc.json"
+config = load_and_parse_config(config_path=config_path)
+
+# 2.创建ObjectDetector类的实例
+detector = ObjectDetector(config=config)
+
+cap = cv2.VideoCapture(0)
+while True:
+    # 3.使用OpenCV读取摄像头每帧图像
+    ret, image_np = cap.read()
+    input = image_np.copy()
+
+    # 4.对每帧图像进行检测
+    detection_bbox_data = object_detection_predict(input, detector, is_training=False)
+
+    # 5.调用OpenCV库为每帧图像画检测框并显示动态视频图像检测效果图
+    detection_image_np = visualize_boxes_on_image(image_np, detection_bbox_data, box_color=(0, 255, 0),
+                                                  box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
+                                                  font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True)
+    cv2.imshow('object detection camera', cv2.resize(detection_image_np, (800, 600)))
+
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
 ```

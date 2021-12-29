@@ -54,6 +54,7 @@ Welcome to TinyMS's documentation!
    tinyms/tinyms.metrics
    tinyms/tinyms.hub
    tinyms/tinyms.serving
+   tinyms/tinyms.app
 
 .. toctree::
    :maxdepth: 2
