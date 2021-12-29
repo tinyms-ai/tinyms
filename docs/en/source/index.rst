@@ -57,6 +57,7 @@ designed to providing quick-start guidelines for machine learning beginners.
    tinyms/tinyms.metrics
    tinyms/tinyms.hub
    tinyms/tinyms.serving
+   tinyms/tinyms.app
 
 .. toctree::
    :maxdepth: 2
