@@ -37,7 +37,7 @@ def _download_ckeckpoint(checkpoint_url, sha256, checkpoint_path):
 
 
 def load_and_parse_config(config_path):
-    r'''
+    r"""
     Load and parse the json file the object detection model.
 
     Args:
@@ -45,7 +45,7 @@ def load_and_parse_config(config_path):
 
     Returns:
         dict, the model configuration.
-   '''
+    """
     # Check if config_path existed
     if not os.path.exists(config_path):
         raise FileNotFoundError("The config file path {} does not exist!".format(config_path))

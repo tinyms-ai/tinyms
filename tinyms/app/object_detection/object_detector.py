@@ -33,18 +33,18 @@ transform_checker = {
 
 
 class ObjectDetector():
-    r'''
+    r"""
     ObjectDetector is a high-level class defined for building model，preproceing the input image,
     predicting and postprocessing the prediction output data.
 
     Args:
         config (dict): model config parsed from the json file under the app/object_detection/configs dir.
-    '''
+    """
     def __init__(self, config=None):
         self.config = config
 
     def data_preprocess(self, input):
-        r'''
+        r"""
         Preprocess the input image.
 
         Args:
@@ -53,7 +53,7 @@ class ObjectDetector():
         Returns:
             list, the preprocess image shape.
             numpy.ndarray, the preprocess image result.
-        '''
+        """
         if not isinstance(input, np.ndarray):
             err_msg = 'The input type should be numpy.ndarray, got {}.'.format(type(input))
             raise TypeError(err_msg)
@@ -69,15 +69,15 @@ class ObjectDetector():
         return image_shape, transform_input
 
     def convert2tensor(self, transform_input):
-        r'''
+        r"""
         Convert the numpy data to the tensor format.
 
         Args:
-            transform_input (numpy.ndarray): the preprocessed image.
+            transform_input (numpy.ndarray): the preprocessing image.
 
         Returns:
             Tensor, the converted image.
-       '''
+        """
         if not isinstance(transform_input, np.ndarray):
             err_msg = 'The transform_input type should be numpy.ndarray, got {}.'.format(type(transform_input))
             raise TypeError(err_msg)
@@ -85,7 +85,7 @@ class ObjectDetector():
         return input_tensor
 
     def model_build(self, is_training=False):
-        r'''
+        r"""
         Build the object detection model to predict the image.
 
         Args:
@@ -93,7 +93,7 @@ class ObjectDetector():
 
         Returns:
             model.Model, generated object detection model.
-       '''
+        """
         model_net = model_checker.get(self.config.get('model_net'))
         if not model_net:
             err_msg = 'Currently model_net only supports {}!'.format(str(list(model_checker.keys())))
@@ -109,17 +109,17 @@ class ObjectDetector():
         return serve_model
 
     def model_load_and_predict(self, serve_model, input_tensor):
-        r'''
+        r"""
         Load the object detection model to predict the image.
 
         Args:
             serve_model (model.Model): object detection model.
-            input_tensor(Tensor): the converted input image
+            input_tensor (Tensor): the converted input image.
 
         Returns:
             model.Model, object detection model loaded the checkpoint file.
             list, predictions output result.
-       '''
+        """
         ckpt_path = self.config.get('checkpoint_path')
         if not ckpt_path:
             err_msg = 'The ckpt_path {} can not be none.'.format(ckpt_path)
@@ -139,16 +139,16 @@ class ObjectDetector():
         return serve_model, predictions_output
 
     def data_postprocess(self, predictions_output, image_shape):
-        r'''
+        r"""
         Postprocessing the predictions output data.
 
         Args:
             predictions_output (list): predictions output data.
-            image_shape(list): the shapr of the input image.
+            image_shape (list): the shape of the input image.
 
         Returns:
-            dict, the postprocess result.
-       '''
+            dict, the postprocessing result.
+        """
         output_np = (ts.concatenate((predictions_output[0], predictions_output[1]), axis=-1).asnumpy())
         transform_func = transform_checker.get(self.config.get('dataset'))
         if not transform_func:
@@ -158,17 +158,17 @@ class ObjectDetector():
 
 
 def object_detection_predict(input, object_detector, is_training=False):
-    r'''
+    r"""
     An easy object detection model predicting method for beginning developers to use.
 
     Args:
         input (numpy.ndarray): the input image.
-        object_detector (ObjectDetector): the instance of the ObjectDetector class
+        object_detector (ObjectDetector): the instance of the ObjectDetector class.
         is_training (bool): default: False.
 
     Returns:
-        dict, the postprocess result.
-   '''
+        dict, the postprocessing result.
+    """
     if not isinstance(object_detector, ObjectDetector):
         err_msg = 'The object_detector is not the instance of ObjectDetector'
         raise TypeError(err_msg)

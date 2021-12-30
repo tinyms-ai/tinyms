@@ -43,14 +43,14 @@ if __name__ == '__main__':
     # 2.Generate the instance of ObjectDetector
     detector = ObjectDetector(config=config)
 
-    # 3.Read the input image
+    # 3.Read the input image using OpenCV
     image_np = cv2.imread(args_opt.img_path)
     input = image_np.copy()
 
     # 4.Detect the input image
     detection_bbox_data = object_detection_predict(input, detector, is_training=False)
 
-    # 5.Draw the box for the input image and visualize in the opencv window.
+    # 5.Draw the box for the input image and view it using OpenCV.
     detection_image_np = visualize_boxes_on_image(image_np, detection_bbox_data, box_color=(0, 255, 0),
                                                   box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
                                                   font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True)
