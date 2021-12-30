@@ -269,7 +269,7 @@ detection_bbox_data = object_detection_predict(input, detector, is_training=Fals
 # 5.调用OpenCV库为图像画检测框并显示检测图像检测效果图
 detection_image_np = visualize_boxes_on_image(image_np, detection_bbox_data, box_color=(0, 255, 0),
                                               box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
-                                              font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True)
+                                              font_scale=2, text_color=(0, 0, 255), font_size=3, show_scores=True)
 cv2.imshow('object detection image', cv2.resize(detection_image_np, (600, 1000)))
 cv2.waitKey(0)
 ```
@@ -302,7 +302,7 @@ while True:
     # 5.调用OpenCV库为每帧图像画检测框并显示动态视频图像检测效果图
     detection_image_np = visualize_boxes_on_image(image_np, detection_bbox_data, box_color=(0, 255, 0),
                                                   box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
-                                                  font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True)
+                                                  font_scale=2, text_color=(0, 0, 255), font_size=3, show_scores=True)
     cv2.imshow('object detection camera', cv2.resize(detection_image_np, (800, 600)))
 
     if cv2.waitKey(25) & 0xFF == ord('q'):

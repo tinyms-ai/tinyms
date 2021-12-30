@@ -13,6 +13,7 @@ Welcome to TinyMS's documentation!
    quickstart/overview
    quickstart/install
    quickstart/quickstart_in_one_minute.ipynb
+   quickstart/reasoning_visualization_experience
 
 .. toctree::
    :maxdepth: 2

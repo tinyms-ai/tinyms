@@ -16,6 +16,7 @@ designed to providing quick-start guidelines for machine learning beginners.
    quickstart/overview
    quickstart/install
    quickstart/quickstart_in_one_minute.ipynb
+   quickstart/reasoning_visualization_experience
 
 .. toctree::
    :maxdepth: 2
