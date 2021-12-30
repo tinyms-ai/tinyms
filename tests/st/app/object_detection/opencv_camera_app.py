@@ -29,14 +29,14 @@ detector = ObjectDetector(config=config)
 
 cap = cv2.VideoCapture(0)
 while True:
-    # 3.Read the frame image from the camera
+    # 3.Read the frame image from the camera using OpenCV
     ret, image_np = cap.read()
     input = image_np.copy()
 
     # 4.Detect the input frame image
     detection_bbox_data = object_detection_predict(input, detector, is_training=False)
 
-    # 5.Draw the box for the input frame image and visualize in the opencv window.
+    # 5.Draw the box for the input frame image and view it using OpenCV.
     detection_image_np = visualize_boxes_on_image(image_np, detection_bbox_data, box_color=(0, 255, 0),
                                                   box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
                                                   font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True)

@@ -21,15 +21,15 @@ IMG_FORMAT = ('jpg', 'jpeg', 'png')
 
 
 def save_image(img, save_dir='./', img_name='no_name', img_format='jpg'):
-    r'''
+    r"""
     Save the prediction image.
 
     Args:
         img (numpy.ndarray): the input image.
         save_dir (str): the dir to save the prediction image.
-        img_name (str): the name of the prediction image.
-        img_format (str): the format of the prediction image.
-   '''
+        img_name (str): the name of the prediction image. Default: 'no_name'.
+        img_format (str): the format of the prediction image. Default: 'jpg'.
+    """
     if img_format.lower() not in IMG_FORMAT:
         raise Exception("当前图片格式仅支持", IMG_FORMAT)
     output_image = os.path.join(save_dir, '{}.{}'.format(img_name, img_format))
@@ -39,25 +39,23 @@ def save_image(img, save_dir='./', img_name='no_name', img_format='jpg'):
 def draw_boxes_on_image(img, boxes, box_scores, box_classes, box_color=(0, 255, 0),
                         box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
                         font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True):
-    r'''
+    r"""
     Draw the prediction box for the input image.
 
     Args:
         img (numpy.ndarray): the input image.
         boxes (list): the box coordinates.
-        box_scores (int): the prediction score.
-        box_classes: the prediction category.
-        box_color (list): the box color.
-        box_thickness (int): box thickness.
-        text_font (Enum): text font.
-        font_scale (int): font scale.
-        text_color (list): text color.
-        font_size (int): font size.
+        box_color (list): the box color. Default: (0, 255, 0).
+        box_thickness (int): box thickness. Default: 3.
+        text_font (Enum): text font. Default: cv2.FONT_HERSHEY_PLAIN.
+        font_scale (int): font scale. Default: 3.
+        text_color (list): text color. Default: (0, 0, 255).
+        font_size (int): font size. Default: 3.
         show_scores (bool): whether to show scores. Default: True.
 
     Returns:
         numpy.ndarray, the output image drawed the prediction box.
-   '''
+    """
     x = int(boxes[0])
     y = int(boxes[1])
     w = int(boxes[2])
@@ -71,23 +69,23 @@ def draw_boxes_on_image(img, boxes, box_scores, box_classes, box_color=(0, 255, 
 def visualize_boxes_on_image(img, bbox_data, box_color=(0, 255, 0),
                              box_thickness=3, text_font=cv2.FONT_HERSHEY_PLAIN,
                              font_scale=3, text_color=(0, 0, 255), font_size=3, show_scores=True):
-    r'''
+    r"""
     Visualize the prediction image.
 
     Args:
         img (numpy.ndarray): the input image.
         bbox_data (dict): the predictions box data.
-        box_color (list): the box color.
-        box_thickness (int): box thickness.
-        text_font (Enum): text font.
-        font_scale (int): font scale.
-        text_color (list): text color.
-        font_size (int): font size.
+        box_color (list): the box color. Default: (0, 255, 0).
+        box_thickness (int): box thickness. Default: 3.
+        text_font (Enum): text font. Default: cv2.FONT_HERSHEY_PLAIN.
+        font_scale (int): font scale. Default: 3.
+        text_color (list): text color. Default: (0, 0, 255).
+        font_size (int): font size. Default: 3.
         show_scores (bool): whether to show scores. Default: True.
 
     Returns:
         numpy.ndarray, the output image drawed the prediction box.
-   '''
+    """
     bbox_num = len(bbox_data)
     if bbox_num:
         for i in range(bbox_num):
