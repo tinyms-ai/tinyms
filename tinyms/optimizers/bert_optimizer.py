@@ -24,7 +24,7 @@ import tinyms as ts
 from tinyms import Tensor
 from tinyms import primitives as P
 from tinyms import context
-from . import AdamWeightDecay, Lamb, Momentum, THOR, Optimizer
+from . import AdamWeightDecay, Lamb, Momentum, thor, Optimizer
 
 
 __all__ = ['AdamWeightDecayForBert', 'AdamWeightDecayOp']
@@ -400,7 +400,7 @@ def get_optimizer(args_opt, network, cfg, bert_net_cfg):
             else:
                 split_indices = [38, 93, 148, 203, 258, 313, 368, 397]
 
-        optimizer = THOR(network, lr, damping, cfg.Thor.momentum,
+        optimizer = thor(network, lr, damping, cfg.Thor.momentum,
                          cfg.Thor.weight_decay, cfg.Thor.loss_scale, cfg.batch_size,
                          decay_filter=lambda x: 'layernorm' not in x.name.lower() and 'bias' not in x.name.lower(),
                          split_indices=split_indices)
