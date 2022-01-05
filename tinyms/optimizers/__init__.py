@@ -18,7 +18,7 @@ The optimizer is used to calculate and update the gradients.
 """
 from mindspore.nn import optim
 from mindspore.nn.optim import *
-from .bert_optimizer import *
+from . import bert_optimizer
 
 
 __all__ = []
