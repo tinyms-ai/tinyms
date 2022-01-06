@@ -21,8 +21,23 @@ mkdir -pv /root/.pip \
 ```
 
 ```shell
-pip install tinyms==0.3.0
+pip install tinyms==0.3.1
 ```
+
+> Note: There may be some problems during the installation process. The following possible situations are for reference only. If you encounter other problems during the installation process, we welcome you  to submit your issues and pull requests in our [community](https://github.com/tinyms-ai/tinyms), and we will reply you as soon as possible.
+>
+> 1. Error 1: If you use the mirror source to execute the installation command, it may report `Could not find a version that satisfies the requirement tinyms==0.3.1`
+>
+>    **Solution:**
+>
+>    - You can try to use the default official source, directly append `-i https://pypi.python.org/simple/` at the end, the download speed of the default official source may be slower, please be patient :smile:
+>
+> 2. Error 2: If you are a windows user, please make sure that `Microsoft VC++ 14.0` is installed. If not, it may report`ERROR: Microsoft Visual C++ 14.0 or greater is required. Get it with “Microsoft C++ Build Tools” may be reported during the installation process. : https://visualstudio.microsoft.com/visual-cpp-build-tools/`
+>
+>    **Solution:**
+>
+>    - Because TinyMS is dependent on the `Python3.7.5` environment, and Python3 is compiled with `VC++ 14.0`. According to the error prompt, download `Microsoft C++ Build Tools` at the provided [link](https://visualstudio.microsoft.com/visual-cpp-build-tools/) . Note that during the installation process, the two components `windows 10 SDK` and `C++ CMake Tools for Windows` need to be checked in `Desktop Development Module Using C++ Desktop`. For installation details, please refer to [Visual Studio Build Tool Installation](https://devblogs.microsoft.com/cppblog/introducing-the-visual-studio-build-tools/).
+>
 
 ### Docker
 
@@ -38,8 +53,8 @@ If user wants to experience the image inference service in a visual WEB UI，ple
 * Default version
 
 ```shell
-docker pull tinyms/tinyms:0.3.0
-docker run -it tinyms/tinyms:0.3.0
+docker pull tinyms/tinyms:0.3.1
+docker run -it tinyms/tinyms:0.3.1
 ```
 
 * Jupyter version
@@ -47,8 +62,8 @@ docker run -it tinyms/tinyms:0.3.0
 If user wants to try jupyter, run the following command line
 
 ```shell
-docker pull tinyms/tinyms:0.1.0-jupyter
-docker run -it --net=host tinyms/tinyms:0.1.0-jupyter
+docker pull tinyms/tinyms:0.3.1-jupyter
+docker run -it --net=host tinyms/tinyms:0.3.1-jupyter
 ```
 
 Open a browser on the local machine, type in
@@ -64,8 +79,8 @@ Example: `188.8.8.88:8888`, the default password is `tinyms`，then user can log
 If user wants to experience the image inference service in a visual WEB UI, run the following command line
 
 ```shell
-docker pull tinyms/tinyms:0.3.0-nginx
-docker run -itd --name=tinyms-nginx -p 80:80 tinyms/tinyms:0.3.0-nginx /bin/bash
+docker pull tinyms/tinyms:0.3.1-nginx
+docker run -itd --name=tinyms-nginx -p 80:80 tinyms/tinyms:0.3.1-nginx /bin/bash
 
 docker exec -it tinyms-nginx /bin/bash
 entrypoint.sh <Your_host_public_IP_address_not_docker_IP_address>
