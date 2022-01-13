@@ -25,7 +25,12 @@ import random
 import numpy as np
 import math
 import gensim
+import codecs
+import collections
+import pickle
+
 from itertools import chain
+from tqdm import tqdm
 
 from mindspore.dataset import engine
 from mindspore.dataset.engine import *
@@ -33,7 +38,8 @@ from mindspore.mindrecord import FileWriter
 from .utils import generate_image_list, load_img
 
 
-common_dataset = ['UnalignedDataset', 'GanImageFolderDataset', 'ImdbDataset', 'BertDataset']
+common_dataset = ['UnalignedDataset', 'GanImageFolderDataset', 'ImdbDataset', 'BertDataset',
+                  'KaggleDisplayAdvertisingDataset']
 common_sampler = ['DistributedSampler']
 
 __all__ = common_dataset + common_sampler
@@ -341,6 +347,341 @@ class ImdbDataset:
         writer.add_index(["id", "label"])
         writer.write_raw_data(data)
         writer.commit()
+
+
+class KaggleDisplayAdvertisingDataset:
+    """
+    parse aclImdb data to features and labels.
+    sentence->tokenized->encoded->padding->features
+
+    Args:
+        data_dir (str): The path where the uncompressed dataset stored.
+        num_parallel_workers (int): The number of concurrent workers. Default: None.
+        shuffle (bol): Whether the dataset needs to be shuffled. Default: True.
+
+    Examples:
+        >>> from tinyms.data import KaggleDisplayAdvertisingDataset
+        >>>
+        >>> kaggle_display_advertising_ds = KaggleDisplayAdvertisingDataset('data')
+        >>> kaggle_display_advertising_ds.stats_data()
+        >>> kaggle_display_advertising_ds.convert_to_mindrecord()
+        >>> train_ds = kaggle_display_advertising_ds.load_mindreocrd_dataset(usage='train')
+        >>> test_ds = kaggle_display_advertising_ds.load_mindreocrd_dataset(usage='test')
+    """
+    def __init__(self, data_dir, num_parallel_workers=None, shuffle=True):
+        self.data_dir = data_dir
+        self.dense_dim = 13
+        self.slot_dim = 26
+        self.field_size = 39  # dense_dim + slot_dim
+        self.skip_id_convert = False
+        self.train_line_count = 45840617
+        self.test_size = 0.1
+        self.seed = 20191005
+        self.line_per_sample = 1000
+        self.epochs = 1
+        self.num_parallel_workers = num_parallel_workers
+        self._check_num_parallel_workers()
+        self.shuffle = shuffle
+
+        self.__init_stats()
+        self.__init_mindrecord()
+
+    def __check_mindrecord_dir(self):
+        if os.path.exists(self.mindrecord_dir):
+            print("mindrecord directory: {} exists! we will use it to save or read mindrecord dataset.".
+                  format(self.mindrecord_dir), flush=True)
+        else:
+            print("create mindrecord directory: {} to save or read mindrecord dataset.".
+                  format(self.mindrecord_dir), flush=True)
+            os.makedirs(self.mindrecord_dir)
+
+    def _check_num_parallel_workers(self):
+        # use multiprocessing to get cpu count
+        import multiprocessing
+        cpu_count = multiprocessing.cpu_count()
+
+        if self.num_parallel_workers is not None:
+            if cpu_count < self.num_parallel_workers:
+                raise ValueError("num_parallel_workers: {} is bigger than cpu count: {}!".format(
+                    self.num_parallel_workers, cpu_count))
+
+    def __check_stats_dict_dir(self):
+        if os.path.exists(self.stats_dict_dir):
+            print("stats dict directory: {} exists! we will use it to save or read stats dict.".
+                  format(self.stats_dict_dir), flush=True)
+        else:
+            print("create stats dict directory: {} to save or read stats dict.".
+                  format(self.stats_dict_dir), flush=True)
+            os.makedirs(self.stats_dict_dir)
+
+    def __init_mindrecord(self):
+        """
+        init mindrecord
+        """
+        self.mindrecord_dir = os.path.join(self.data_dir, "mindrecord")
+        self.__check_mindrecord_dir()
+
+    def __init_stats(self):
+        """
+        init stats values
+        """
+        self.val_cols = ["val_{}".format(i + 1) for i in range(self.dense_dim)]
+        self.cat_cols = ["cat_{}".format(i + 1) for i in range(self.slot_dim)]
+        self.val_min_dict = {col: 0 for col in self.val_cols}
+        self.val_max_dict = {col: 0 for col in self.val_cols}
+        self.cat_count_dict = {col: collections.defaultdict(int) for col in self.cat_cols}
+        self.oov_prefix = "OOV"
+        self.cat2id_dict = {}
+        self.cat2id_dict.update({col: i for i, col in enumerate(self.val_cols)})
+        self.cat2id_dict.update(
+            {self.oov_prefix + col: i + len(self.val_cols) for i, col in enumerate(self.cat_cols)})
+        self.stats_dict_dir = os.path.join(self.data_dir, "stats_dict/")
+        self.__check_stats_dict_dir()
+
+    def __stats_vals(self, val_list):
+        """
+        handling weights column
+        """
+        assert len(val_list) == len(self.val_cols)
+        for i, val in enumerate(val_list):
+            key = self.val_cols[i]
+            if val != "":
+                if float(val) > self.val_max_dict[key]:
+                    self.val_max_dict[key] = float(val)
+                if float(val) < self.val_min_dict[key]:
+                    self.val_min_dict[key] = float(val)
+
+    def __stats_cats(self, cat_list):
+        """
+        handling cats column
+        """
+        assert len(cat_list) == len(self.cat_cols)
+        for i, cat in enumerate(cat_list):
+            key = self.cat_cols[i]
+            self.cat_count_dict[key][cat] += 1
+
+    def __save_stats_dict(self):
+        """
+        save stats dict
+        """
+        with open(os.path.join(self.stats_dict_dir, "val_max_dict.pkl"), "wb") as f:
+            pickle.dump(self.val_max_dict, f)
+        with open(os.path.join(self.stats_dict_dir, "val_min_dict.pkl"), "wb") as f:
+            pickle.dump(self.val_min_dict, f)
+        with open(os.path.join(self.stats_dict_dir, "cat_count_dict.pkl"), "wb") as f:
+            pickle.dump(self.cat_count_dict, f)
+
+    def __load_stats_dict(self,):
+        """
+        load stats dict
+        """
+        with open(os.path.join(self.stats_dict_dir, "val_max_dict.pkl"), "rb") as f:
+            self.val_max_dict = pickle.load(f)
+        with open(os.path.join(self.stats_dict_dir, "val_min_dict.pkl"), "rb") as f:
+            self.val_min_dict = pickle.load(f)
+        with open(os.path.join(self.stats_dict_dir, "cat_count_dict.pkl"), "rb") as f:
+            self.cat_count_dict = pickle.load(f)
+        print("val_max_dict.items()[:50]:{}".format(list(self.val_max_dict.items())), flush=True)
+        print("val_min_dict.items()[:50]:{}".format(list(self.val_min_dict.items())), flush=True)
+
+    def __get_cat2id(self, threshold=100):
+        for key, cat_count_d in self.cat_count_dict.items():
+            new_cat_count_d = dict(filter(lambda x: x[1] > threshold, cat_count_d.items()))
+            for cat_str, _ in new_cat_count_d.items():
+                self.cat2id_dict[key + "_" + cat_str] = len(self.cat2id_dict)
+        print("cat2id_dict.size:{}".format(len(self.cat2id_dict)), flush=True)
+        print("cat2id.dict.items()[:50]:{}".format(list(self.cat2id_dict.items())[:50]), flush=True)
+
+    def __map_cat2id(self, values, cats):
+        """
+        category value to id value
+        """
+        id_list = []
+        weight_list = []
+        for i, val in enumerate(values):
+            if val == "":
+                id_list.append(i)
+                weight_list.append(0)
+            else:
+                key = "val_{}".format(i + 1)
+                id_list.append(self.cat2id_dict[key])
+                max_v = float(self.val_max_dict["val_{}".format(i + 1)])
+                minmax_scale_value = float(val) * 1.0 / max_v
+                weight_list.append(minmax_scale_value)
+
+        for i, cat_str in enumerate(cats):
+            key = "cat_{}".format(i + 1) + "_" + cat_str
+            if key in self.cat2id_dict:
+                if self.skip_id_convert is True:
+                    # For the synthetic data, if the generated id is between [0, max_vcoab], but the num examples is l
+                    # ess than vocab_size/ slot_nums the id will still be converted to [0, real_vocab], where real_vocab
+                    # the actually the vocab size, rather than the max_vocab. So a simple way to alleviate this
+                    # problem is skip the id convert, regarding the synthetic data id as the final id.
+                    id_list.append(cat_str)
+                else:
+                    id_list.append(self.cat2id_dict[key])
+            else:
+                id_list.append(self.cat2id_dict[self.oov_prefix + "cat_{}".format(i + 1)])
+            weight_list.append(1.0)
+        return id_list, weight_list
+
+    def stats_data(self):
+        """
+        stats data
+        """
+        num_splits = self.dense_dim + self.slot_dim + 1
+        error_stat_lines_num = []
+
+        train_file_path = os.path.join(self.data_dir, "train.txt")
+        with codecs.open(train_file_path, encoding="utf8", buffering=32*1024*1024) as f:
+            t_f = tqdm(f, total=self.train_line_count)
+            t_f.set_description("Processing StatsData")
+            num_line = 0
+            for line in t_f:
+                num_line += 1
+                line = line.strip("\n")
+                items = line.split("\t")
+                if len(items) != num_splits:
+                    error_stat_lines_num.append(num_line)
+                    # print("Found line length: {}, suppose to be {}, the line is {}".format(
+                    #     len(items), num_splits, line))
+                    continue
+                # if num_line % 1000000 == 0:
+                #     print("Have handled {}w lines.".format(num_line // 10000))
+                values = items[1: self.dense_dim + 1]
+                cats = items[self.dense_dim + 1:]
+                assert len(values) == self.dense_dim, "values.size: {}".format(len(values))
+                assert len(cats) == self.slot_dim, "cats.size: {}".format(len(cats))
+                self.__stats_vals(values)
+                self.__stats_cats(cats)
+        self.__save_stats_dict()
+
+        error_stat_path = os.path.join(self.data_dir, "error_stat_lines_num.npy")
+        np.save(error_stat_path, error_stat_lines_num)
+
+    def convert_to_mindrecord(self):
+        test_size = int(self.train_line_count * self.test_size)
+        all_indices = [i for i in range(self.train_line_count)]
+        np.random.seed(self.seed)
+        np.random.shuffle(all_indices)
+        test_indices_set = set(all_indices[:test_size])
+
+        train_data_list = []
+        test_data_list = []
+        ids_list = []
+        wts_list = []
+        label_list = []
+
+        schema = {
+            "label": {"type": "float32", "shape": [-1]},
+            "feat_vals": {"type": "float32", "shape": [-1]},
+            "feat_ids": {"type": "int32", "shape": [-1]}
+        }
+
+        train_writer = FileWriter(os.path.join(self.mindrecord_dir, "train_input_part.mindrecord"), 21)
+        test_writer = FileWriter(os.path.join(self.mindrecord_dir, "test_input_part.mindrecord"), 3)
+        train_writer.add_schema(schema, "CRITEO_TRAIN")
+        test_writer.add_schema(schema, "CRITEO_TEST")
+
+        part_rows = 2000000
+        num_splits = self.dense_dim + self.slot_dim + 1
+        error_conv_lines_num = []
+
+        train_file_path = os.path.join(self.data_dir, "train.txt")
+        with codecs.open(train_file_path, encoding="utf8", buffering=32*1024*1024) as f:
+            t_f = tqdm(f, total=self.train_line_count)
+            t_f.set_description("Processing Convert2MR")
+            num_line = 0
+            train_part_number = 0
+            test_part_number = 0
+            for line in t_f:
+                num_line += 1
+                # if num_line % 1000000 == 0:
+                #     print("Converting to MindRecord. Have handle {}w lines.".format(num_line // 10000), flush=True)
+                line = line.strip("\n")
+                items = line.split("\t")
+                if len(items) != num_splits:
+                    error_conv_lines_num.append(num_line)
+                    continue
+                label = float(items[0])
+                values = items[1: 1 + self.dense_dim]
+                cats = items[1+self.dense_dim:]
+
+                assert len(values) == self.dense_dim, "values.size: {}".format(len(values))
+                assert len(cats) == self.slot_dim, "cats.size: {}".format(len(cats))
+
+                ids, wts = self.__map_cat2id(values, cats)
+                ids_list.extend(ids)
+                wts_list.extend(wts)
+                label_list.append(label)
+
+                if num_line % self.line_per_sample == 0:
+                    if num_line not in test_indices_set:
+                        train_data_list.append({"feat_ids": np.array(ids_list, dtype=np.int32),
+                                                "feat_vals": np.array(wts_list, dtype=np.float32),
+                                                "label": np.array(label_list, dtype=np.float32)
+                                                })
+                    else:
+                        test_data_list.append({"feat_ids": np.array(ids_list, dtype=np.int32),
+                                               "feat_vals": np.array(wts_list, dtype=np.float32),
+                                               "label": np.array(label_list, dtype=np.float32)
+                                               })
+                    if train_data_list and len(train_data_list) % part_rows == 0:
+                        train_writer.write_raw_data(train_data_list)
+                        train_data_list.clear()
+                        train_part_number += 1
+
+                    if test_data_list and len(test_data_list) % part_rows == 0:
+                        test_writer.write_raw_data(test_data_list)
+                        test_data_list.clear()
+                        test_part_number += 1
+
+                    ids_list.clear()
+                    wts_list.clear()
+                    label_list.clear()
+            if train_data_list:
+                train_writer.write_raw_data(train_data_list)
+            if test_data_list:
+                test_writer.write_raw_data(test_data_list)
+        train_writer.commit()
+        test_writer.commit()
+
+        error_stat_path = os.path.join(self.data_dir, "error_conv_lines_num.npy")
+        np.save(error_stat_path, error_conv_lines_num)
+
+    def load_mindreocrd_dataset(self, usage='train', batch_size=1000):
+        """
+        load mindrecord dataset.
+        Args:
+            usage (str): Dataset mode. Default: 'train'.
+            batch_size (int): batch size. Default: 1000.
+
+        Returns:
+            MindDataset
+        """
+        if usage == 'train':
+            train_mode = True
+        else:
+            train_mode = False
+
+        prefix_file_name = 'train_input_part.mindrecord' if train_mode else 'test_input_part.mindrecord'
+        suffix_file_name = '00' if train_mode else '0'
+        dataset_path = os.path.join(self.mindrecord_dir, prefix_file_name + suffix_file_name)
+
+        dataset = MindDataset(dataset_path,
+                              columns_list=['feat_ids', 'feat_vals', 'label'],
+                              num_parallel_workers=self.num_parallel_workers,
+                              shuffle=self.shuffle, num_shards=None, shard_id=None)
+
+        dataset = dataset.batch(int(batch_size / self.line_per_sample), drop_remainder=True)
+        dataset = dataset.map(operations=(lambda x, y, z: (np.array(x).flatten().reshape(batch_size, 39),
+                                                           np.array(y).flatten().reshape(batch_size, 39),
+                                                           np.array(z).flatten().reshape(batch_size, 1))),
+                              input_columns=['feat_ids', 'feat_vals', 'label'],
+                              column_order=['feat_ids', 'feat_vals', 'label'],
+                              num_parallel_workers=self.num_parallel_workers)
+        dataset = dataset.repeat(self.epochs)
+        return dataset
 
 
 class DistributedSampler:

@@ -55,6 +55,9 @@ install_required_package = [
     'PyYAML',
     'opencv-python==4.1.2.30',
     'flask_cors>=3.0.10',
+    'wget==3.2',
+    'scikit-learn==1.0.1',
+    'tqdm==4.62.3',
 ]
 
 test_required_package = [
