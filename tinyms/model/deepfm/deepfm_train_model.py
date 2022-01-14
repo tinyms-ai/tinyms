@@ -16,13 +16,13 @@ from tinyms import layers
 from tinyms import ParameterTuple
 
 from tinyms.context import ParallelMode, get_auto_parallel_context
+from tinyms.layers import DistributedGradReducer
 from tinyms.optimizers import Adam
 from tinyms.primitives import HyperMap, GradOperation
 from tinyms.primitives import depend
 from tinyms.primitives import DType, Fill, ReduceMean, ReduceSum, Shape, Square
 from tinyms.primitives import SigmoidCrossEntropyWithLogits
 from mindspore.communication.management import get_group_size
-from mindspore.nn.wrap.grad_reducer import DistributedGradReducer
 
 
 class DeepFMWithLoss(layers.Layer):
