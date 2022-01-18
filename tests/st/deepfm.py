@@ -15,7 +15,7 @@
 """DeepFM Tutorial
 The sample can be run on CPU, GPU. Not test on Ascend AI processor.
 For download speed, you can download the kaggle display advertising dataset by tool
-and put it into `${dataset_path}/kaggle_display_advertising`.
+and put it into `${dataset_path}/kaggle_display_advertising`, and uncompress it.
 """
 import os
 import argparse
