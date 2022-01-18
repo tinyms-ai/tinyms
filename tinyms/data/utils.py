@@ -234,6 +234,7 @@ def _download_kaggle_display_advertising(local_path):
     # already exist criteo-research-kaggle-display-advertising-challenge-dataset.tar.gz
     if os.path.exists(file_name):
         if os.path.getsize(file_name) == 4576820670:
+            print("************** Uncompress already exists tar format data **************")
             _unzip(file_name)
     if not _check_uncompressed_kaggle_display_advertising_files(local_path):
         _fetch_and_unzip_by_wget(remote_url, file_name)
