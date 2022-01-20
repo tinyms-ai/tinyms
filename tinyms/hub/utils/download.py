@@ -21,8 +21,10 @@ import errno
 import stat
 import urllib
 from urllib.request import urlretrieve, HTTPError, URLError
+import ssl
 
 
+ssl._create_default_https_context = ssl._create_unverified_context
 REAL_PATH = os.path.split(os.path.realpath(__file__))[0]
 MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024  # 5GB
 SUFFIX_LIST = ['.ckpt', 'mindir', '.onnx']
