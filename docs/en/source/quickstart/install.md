@@ -123,3 +123,32 @@ If the output is similar to below, then the installation is valid
 [[2. 2. 2.]
  [2. 2. 2.]]
 ```
+
+## Notes
+
+When we use `TinyMS 0.3.1`, the following error may be reported
+
+**Error Details:**
+
+````
+[ERROR] ME(24148:23792,MainProcess):2022-01-25-21:59:25.562.448 [mindspore\_extends\parse\parser.py:565] When eval 'P.tensor_add(identity, x)' by using Fallback feature, an error occurred: name 'identity' is not defined. You can try to turn off the Fallback feature by 'export MS_DEV_ENABLE_FALLBACK=0'.
+````
+
+**Solution:**
+
+According to the error prompt, we can turn off the `Fallback feature` with the following command.
+
+For general users, execute the following commands in the command line tool:
+
+```shell
+export MS_DEV_ENABLE_FALLBACK=0
+````
+
+For users using jupyter, execute the following command in the cell:
+
+````python
+!export MS_DEV_ENABLE_FALLBACK=0
+````
+
+If you report other error while using `TinyMS 0.3.1`, after you try to solve the error, there is still a problem, we welcome you to submit your issues and pull requests in our [community](https://github.com/tinyms-ai/tinyms), and we will reply you as soon as possible.
+
