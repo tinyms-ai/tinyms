@@ -19,7 +19,7 @@ import os
 import setuptools
 
 package_name = 'tinyms'
-version_tag = '0.3.0'
+version_tag = '0.3.1'
 pwd = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -47,17 +47,17 @@ install_required_package = [
     'scipy>=1.5.2,<1.8.0',
     'matplotlib>=3.1.3',
     'Pillow>=6.2.0',
-    'mindspore==1.5.0',
+    'mindspore>=1.5.0',
     'requests>=2.22.0',
     'flask>=1.1.1',
     'python-Levenshtein>=0.10.2',
     'gensim==3.8.1',
     'PyYAML',
-    'opencv-python==4.1.2.30',
+    'opencv-python>=4.1.2.30',
     'flask_cors>=3.0.10',
-    'wget==3.2',
-    'scikit-learn==1.0.1',
-    'tqdm==4.62.3',
+    'wget>=3.2',
+    'scikit-learn>=1.0.1',
+    'tqdm>=4.62.3',
 ]
 
 test_required_package = [
