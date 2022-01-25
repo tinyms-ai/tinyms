@@ -122,3 +122,29 @@ print(tensor_add(x, y))
 [[2. 2. 2.]
  [2. 2. 2.]]
 ```
+
+## Notes
+
+在我们使用`TinyMS 0.3.1`的时候可能会报以下错误，这是因为`TinyMS 0.3.1`默认开启了`JIT`，我们需要手动将`JIT`关闭。
+
+**错误详情：**
+
+```
+[ERROR] ME(24148:23792,MainProcess):2022-01-25-21:59:25.562.448 [mindspore\_extends\parse\parser.py:565] When eval 'P.tensor_add(identity, x)' by using Fallback feature, an error occurred: name 'identity' is not defined. You can try to turn off the Fallback feature by 'export MS_DEV_ENABLE_FALLBACK=0'.
+```
+
+**解决方案：**
+
+对于一般用户，在命令行工具执行以下命令：
+
+```shell
+export MS_DEV_ENABLE_FALLBACK=0
+```
+
+对于使用jupyter的用户，在cell执行以下命令：
+
+```python
+!export MS_DEV_ENABLE_FALLBACK=0
+```
+
+**若您在使用`TinyMS 0.3.1`的过程中出现了其他问题，在您的尝试之后，依然无法解决，我们欢迎您我们的[社区](https://github.com/tinyms-ai/tinyms)，提出您的Issues和Pull requests，我们会及时回复您。**
