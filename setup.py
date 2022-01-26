@@ -58,6 +58,7 @@ install_required_package = [
     'wget==3.2',
     'scikit-learn==1.0.1',
     'tqdm==4.62.3',
+    'psutil==5.8.0',
 ]
 
 test_required_package = [

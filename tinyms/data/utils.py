@@ -121,13 +121,13 @@ def _fetch_and_unzip_by_wget(url, file_name):
         file_name: str, local path of downloaded file
     """
     # function to show download progress
-    def bar_progress(current, total, width=80):
+    def _bar_progress(current, total, width=80):
         progress_message = "Downloading: %d%% [%d / %d] bytes" % (current / total * 100, current, total)
         # Don't use print() as it will print in new line every time.
         sys.stdout.write("\r" + progress_message)
         sys.stdout.flush()
     # using wget is faster than fetch.
-    wget.download(url, out=file_name, bar=bar_progress)
+    wget.download(url, out=file_name, bar=_bar_progress)
     print("\n============== {} is ready ==============".format(file_name))
     _unzip(file_name)
     os.remove(file_name)
@@ -230,18 +230,29 @@ def _download_kaggle_display_advertising(local_path):
     if not os.path.exists(dataset_path):
         os.makedirs(dataset_path)
 
-    print("************** Downloading the Kaggle Display Advertising Challenge dataset **************")
     remote_url = "http://go.criteo.net/criteo-research-kaggle-display-advertising-challenge-dataset.tar.gz"
     file_name = os.path.join(dataset_path, remote_url.split('/')[-1])
-    # already exist criteo-research-kaggle-display-advertising-challenge-dataset.tar.gz
+
+    # existing uncompressed kaggle-display-advertising data
+    if _check_uncompressed_kaggle_display_advertising_files(dataset_path):
+        print("************** Uncompressed kaggle-display-advertising data already exists **************",
+              flush=True)
+        return os.path.join(dataset_path)
+
+    # existing criteo-research-kaggle-display-advertising-challenge-dataset.tar.gz
     if os.path.exists(file_name):
         if os.path.getsize(file_name) == 4576820670:
-            print("************** Uncompress already exists tar format data **************", flush=True)
+            print("************** Uncompress existing tar.gz format file **************", flush=True)
             _unzip(file_name)
-    if not _check_uncompressed_kaggle_display_advertising_files(dataset_path):
-        _fetch_and_unzip_by_wget(remote_url, file_name)
-    else:
-        print("{} already have uncompressed kaggle display advertising dataset.".format(dataset_path), flush=True)
+            # check uncompressed files
+            if _check_uncompressed_kaggle_display_advertising_files(dataset_path):
+                return os.path.join(dataset_path)
+            else:
+                print("************** {} **************".
+                      format("Uncompress existing tar.gz format file failed, need to download again"), flush=True)
+
+    print("************** Downloading the Kaggle Display Advertising Challenge dataset **************", flush=True)
+    _fetch_and_unzip_by_wget(remote_url, file_name)
 
     return os.path.join(dataset_path)
 

@@ -71,13 +71,14 @@ if __name__ == "__main__":
     batch_size = args_opt.batch_size
     dataset_path = args_opt.dataset_path
     dataset_sink_mode = not args_opt.device_target == "CPU"
+    convert_dtype = not args_opt.device_target == "CPU"
     checkpoint_dir = args_opt.checkpoint_dir if args_opt.checkpoint_dir is not None else "."
 
     # create train and eval dataset
     train_ds, eval_ds = create_dataset(data_path=dataset_path, batch_size=batch_size)
     # build base network
     data_size = train_ds.get_dataset_size()
-    net = DeepFM(field_size=39, vocab_size=184965, embed_size=80, convert_dtype=True)
+    net = DeepFM(field_size=39, vocab_size=184965, embed_size=80, convert_dtype=convert_dtype)
     # build train network
     train_net = DeepFMTrainModel(DeepFMWithLoss(net))
     # build eval network
