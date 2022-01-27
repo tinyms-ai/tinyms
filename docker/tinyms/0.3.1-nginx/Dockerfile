@@ -12,7 +12,7 @@ RUN git clone https://github.com/tinyms-ai/tinyms.git
 
 # Ready for tinyms web frontend startup
 # Install Nginx and opencv dependencies software
-RUN apt-get install nginx=1.14.0-0ubuntu1.9 lsof libglib2.0-dev libsm6 libxrender1 -y
+RUN apt-get install nginx=1.14.0-0ubuntu1.9 lsof libglib2.0-dev libsm6 libxrender1 libgl1-mesa-glx -y
 
 # Configure Nginx
 RUN sed -i '/include \/etc\/nginx\/sites-enabled\/\*;/a\

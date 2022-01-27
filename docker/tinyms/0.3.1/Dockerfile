@@ -6,7 +6,7 @@ LABEL MAINTAINER="TinyMS Authors"
 # Install base tools
 RUN apt-get update
 # Install opencv dependencies software
-RUN apt-get install libglib2.0-dev libsm6 libxrender1 -y
+RUN apt-get install libglib2.0-dev libsm6 libxrender1 libgl1-mesa-glx -y
 
 # Install TinyMS cpu whl package
 RUN pip install --upgrade pip && pip install --no-cache-dir tinyms==0.3.1
