@@ -326,6 +326,8 @@ len("Hello TinyMS!")
 
     'hello tinyms!'
 
+
+
 #### List（列表）
 
 List（列表） 在其他语言中通常叫数组`Array`，是 Python 中使用最频繁的数据类型。
@@ -752,6 +754,8 @@ set([1,1,2,2,3,3,4,5,6,7])
 
 
     {1, 2, 3, 4, 5, 6, 7}
+
+
 
 #### 数据类型转换
 
@@ -1612,6 +1616,7 @@ Human.grunt()   # => "*grunt*"
     '*grunt*'
 
 
+
 ### 8.模块
 
 #### 1.用import导入模块
@@ -1829,4 +1834,98 @@ NumPy 是一个运行速度非常快的数学库，主要用于数组计算，�
 
 ### ![NumPy速查表](https://tva1.sinaimg.cn/large/008i3skNgy1gpsyiqhazvj313y0u0kf1.jpg)
 
+### 2.Scipy
 
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+### 3.Matplotlib
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+## 五、几个练习小技巧
+
+1. 找一些难度适中的题目去练习，熟悉Python语法
+2. 刷Leetcode，选择Python语言，尝试各种不同的解法
+3. 在工作中用Python，不断优化代码，提升处理效率
+4. 尝试用Python去复现机器学习/深度学习的模型，能够帮助你深入理解算法，提升代码能力
+
+## 六、参考文献
+
+1.[Look Ma, No For-Loops: Array Programming With NumPy](https://realpython.com/numpy-array-programming)
+
+2.[Python基础教程](https://www.runoob.com/python/python-variable-types.html)
+
+3.[LearnXInYMinutes](https://learnxinyminutes.com/docs/zh-cn/python-cn/)
+
+4.https://oi-wiki.org/lang/python/#_12
+
+
+```python
+
+```
