@@ -136,7 +136,8 @@ TinyMS配套了完善的教程，适合纯小白入手。
 | EP01 | [最适合小白的深度学习入门课程来了!](https://www.bilibili.com/video/BV1MB4y1P79S) | 老师简介+深度学习科普+课程介绍 | 无 | 已发布 | 2021.3.30 |
 | EP02 | [计算机是如何识别图像的?](https://www.bilibili.com/video/BV18v41187fX) | 计算机识别图像科普+TinyMS安装（Ubuntu、Win10、Docker安装） | [TinyMS快速安装](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html) | 已发布 | 2020.3.31 |
 | EP03 | [30min速成Shell脚本命令](https://www.bilibili.com/video/BV1vy4y1b7jh) | shell基本命令、变量与传参、数组、运算符、test命令、使用函数、输入输出重定向、流程控制函数以及常见的文件操作命令 | [Shell脚本30min速成指南](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP03/30min速成Shell脚本.md) | 已发布 | 2020.4.1 |
-
+| EP04 | [30min速成Python指南（上）](https://www.bilibili.com/video/BV1Tp4y1b7UG?spm_id_from=333.999.0.0) | Python安装、基础语法、原始数据类型及运算符介绍 | [Python30min速成指南(上)](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP04/Quickstart-for-Python-in-30-minutes.md) | 已发布 | 2020.4.23  |
+| EP05 | [30min速成Python指南（下）](https://www.bilibili.com/video/BV1XS4y1Z7yp?spm_id_from=333.999.0.0) | Python条件语句、循环语句、迭代器、生成器、函数、类、模块、高级用法、及深度学习中常用的Python库 | [Python30min速成指南(下)](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP04/Quickstart-for-Python-in-30-minutes.md) | 已发布 | 2022.1.10  |
 ## 社区
 
 欢迎加入TinyMS社区进行贡献，如果您还不太清楚TinyMS社区的运作流程，可通过[贡献指南](https://tinyms.readthedocs.io/zh_CN/latest/community/contributing.html)的学习快速上手社区贡献。
