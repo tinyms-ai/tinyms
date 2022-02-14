@@ -136,7 +136,8 @@ For a more detailed step-by-step video tutorial, please refer to the following w
 | EP01    | [How to learn Deep Learning? The Most Efficient Way For Beginners!](https://www.bilibili.com/video/BV1MB4y1P79S) | Teacher's profile+DeepLearning Course Introduction | - | Published | 2021.3.30 |
 | EP02    | [How we teach computers to understand pictures? Three Ways to Install TinyMS](https://www.bilibili.com/video/BV18v41187fX) | It uncovers the magic of computer vision + three ways to install TinyMS (Ubuntu, Win10, Docker) | [TinyMS Installation For Beginners](https://tinyms.readthedocs.io/zh_CN/latest/quickstart/install.html) | Published | 2020.3.31 |
 | EP03    | [Learn Shell Script in 30 Minutes](https://www.bilibili.com/video/BV1vy4y1b7jh) | It covers the essential concepts such as using variables, basic operators, loops & functions and so on. It also gives you an insight by scaling down some real-time scenarios and demonstrating them using the docker container. | [Learn Shell Script in 30 Minutes (doc)](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP03/30min速成Shell脚本.md) | Published | 2020.4.1 |
-
+| EP04    | [Learn Python in 30 Minutes(Part I.)](https://www.bilibili.com/video/BV1Tp4y1b7UG?spm_id_from=333.999.0.0) | Python installation, basic syntax, primitive data types and operators| [Learn Python in 30 Minutes](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP04/Quickstart-for-Python-in-30-minutes.md) | Published | 2021.4.23    |
+| EP05    | [Learn Python in 30 Minutes(Part II.)](https://www.bilibili.com/video/BV1XS4y1Z7yp?spm_id_from=333.999.0.0) | Python conditional statements, loop statements, iterators, generators, functions, class, module, advanced usages, and several most commonly used Python libraries in deep learning | [Learn Python in 30 Minutes](https://github.com/tinyms-ai/tinyms/blob/main/tutorials/EP04/Quickstart-for-Python-in-30-minutes.md) | Published | 2022.1.10    |
 
 ## Community
 
