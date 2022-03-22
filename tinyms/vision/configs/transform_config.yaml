@@ -21,7 +21,7 @@ Cifar10Transform:
   labels: ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
   transform_strategy: ['TOP1_CLASS', 'TOP3_CLASS', 'TOP5_CLASS']
   random_crop:
-    size: [224, 224]
+    size: [32, 32]
     padding: [4, 4, 4, 4]
   random_horizontal_flip:
     prob: 0.5
