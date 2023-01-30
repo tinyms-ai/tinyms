@@ -6,3 +6,4 @@ nbsphinx
 pandoc
 numpy >= 1.17.0 , <=1.17.5
 jieba
+jinja2 == 3.0.3
