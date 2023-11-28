@@ -75,7 +75,26 @@ def _unzip(gzip_path):
     # decompress the file if gzip_path ends with `.tar`
     if gzip_path.endswith('.tar'):
         with tarfile.open(gzip_path) as f:
-            f.extractall(gzip_path[:gzip_path.rfind('/')])
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(f, gzip_path[:gzip_path.rfind("/")])
     elif gzip_path.endswith('.gz'):
         gzip_file = gzip_path.replace('.gz', '')
         with open(gzip_file, 'wb') as f:
@@ -84,7 +103,26 @@ def _unzip(gzip_path):
         # decompress the file if gz_file ends with `.tar`
         if gzip_file.endswith('.tar'):
             with tarfile.open(gzip_file) as f:
-                f.extractall(gzip_file[:gzip_file.rfind('/')])
+                def is_within_directory(directory, target):
+                    
+                    abs_directory = os.path.abspath(directory)
+                    abs_target = os.path.abspath(target)
+                
+                    prefix = os.path.commonprefix([abs_directory, abs_target])
+                    
+                    return prefix == abs_directory
+                
+                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                
+                    for member in tar.getmembers():
+                        member_path = os.path.join(path, member.name)
+                        if not is_within_directory(path, member_path):
+                            raise Exception("Attempted Path Traversal in Tar File")
+                
+                    tar.extractall(path, members, numeric_owner=numeric_owner) 
+                    
+                
+                safe_extract(f, gzip_file[:gzip_file.rfind("/")])
     else:
         print("Currently the format of unzip dataset only supports `*.tar`, `*.gz` and `*.tar.gz`!")
         sys.exit(0)
