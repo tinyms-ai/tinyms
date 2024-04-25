@@ -1,7 +1,7 @@
 # 30min速成Python指南
 
 <h1>Table of Contents<span class="tocSkip"></span></h1>
-<div class="toc"><ul class="toc-item"><li><span><a href="#一、为什么要学习Python" data-toc-modified-id="一、为什么要学习Python-1">一、为什么要学习Python</a></span></li><li><span><a href="#二、如何安装Python" data-toc-modified-id="二、如何安装Python-2">二、如何安装Python</a></span><ul class="toc-item"><li><span><a href="#1.-下载并安装Python" data-toc-modified-id="1.-下载并安装Python-2.1">1. 下载并安装Python</a></span></li><li><span><a href="#2.选择合适的Pip源？" data-toc-modified-id="2.选择合适的Pip源？-2.2">2.选择合适的Pip源？</a></span></li></ul></li><li><span><a href="#三、Python基础语法" data-toc-modified-id="三、Python基础语法-3">三、Python基础语法</a></span><ul class="toc-item"><li><span><a href="#1.-原始数据类型与运算符" data-toc-modified-id="1.-原始数据类型与运算符-3.1">1. 原始数据类型与运算符</a></span><ul class="toc-item"><li><span><a href="#Numbers（数字）" data-toc-modified-id="Numbers（数字）-3.1.1">Numbers（数字）</a></span></li><li><span><a href="#String（字符串）" data-toc-modified-id="String（字符串）-3.1.2">String（字符串）</a></span></li><li><span><a href="#List（列表）" data-toc-modified-id="List（列表）-3.1.3">List（列表）</a></span></li><li><span><a href="#Tuples（元祖）" data-toc-modified-id="Tuples（元祖）-3.1.4">Tuples（元祖）</a></span></li><li><span><a href="#Dictionary（字典）" data-toc-modified-id="Dictionary（字典）-3.1.5">Dictionary（字典）</a></span></li><li><span><a href="#Set（集合）" data-toc-modified-id="Set（集合）-3.1.6">Set（集合）</a></span></li><li><span><a href="#数据类型转换" data-toc-modified-id="数据类型转换-3.1.7">数据类型转换</a></span></li></ul></li><li><span><a href="#2.条件语句" data-toc-modified-id="2.条件语句-3.2">2.条件语句</a></span></li><li><span><a href="#3.循环语句" data-toc-modified-id="3.循环语句-3.3">3.循环语句</a></span></li><li><span><a href="#4.迭代器" data-toc-modified-id="4.迭代器-3.4">4.迭代器</a></span><ul class="toc-item"><li><span><a href="#1.迭代器是什么？" data-toc-modified-id="1.迭代器是什么？-3.4.1">1.迭代器是什么？</a></span></li><li><span><a href="#2.TinyMS中的迭代器" data-toc-modified-id="2.TinyMS中的迭代器-3.4.2">2.TinyMS中的迭代器</a></span></li></ul></li><li><span><a href="#5.生成器" data-toc-modified-id="5.生成器-3.5">5.生成器</a></span><ul class="toc-item"><li><span><a href="#1.-生成器是什么？" data-toc-modified-id="1.-生成器是什么？-3.5.1">1. 生成器是什么？</a></span></li><li><span><a href="#2.-为什么要使用yield函数？" data-toc-modified-id="2.-为什么要使用yield函数？-3.5.2">2. 为什么要使用yield函数？</a></span></li><li><span><a href="#3.-在TinyMS中如何使用yield函数？" data-toc-modified-id="3.-在TinyMS中如何使用yield函数？-3.5.3">3. 在TinyMS中如何使用yield函数？</a></span></li></ul></li><li><span><a href="#6.函数" data-toc-modified-id="6.函数-3.6">6.函数</a></span><ul class="toc-item"><li><span><a href="#1.-定义函数" data-toc-modified-id="1.-定义函数-3.6.1">1. 定义函数</a></span></li><li><span><a href="#2.-函数作用域" data-toc-modified-id="2.-函数作用域-3.6.2">2. 函数作用域</a></span></li><li><span><a href="#3.嵌套函数" data-toc-modified-id="3.嵌套函数-3.6.3">3.嵌套函数</a></span></li><li><span><a href="#4.匿名函数" data-toc-modified-id="4.匿名函数-3.6.4">4.匿名函数</a></span></li><li><span><a href="#5.内置的高阶函数" data-toc-modified-id="5.内置的高阶函数-3.6.5">5.内置的高阶函数</a></span></li><li><span><a href="#6.列表推导式" data-toc-modified-id="6.列表推导式-3.6.6">6.列表推导式</a></span></li></ul></li><li><span><a href="#7.类" data-toc-modified-id="7.类-3.7">7.类</a></span><ul class="toc-item"><li><span><a href="#1.定义一个继承object的类" data-toc-modified-id="1.定义一个继承object的类-3.7.1">1.定义一个继承object的类</a></span></li><li><span><a href="#2.构造一个实例" data-toc-modified-id="2.构造一个实例-3.7.2">2.构造一个实例</a></span></li><li><span><a href="#3.调用一个类方法" data-toc-modified-id="3.调用一个类方法-3.7.3">3.调用一个类方法</a></span></li><li><span><a href="#4.改一个共用的类属性" data-toc-modified-id="4.改一个共用的类属性-3.7.4">4.改一个共用的类属性</a></span></li><li><span><a href="#5.调用静态方法" data-toc-modified-id="5.调用静态方法-3.7.5">5.调用静态方法</a></span></li></ul></li><li><span><a href="#8.模块" data-toc-modified-id="8.模块-3.8">8.模块</a></span><ul class="toc-item"><li><span><a href="#1.用import导入模块" data-toc-modified-id="1.用import导入模块-3.8.1">1.用import导入模块</a></span></li><li><span><a href="#2.from-xxx-import" data-toc-modified-id="2.from-xxx-import-3.8.2">2.from xxx import</a></span></li><li><span><a href="#3.其他用法" data-toc-modified-id="3.其他用法-3.8.3">3.其他用法</a></span></li></ul></li><li><span><a href="#9.高级用法" data-toc-modified-id="9.高级用法-3.9">9.高级用法</a></span><ul class="toc-item"><li><span><a href="#1.-用生成器(generators)写函数计算" data-toc-modified-id="1.-用生成器(generators)写函数计算-3.9.1">1. 用生成器(generators)写函数计算</a></span></li><li><span><a href="#2.-装饰器" data-toc-modified-id="2.-装饰器-3.9.2">2. 装饰器</a></span></li></ul></li><li><span><a href="#10.-常用内置库" data-toc-modified-id="10.-常用内置库-3.10">10. 常用内置库</a></span></li></ul></li><li><span><a href="#四、深度学习常用Python库" data-toc-modified-id="四、深度学习常用Python库-4">四、深度学习常用Python库</a></span><ul class="toc-item"><li><span><a href="#1.-Numpy" data-toc-modified-id="1.-Numpy-4.1">1. Numpy</a></span></li><li><span><a href="#2.Scipy" data-toc-modified-id="2.Scipy-4.2">2.Scipy</a></span></li><li><span><a href="#3.Matplotlib" data-toc-modified-id="3.Matplotlib-4.3">3.Matplotlib</a></span></li></ul></li><li><span><a href="#五、几个练习小技巧" data-toc-modified-id="五、几个练习小技巧-5">五、几个练习小技巧</a></span></li><li><span><a href="#六、参考文献" data-toc-modified-id="六、参考文献-6">六、参考文献</a></span></li></ul></div>
+<div class="toc"><ul class="toc-item"><li><span><a href="#一、为什么要学习Python" data-toc-modified-id="一、为什么要学习Python-1">一、为什么要学习Python</a></span></li><li><span><a href="#二、如何安装Python" data-toc-modified-id="二、如何安装Python-2">二、如何安装Python</a></span><ul class="toc-item"><li><span><a href="#1.-下载并安装Python" data-toc-modified-id="1.-下载并安装Python-2.1">1. 下载并安装Python</a></span></li><li><span><a href="#2.选择合适的Pip源？" data-toc-modified-id="2.选择合适的Pip源？-2.2">2.选择合适的Pip源？</a></span></li></ul></li><li><span><a href="#三、Python基础语法" data-toc-modified-id="三、Python基础语法-3">三、Python基础语法</a></span><ul class="toc-item"><li><span><a href="#1.-原始数据类型与运算符" data-toc-modified-id="1.-原始数据类型与运算符-3.1">1. 原始数据类型与运算符</a></span><ul class="toc-item"><li><span><a href="#Numbers（数字）" data-toc-modified-id="Numbers（数字）-3.1.1">Numbers（数字）</a></span></li><li><span><a href="#String（字符串）" data-toc-modified-id="String（字符串）-3.1.2">String（字符串）</a></span></li><li><span><a href="#List（列表）" data-toc-modified-id="List（列表）-3.1.3">List（列表）</a></span></li><li><span><a href="#Tuples（元组）" data-toc-modified-id="Tuples（元组）-3.1.4">Tuples（元组）</a></span></li><li><span><a href="#Dictionary（字典）" data-toc-modified-id="Dictionary（字典）-3.1.5">Dictionary（字典）</a></span></li><li><span><a href="#Set（集合）" data-toc-modified-id="Set（集合）-3.1.6">Set（集合）</a></span></li><li><span><a href="#数据类型转换" data-toc-modified-id="数据类型转换-3.1.7">数据类型转换</a></span></li></ul></li><li><span><a href="#2.条件语句" data-toc-modified-id="2.条件语句-3.2">2.条件语句</a></span></li><li><span><a href="#3.循环语句" data-toc-modified-id="3.循环语句-3.3">3.循环语句</a></span></li><li><span><a href="#4.迭代器" data-toc-modified-id="4.迭代器-3.4">4.迭代器</a></span><ul class="toc-item"><li><span><a href="#1.迭代器是什么？" data-toc-modified-id="1.迭代器是什么？-3.4.1">1.迭代器是什么？</a></span></li><li><span><a href="#2.TinyMS中的迭代器" data-toc-modified-id="2.TinyMS中的迭代器-3.4.2">2.TinyMS中的迭代器</a></span></li></ul></li><li><span><a href="#5.生成器" data-toc-modified-id="5.生成器-3.5">5.生成器</a></span><ul class="toc-item"><li><span><a href="#1.-生成器是什么？" data-toc-modified-id="1.-生成器是什么？-3.5.1">1. 生成器是什么？</a></span></li><li><span><a href="#2.-为什么要使用yield函数？" data-toc-modified-id="2.-为什么要使用yield函数？-3.5.2">2. 为什么要使用yield函数？</a></span></li><li><span><a href="#3.-在TinyMS中如何使用yield函数？" data-toc-modified-id="3.-在TinyMS中如何使用yield函数？-3.5.3">3. 在TinyMS中如何使用yield函数？</a></span></li></ul></li><li><span><a href="#6.函数" data-toc-modified-id="6.函数-3.6">6.函数</a></span><ul class="toc-item"><li><span><a href="#1.-定义函数" data-toc-modified-id="1.-定义函数-3.6.1">1. 定义函数</a></span></li><li><span><a href="#2.-函数作用域" data-toc-modified-id="2.-函数作用域-3.6.2">2. 函数作用域</a></span></li><li><span><a href="#3.嵌套函数" data-toc-modified-id="3.嵌套函数-3.6.3">3.嵌套函数</a></span></li><li><span><a href="#4.匿名函数" data-toc-modified-id="4.匿名函数-3.6.4">4.匿名函数</a></span></li><li><span><a href="#5.内置的高阶函数" data-toc-modified-id="5.内置的高阶函数-3.6.5">5.内置的高阶函数</a></span></li><li><span><a href="#6.列表推导式" data-toc-modified-id="6.列表推导式-3.6.6">6.列表推导式</a></span></li></ul></li><li><span><a href="#7.类" data-toc-modified-id="7.类-3.7">7.类</a></span><ul class="toc-item"><li><span><a href="#1.定义一个继承object的类" data-toc-modified-id="1.定义一个继承object的类-3.7.1">1.定义一个继承object的类</a></span></li><li><span><a href="#2.构造一个实例" data-toc-modified-id="2.构造一个实例-3.7.2">2.构造一个实例</a></span></li><li><span><a href="#3.调用一个类方法" data-toc-modified-id="3.调用一个类方法-3.7.3">3.调用一个类方法</a></span></li><li><span><a href="#4.改一个共用的类属性" data-toc-modified-id="4.改一个共用的类属性-3.7.4">4.改一个共用的类属性</a></span></li><li><span><a href="#5.调用静态方法" data-toc-modified-id="5.调用静态方法-3.7.5">5.调用静态方法</a></span></li></ul></li><li><span><a href="#8.模块" data-toc-modified-id="8.模块-3.8">8.模块</a></span><ul class="toc-item"><li><span><a href="#1.用import导入模块" data-toc-modified-id="1.用import导入模块-3.8.1">1.用import导入模块</a></span></li><li><span><a href="#2.from-xxx-import" data-toc-modified-id="2.from-xxx-import-3.8.2">2.from xxx import</a></span></li><li><span><a href="#3.其他用法" data-toc-modified-id="3.其他用法-3.8.3">3.其他用法</a></span></li></ul></li><li><span><a href="#9.高级用法" data-toc-modified-id="9.高级用法-3.9">9.高级用法</a></span><ul class="toc-item"><li><span><a href="#1.-用生成器(generators)写函数计算" data-toc-modified-id="1.-用生成器(generators)写函数计算-3.9.1">1. 用生成器(generators)写函数计算</a></span></li><li><span><a href="#2.-装饰器" data-toc-modified-id="2.-装饰器-3.9.2">2. 装饰器</a></span></li></ul></li><li><span><a href="#10.-常用内置库" data-toc-modified-id="10.-常用内置库-3.10">10. 常用内置库</a></span></li></ul></li><li><span><a href="#四、深度学习常用Python库" data-toc-modified-id="四、深度学习常用Python库-4">四、深度学习常用Python库</a></span><ul class="toc-item"><li><span><a href="#1.-Numpy" data-toc-modified-id="1.-Numpy-4.1">1. Numpy</a></span></li><li><span><a href="#2.Scipy" data-toc-modified-id="2.Scipy-4.2">2.Scipy</a></span></li><li><span><a href="#3.Matplotlib" data-toc-modified-id="3.Matplotlib-4.3">3.Matplotlib</a></span></li></ul></li><li><span><a href="#五、几个练习小技巧" data-toc-modified-id="五、几个练习小技巧-5">五、几个练习小技巧</a></span></li><li><span><a href="#六、参考文献" data-toc-modified-id="六、参考文献-6">六、参考文献</a></span></li></ul></div>
 
 ## 一、为什么要学习Python
 
@@ -45,7 +45,7 @@ Python有五个标准的数据类型：
 - Numbers（数字）
 - String（字符串）
 - List（列表）
-- Tuple（元祖）
+- Tuple（元组）
 - Dictionary（字典）
 
 也支持多种运算符操作，按照优先级排列如下：
@@ -517,9 +517,9 @@ a
 
 
 
-#### Tuples（元祖）
+#### Tuples（元组）
 
-元祖和列表类似，但是元祖的元素不能修改，创建以后不能改变。
+元组和列表类似，但是元组的元素不能修改，创建以后不能改变。
 
 
 ```python
@@ -542,7 +542,7 @@ employee[0] = "John"
     TypeError: 'tuple' object does not support item assignment
 
 
-- 元祖切分
+- 元组切分
 
 
 ```python
@@ -569,7 +569,7 @@ employee[1:3]
 
 
 
-- 元祖相加
+- 元组相加
 
 
 ```python
@@ -586,7 +586,7 @@ tuple3
 
 
 
-- 元祖和列表转化
+- 元组和列表转化
 
 
 ```python
@@ -601,9 +601,9 @@ list(tuple1)
 
 
 
-因为元祖是不可变序列，所以很多对列表适用的方法对元祖并不是适用，但元祖也有两个内置的方法：
-- tuple.count()：统计元祖中出现元素的数量
-- tuple.index()：输出元祖中某个元素的索引index，如果元祖中不存在，会报ValueError
+因为元组是不可变序列，所以很多对列表适用的方法对元组并不是适用，但元组也有两个内置的方法：
+- tuple.count()：统计元组中出现元素的数量
+- tuple.index()：输出元组中某个元素的索引index，如果元组中不存在，会报ValueError
 
 
 ```python
@@ -957,7 +957,7 @@ print (next(it))   # 输出迭代器的下一个元素
 
 
 ```python
-# 元祖
+# 元组
 tuple_a=(1,2,3,4)
 it = iter(tuple_a)
 print (next(it))   # 输出迭代器的下一个元素
